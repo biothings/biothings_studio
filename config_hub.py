@@ -38,7 +38,7 @@ CACHE_FORMAT = "xz"
 HUB_MAX_MEM_USAGE = None
 
 # Max number of *processes* hub can access to run jobs
-HUB_MAX_WORKERS = int(os.cpu_count() / 4)
+HUB_MAX_WORKERS = max(1,int(os.cpu_count() / 4))
 # Max number of *threads* hub can use (will default to HUB_MAX_WORKERS if undefined)
 HUB_MAX_THREADS = HUB_MAX_WORKERS
 MAX_SYNC_WORKERS = HUB_MAX_WORKERS
