@@ -3,12 +3,13 @@
 # ######### #
 import os
 
-DATA_HUB_DB_DATABASE = "biothings_hubdb"     # db containing the following (internal use)
+DATA_HUB_DB_DATABASE = "biothings_hubdb"   # db containing the following (internal use)
 DATA_SRC_MASTER_COLLECTION = 'src_master'  # for metadata of each src collections
 DATA_SRC_DUMP_COLLECTION = 'src_dump'      # for src data download information
 DATA_SRC_BUILD_COLLECTION = 'src_build'    # for src data build information
 DATA_PLUGIN_COLLECTION = 'data_plugin'     # for data plugins information
-API_COLLECTION = 'api'                           # for api information (running under hub control)
+API_COLLECTION = 'api'                     # for api information (running under hub control)
+CMD_COLLECTION = 'cmd'                     # for cmd launched from the hub
 
 DATA_TARGET_MASTER_COLLECTION = 'db_master'
 
