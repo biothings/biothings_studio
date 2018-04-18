@@ -10,6 +10,7 @@ DATA_SRC_BUILD_COLLECTION = 'src_build'    # for src data build information
 DATA_PLUGIN_COLLECTION = 'data_plugin'     # for data plugins information
 API_COLLECTION = 'api'                     # for api information (running under hub control)
 CMD_COLLECTION = 'cmd'                     # for cmd launched from the hub
+EVENT_COLLECTION = 'event'                 # for event propagation
 
 DATA_TARGET_MASTER_COLLECTION = 'db_master'
 
