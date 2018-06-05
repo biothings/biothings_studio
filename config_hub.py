@@ -114,6 +114,11 @@ HIPCHAT_CONFIG = {
 HUB_SSH_PORT = 7022
 HUB_API_PORT = 7080
 
+# Hub name/icon url/version, for display purpose
+HUB_NAME = "BioThings Studio"
+HUB_ICON = None # default one
+HUB_VERSION = "0.1c"
+
 ################################################################################
 # HUB_PASSWD
 ################################################################################
