@@ -119,6 +119,8 @@ HUB_NAME = "BioThings Studio"
 HUB_ICON = None # default one
 HUB_VERSION = "0.1c"
 
+USE_RELOADER = True # so no need to restart hub when a datasource has changed
+
 ################################################################################
 # HUB_PASSWD
 ################################################################################
