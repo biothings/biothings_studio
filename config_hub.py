@@ -186,6 +186,11 @@ HUB_DB_BACKEND = ConfigurationError("Define Hub DB connection")
 
 #ES_HOST = ConfigurationError("Define ElasticSearch host used for index creation (eg localhost:9200)")
 
+TORNADO_SETTINGS = {
+    # max 10GiB upload
+    "max_buffer_size" : 10*1024*1024*1024,
+}
+
 # Path to a folder to store all downloaded files, logs, caches, etc...
 DATA_ARCHIVE_ROOT = ConfigurationError("Define path to folder which will contain all downloaded data, cache files, etc...")
 
