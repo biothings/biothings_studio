@@ -197,6 +197,8 @@ DATA_ARCHIVE_ROOT = ConfigurationError("Define path to folder which will contain
 # Path to a folder to store all 3rd party parsers, dumpers, etc...
 DATA_PLUGIN_FOLDER = ConfigurationError("Define path to folder which will contain all 3rd party parsers, dumpers, etc...")
 
+DATA_UPLOAD_FOLDER = ConfigurationError("Define path to folder where uploads to API are stored")
+
 # Path to folder containing diff files
 DIFF_PATH = ConfigurationError("Define path to folder which will contain output files from diff")
 # Usually inside DATA_ARCHIVE_ROOT
