@@ -4,32 +4,32 @@
 
 biothings_studio:
 	docker build --force-rm \
-    --build-arg STUDIO_VERSION=master \
-    --build-arg BIOTHINGS_VERSION=master \
+    --build-arg STUDIO_VERSION=0.1e \
+    --build-arg BIOTHINGS_VERSION=0.2.2 \
     -t biothings_studio:$$(git branch | grep ^\* | sed "s#\* ##") .
 
 studio4mygene:
 	docker build --force-rm \
-    --build-arg STUDIO_VERSION=master \
-    --build-arg BIOTHINGS_VERSION=master \
+    --build-arg STUDIO_VERSION=0.1e \
+    --build-arg BIOTHINGS_VERSION=0.2.2 \
     --build-arg API_NAME=mygene.info \
-    --build-arg API_VERSION=master \
+    --build-arg API_VERSION=v3 \
     -t studio4mygene:$$(git branch | grep ^\* | sed "s#\* ##") .
 
 studio4myvariant:
 	docker build --force-rm \
-    --build-arg STUDIO_VERSION=master \
-    --build-arg BIOTHINGS_VERSION=master \
+    --build-arg STUDIO_VERSION=0.1e \
+    --build-arg BIOTHINGS_VERSION=0.2.2 \
     --build-arg API_NAME=myvariant.info \
-    --build-arg API_VERSION=master \
+    --build-arg API_VERSION=production\
     -t studio4myvariant:$$(git branch | grep ^\* | sed "s#\* ##") .
 
 studio4mychem:
 	docker build --force-rm \
-    --build-arg STUDIO_VERSION=master \
-    --build-arg BIOTHINGS_VERSION=master \
+    --build-arg STUDIO_VERSION=0.1e \
+    --build-arg BIOTHINGS_VERSION=0.2.2 \
     --build-arg API_NAME=mychem.info \
-    --build-arg API_VERSION=master \
+    --build-arg API_VERSION=production \
     -t studio4mychem:$$(git branch | grep ^\* | sed "s#\* ##") .
 
 run:
