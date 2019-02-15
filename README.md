@@ -18,3 +18,8 @@ Finally, BioThings Studio comes in different flavors, to facilitate contribution
 - *Studio for MyVariant.info* : http://biothings-containers.s3-website-us-west-2.amazonaws.com/biothings_studio/studio4myvariant_unstable.docker (unstable)
 
 - *Studio for MyChem.info* : http://biothings-containers.s3-website-us-west-2.amazonaws.com/biothings_studio/studio4mychem_unstable.docker (unstable)
+
+## Build Images
+
+Please see the README.md file in the 'docker' directory.
+
