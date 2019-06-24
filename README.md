@@ -5,7 +5,7 @@
 http://docs.biothings.io/en/latest/doc/studio.html
 
 ## Stable releases
-See latest release note https://github.com/biothings/biothings_studio/releases/tag/0.1.0e for all available links to Docker images
+See latest release note https://github.com/biothings/biothings_studio/releases/tag/0.1.0f for all available links to Docker images
 
 ## Unstable releases
 
