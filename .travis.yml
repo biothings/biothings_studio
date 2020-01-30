@@ -1,0 +1,19 @@
+language: python
+
+services:
+  - docker
+
+before_install:
+  - pip install tavern==0.34.0
+
+script:
+- cd tests && make apitest webapptest
+
+jobs:
+  include:
+    - stage: "API"                # naming the Tests stage
+      name: "Testing Hub API"            # names the first Tests stage job
+      script: cd tests && make apitest
+    - stage: "Webapp"
+      name: "Testing webapp UI"
+      script: cd tests && make webapptest
