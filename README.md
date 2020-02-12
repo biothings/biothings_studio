@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/biothings/biothings_studio.svg?branch=master)](https://travis-ci.org/biothings/biothings_studio)
+
 **BioThings Studio** is a pre-configured, ready-to-use software. At its core is **BioThings Hub**, the backend system behind all BioThings API.
 
 
