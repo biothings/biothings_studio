@@ -11,11 +11,11 @@ script:
 
 jobs:
   include:
-    - stage: "API"                # naming the Tests stage
+    - stage: "api"                # naming the Tests stage
       name: "Testing Hub API"            # names the first Tests stage job
       script: cd tests && make apitest
-    - stage: "Webapp"
+    - stage: "webapp"
       name: "Testing webapp UI (tutorial)"
       script: cd tests && make test_webapp_tutorial
-    - stage: "Studio4mygene"
+    - stage: "studio4mygene"
       script: cd tests && make test_studio4mygene
