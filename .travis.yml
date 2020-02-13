@@ -22,5 +22,5 @@ jobs:
 
 cache:
   directories:
-    - tests/webapp/tutorial/node_modules/node_modules
+    - tests/webapp/tutorial/node_modules
     - tests/webapp/studio4mygene/node_modules
