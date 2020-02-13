@@ -15,5 +15,7 @@ jobs:
       name: "Testing Hub API"            # names the first Tests stage job
       script: cd tests && make apitest
     - stage: "Webapp"
-      name: "Testing webapp UI"
-      script: cd tests && make webapptest
+      name: "Testing webapp UI (tutorial)"
+      script: cd tests && make test_webapp_tutorial
+    - stage: "Studio4mygene"
+      script: cd tests && make test_studio4mygene
