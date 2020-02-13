@@ -28,5 +28,5 @@ cache:
 addons:
   artifacts:
     paths:
-      - $(git ls-files -o | grep -v \/node_modul
+      - $(git ls-files -o | grep -v \/node_modules\/)
 
