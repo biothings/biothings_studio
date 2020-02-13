@@ -24,3 +24,9 @@ cache:
   directories:
     - tests/webapp/tutorial/node_modules
     - tests/webapp/studio4mygene/node_modules
+
+addons:
+  artifacts:
+    paths:
+      - $(git ls-files -o | grep -v \/node_modul
+
