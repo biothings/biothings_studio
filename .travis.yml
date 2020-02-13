@@ -19,3 +19,7 @@ jobs:
       script: cd tests && make test_webapp_tutorial
     - stage: "studio4mygene"
       script: cd tests && make test_studio4mygene
+
+cache:
+  directories:
+    - node_modules
