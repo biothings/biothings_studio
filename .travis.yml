@@ -6,19 +6,16 @@ services:
 before_install:
   - pip install tavern==0.34.0
 
-script:
-- cd tests && make apitest webapptest
-
 jobs:
   include:
     - stage: "api"                # naming the Tests stage
       name: "Testing Hub API"            # names the first Tests stage job
-      script: cd tests && make apitest
+      script: cd tests && make api
     - stage: "webapp"
       name: "Testing webapp UI (tutorial)"
-      script: cd tests && make test_webapp_tutorial
+      script: cd tests && make webapp
     - stage: "studio4mygene"
-      script: cd tests && make test_studio4mygene
+      script: cd tests && make studio4mygene
 
 cache:
   directories:
