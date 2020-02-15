@@ -16,11 +16,14 @@ jobs:
       script: cd tests && make webapp
     - stage: "studio4mygene"
       script: cd tests && make studio4mygene
+    - stage: "studio4myvariant"
+      script: cd tests && make studio4myvariant
 
 cache:
   directories:
     - tests/webapp/tutorial/node_modules
     - tests/webapp/studio4mygene/node_modules
+    - tests/webapp/studio4myvariant/node_modules
 
 addons:
   artifacts:
