@@ -6,6 +6,8 @@ services:
 before_install:
   - pip install tavern==0.34.0
 
+install: travis_wait
+
 jobs:
   include:
     - stage: "api"                # naming the Tests stage
@@ -19,7 +21,7 @@ jobs:
       script: cd tests && make studio4mygene
     - stage: "studio4myvariant"
       name: "Testing studio4myvariant UI/hub"
-      script: travis_wait cd tests && make studio4myvariant
+      script: cd tests && make studio4myvariant
 
 cache:
   directories:
