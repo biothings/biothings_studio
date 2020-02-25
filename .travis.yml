@@ -34,5 +34,5 @@ cache:
 addons:
   artifacts:
     paths:
-      - $(git ls-files -o | grep -v \/node_modules\/)
+      - $(git ls-files -o | grep -v \/node_modules\/ | grep -v pytest_cache)
 
