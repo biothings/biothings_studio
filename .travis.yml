@@ -20,12 +20,16 @@ jobs:
     #- stage: "studio4myvariant"
     #  name: "Testing studio4myvariant UI/hub"
     #  script: cd tests && make studio4myvariant
+    - stage: "studio4mychem"
+      name: "Testing studio4mychem UI/hub"
+      script: cd tests && make studio4mychem
 
 cache:
   directories:
     - tests/webapp/tutorial/node_modules
     - tests/webapp/studio4mygene/node_modules
     #- tests/webapp/studio4myvariant/node_modules
+    - tests/webapp/studio4mychem/node_modules
 
 addons:
   artifacts:
