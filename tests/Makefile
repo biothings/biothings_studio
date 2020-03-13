@@ -1,26 +1,25 @@
-all: apitest webapptest
+all: api webapp studio4
 
-docker_pull:
-	docker pull biothings/biothings-studio:0.2a
+info:
+	df -h
+	ps auxgww
 
-docker_run:
-	-docker kill test_studio
-	sleep 5
-	while docker ps | grep test_studio; do sleep 1; done
-	docker run --rm --name test_studio -p 8080:8080 -p 7080:7080 -p 8000:8000 -d biothings/biothings-studio:0.2a
-	while ! curl localhost:7080; do echo waiting for hub api to run; sleep 5; done
+api_mvcgi: info
+	cd hubapi/mvcgi && make test
 
-npm_install:
-	cd webapp/tutorial && npm install
+webapp_tutorial: info
+	cd webapp/tutorial && make test
 
-test_api_mvcgi: docker_pull docker_run
-	HUB_API_HOST=http://localhost:7080 py.test hubapi/mvcgi
+studio4mygene: info
+	cd webapp/studio4mygene && make test
 
-test_webapp_tutorial: docker_pull npm_install docker_run
-	# npx is the launcher, not installed globally (no sudo) so use local path explicitely
-	cd webapp/tutorial && ./node_modules/.bin/npx codeceptjs run --steps -o '{ "helpers": {"Puppeteer": {"show": false}}}'
+studio4myvariant: info
+	cd webapp/studio4myvariant && make test
+
+studio4mychem: info
+	cd webapp/studio4mychem && make test
 
 
-apitest: test_api_mvcgi
-webapptest: test_webapp_tutorial
-
+api: api_mvcgi
+webapp: webapp_tutorial
+studio4: studio4mygene studio4myvariant

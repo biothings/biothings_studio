@@ -6,14 +6,33 @@ services:
 before_install:
   - pip install tavern==0.34.0
 
-script:
-- cd tests && make apitest webapptest
-
 jobs:
   include:
-    - stage: "API"                # naming the Tests stage
+    - stage: "api"                # naming the Tests stage
       name: "Testing Hub API"            # names the first Tests stage job
-      script: cd tests && make apitest
-    - stage: "Webapp"
-      name: "Testing webapp UI"
-      script: cd tests && make webapptest
+      script: cd tests && make api
+    - stage: "webapp"
+      name: "Testing webapp UI (tutorial)"
+      script: cd tests && make webapp
+    - stage: "studio4mygene"
+      name: "Testing studio4mygene UI/hub"
+      script: cd tests && make studio4mygene
+    #- stage: "studio4myvariant"
+    #  name: "Testing studio4myvariant UI/hub"
+    #  script: cd tests && make studio4myvariant
+    - stage: "studio4mychem"
+      name: "Testing studio4mychem UI/hub"
+      script: cd tests && make studio4mychem
+
+cache:
+  directories:
+    - tests/webapp/tutorial/node_modules
+    - tests/webapp/studio4mygene/node_modules
+    #- tests/webapp/studio4myvariant/node_modules
+    - tests/webapp/studio4mychem/node_modules
+
+addons:
+  artifacts:
+    paths:
+      - $(git ls-files -o | grep -v \/node_modules\/ | grep -v pytest_cache)
+
