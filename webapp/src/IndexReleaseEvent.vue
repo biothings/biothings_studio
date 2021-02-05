@@ -246,7 +246,7 @@ export default {
                     if(!self.selected_snapshot_env)
                         return;
                     axios.put(axios.defaults.baseURL + `/snapshot`,
-                        {"snapshot_env" : self.selected_snapshot_env,
+                        {"env" : self.selected_snapshot_env,
                          "index" : self.release.index_name,
                          "snapshot" : self.snapshot_name})
                     .then(response => {
