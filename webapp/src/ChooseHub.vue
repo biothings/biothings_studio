@@ -161,6 +161,7 @@ data() {
         signin_error: null,
         logged_username: null,
         tokens: {},
+        base_path: window.location.pathname || "/"
     };
 },
 components: { },
@@ -198,7 +199,7 @@ methods: {
                 Vue.localStorage.set('hub_connections',JSON.stringify(self.existings));
                 // update base URL for all API calls
                 // auto-connect to newly created connection, and redirect to home
-                bus.$emit("connect",data,"/");
+                bus.$emit("connect", data, this.base_path);
                 self.connection_error = null;
                 self.loaded();
             })
