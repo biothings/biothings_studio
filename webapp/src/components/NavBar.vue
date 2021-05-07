@@ -1,6 +1,9 @@
 <template>
     <!-- <div class="ui inverted pointing menu br-0 m-0"> -->
         <div class="ui container">
+            <div class="item">
+                <img src='../assets/biothings-studio-color.svg' alt="Studio">
+            </div>
             <router-link :to="mitem['path']" class="item" style="padding: .5rem 1rem;" v-for="mitem in menu" v-bind:key="mitem.name" exact>
                 {{ mitem['name'] }}
             </router-link>
