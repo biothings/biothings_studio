@@ -1,11 +1,14 @@
 <template>
     <div class="main-background" style="min-height:100vh">
 
-        <div class="ui big message" :class="actionable">
-            <button class="ui button" @click="wizard()" style="margin:10px 0px 0px 50px;">
-                <i class="magic icon"></i>
-                Setup
-            </button>
+        <div class="ui container" style="margin:10px;">
+          <div class="ui big message flex-center" :class="actionable">
+              <h1 class="ui teal header">Releases</h1>
+              <button class="ui button" style="margin-left:20px;" @click="wizard()">
+                  <i class="magic icon"></i>
+                  Setup
+              </button>
+          </div>
         </div>
         <div class="ui grid" v-if="version_urls.length">
             <div class="three wide column">
