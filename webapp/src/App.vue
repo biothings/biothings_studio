@@ -1,7 +1,7 @@
 <template>
   <div id="app" class="m-0">
     <!--🌈🌈 NAV 🌈🌈-->
-    <div class="ui pointing inverted menu br-0" style="display:block">
+    <div class="ui pointing inverted menu br-0 m-0" style="display:block">
       <div class="ui container">
         <div class="header item">
           <img class="logo" src="./assets/biothings-studio-color.svg">

@@ -47,17 +47,21 @@
         </div>
         <div class="pusher main-background">
             <div class="ui main container">
-                <div class="ui orange segment">
+                    <!-- <div class="ui orange segment">
+                      <div class="ui secondary small menu">
+                          <div class="header item">
+                            <h1 class="ui orange header">(<small>{{builds ? builds.length : 0}}</small>) Builds</h1>
+                          </div>
+                          <a class="item" id="side_menu">
+                              <i class="sidebar icon"></i>
+                              Menu
+                          </a>
+                      </div>
+                    </div> -->
 
-                    <div class="ui secondary small menu">
-                        <div class="header item">
-                          <h1 class="ui orange header">(<small>{{builds ? builds.length : 0}}</small>) Builds</h1>
-                        </div>
-                        <a class="item" id="side_menu">
-                            <i class="sidebar icon"></i>
-                            Menu
-                        </a>
-                        </div>
+                    <div class="ui big message flex-center">
+                      <h1 class="ui orange header">(<small>{{builds ? builds.length : 0}}</small>) Builds</h1>
+                      <button id="side_menu" style="margin-left:20px;" class="circular ui icon orange button"><i class="icon ellipsis horizontal"></i></button>
                     </div>
 
                     <div v-if="loadingBuilds" class="ui active inverted dimmer">

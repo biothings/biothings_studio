@@ -8,16 +8,11 @@
       </div>
       <div class="pusher main-background">
           <div class="ui main container">
-              <div class="ui pink segment left aligned">
-                  <div class="ui secondary small menu" :class="actionable">
-                      <div class="header item">
-                        <h1 class="ui pink header">(<small>{{orderedSources ? orderedSources.length : 0}}</small>) Sources</h1>
-                      </div>
-                      <a class="item" id="sources_menu">
-                          <i class="sidebar icon"></i>
-                          Menu
-                      </a>
-                  </div>
+              <div class="ui big message flex-center">
+                <h1 class="ui pink header">
+                  (<small>{{orderedSources ? orderedSources.length : 0}}</small>) Sources
+                </h1>
+                <button id="sources_menu" style="margin-left:20px;" class="circular ui icon pink button"><i class="icon ellipsis horizontal"></i></button>
               </div>
               <div id="data-source-grid" class="ui grid" style="padding-bottom:100px;">
                   <!-- <div class="four wide column" v-for="(source, i) in orderedSources" :key="source+i">

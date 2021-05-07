@@ -56,4 +56,9 @@ export default {
 .pusher{
     min-height:90vh !important;
 }
+.flex-center{
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
 </style>
