@@ -63,17 +63,17 @@
 
         <div class="extra content light-grey" :class="actionable">
             <div class="ui icon buttons left floated mini" v-if="api.status != 'running'">
-                <button class="ui button" v-on:click="startAPI">
+                <button class="ui button" v-on:click="startAPI" data-tooltip="Start API">
                     <i class="play icon"></i>
                 </button>
             </div>
             <div class="ui icon buttons left floated mini" v-else>
-                <button class="ui button" v-on:click="stopAPI">
+                <button class="ui button" v-on:click="stopAPI" data-tooltip="Stop API">
                     <i class="stop icon"></i>
                 </button>
             </div>
             <div class="ui icon buttons right floated mini">
-                <button class="ui button">
+                <button class="ui button delete-btn" data-tooltip="Delete API">
                     <i class="trash icon" :data-api_id="api._id" @click="deleteAPI($event)"></i>
                 </button>
             </div>

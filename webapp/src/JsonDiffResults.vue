@@ -25,9 +25,10 @@ import bus from './bus.js'
 
 export default {
   name: 'json-diff-results',
-  mounted () {
-    $('table').tablesort()
-  },
+  // mounted () {
+  //   // bugged
+  //   // $('table').tablesort()
+  // },
   created () {
     bus.$on('diffed', this.setOps)
   },

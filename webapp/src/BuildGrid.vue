@@ -431,7 +431,7 @@ export default {
       axios.get(axios.defaults.baseURL + '/builds' + filter)
         .then(response => {
           self.builds = response.data.result
-          console.log('TOTAL BUILDS', self.builds.length)
+          console.log('%c 🧰 TOTAL BUILDS =>' + self.builds.length, 'color: coral')
           // if (!self.showSelection) {
           //   self.showSelection = 'today'
           // }

@@ -50,7 +50,7 @@
             <div class="ui clearing divider"></div>
 
             <div class="left aligned description">
-                <p>
+                <div>
                     <div class="ui top attached pointing secondary menu">
                         <a class="item active" :data-tab="'sources' + build.build_config.name">Sources</a>
                         <a class="item" :data-tab="'stats' + build.build_config.name">Stats</a>
@@ -67,23 +67,23 @@
                     <div class="ui bottom attached tab segment" :data-tab="'logs' + build.build_config.name">
                         <build-logs v-bind:build="build"></build-logs>
                     </div>
-                </p>
+                </div>
             </div>
         </div>
 
         <div class="extra content light-grey" :class="actionable">
             <div class="ui icon buttons left floated mini">
-                <button class="ui button m-1" :data-build_id="build._id" v-on:click="inspect">
+                <button class="ui button m-1" :data-build_id="build._id" v-on:click="inspect" data-tooltip="Inspect">
                     <i class="unhide icon" :data-build_id="build._id"></i>
                 </button>
             </div>
             <div class="ui icon buttons right floated mini">
-                <button class="ui button m-1">
+                <button class="ui button m-1 delete-btn" data-tooltip="Delete">
                     <i class="trash icon" @click="deleteBuild()"></i>
                 </button>
             </div>
             <div class="ui icon buttons right floated mini" v-if="!build.archived">
-                <button class="ui button m-1">
+                <button class="ui button m-1" data-tooltip="Archive">
                     <i :class="[build.archived ? 'archived' : '', 'archive icon']" @click="archiveBuild()"></i>
                 </button>
             </div>
