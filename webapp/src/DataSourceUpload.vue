@@ -3,7 +3,7 @@
         <span v-if="source.upload && source.upload.sources">
             <span v-if="Object.keys(source.upload.sources).length > 1">
                 <div id="srcs" class="ui top attached tabular menu">
-                    <a :class="['green item', i === 0 ? 'active' : '']" :data-tab="'upload_' + subsrc" v-for="(_,subsrc,i) in source.upload.sources">
+                    <a :class="['green item', i === 0 ? 'active' : '']" :data-tab="'upload_' + subsrc" v-for="(_,subsrc,i) in source.upload.sources" :key="i+'x'">
                         {{subsrc}}
                         <button class="reset ui button" v-if="source.upload.sources[subsrc]['uploader'] === null" @click="reset(subsrc)" data-tooltip="Datasource broken, click to remove">
                             <i class="close icon"></i>
@@ -11,7 +11,7 @@
                     </a>
                 </div>
             </span>
-            <div :class="['ui bottom attached tab segment', i === 0 ? 'active' : '']" :data-tab="'upload_' + subsrc" v-for="(info,subsrc,i) in source.upload.sources">
+            <div :class="['ui bottom attached tab segment', i === 0 ? 'active' : '']" :data-tab="'upload_' + subsrc" v-for="(info,subsrc,i) in source.upload.sources" :key="i">
                 <div class="ui two grid">
                     <div class="row">
                         <div class="ten wide column">
@@ -97,44 +97,40 @@
 
 <script>
 import axios from 'axios'
-import bus from './bus.js'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 
 export default {
-    name: 'data-source-upload',
-    props: ['source'],
-    mixins: [ Loader, Actionable, ],
-    mounted () {
-        this.setup();
+  name: 'data-source-upload',
+  props: ['source'],
+  mixins: [Loader, Actionable],
+  mounted () {
+    this.setup()
+  },
+  methods: {
+    setup: function () {
+      $('.menu .item').tab()
     },
-    components: { },
-    watch: {
+    do_upload: function (subsrc = null) {
+      return this.$parent.upload(subsrc = subsrc)
     },
-    methods: {
-        setup: function() {
-            $('.menu .item').tab();
-        },
-        do_upload: function(subsrc=null) {
-            return this.$parent.upload(subsrc=subsrc);
-        },
-        reset: function(subsrc) {
-            var self = this;
-            self.loading();
-            var data = {
-                "name" : self.source._id,
-                "key" : "upload",
-                "subkey": subsrc
-            };
-            axios.post(axios.defaults.baseURL + `/source/${self.source._id}/reset`,data)
-            .then(response => {
-                self.loaded();
-            })
-            .catch(err => {
-                self.loaderror(err);
-            });
-        },
-    },
+    reset: function (subsrc) {
+      var self = this
+      self.loading()
+      var data = {
+        name: self.source._id,
+        key: 'upload',
+        subkey: subsrc
+      }
+      axios.post(axios.defaults.baseURL + `/source/${self.source._id}/reset`, data)
+        .then(response => {
+          self.loaded()
+        })
+        .catch(err => {
+          self.loaderror(err)
+        })
+    }
+  }
 }
 </script>
 

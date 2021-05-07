@@ -7,7 +7,7 @@
             </div>
         </div>
         <table class="ui compact celled table" v-if="Object.keys(commands).length">
-            <tr v-for="command in orderedCommands"
+            <tr v-for="(command, i) in orderedCommands" :key="command.is_done+i"
                 v-bind:class="[ command.is_done & command.failed ? 'negative' : '', command.is_done & !command.failed ? 'positive': '' ,'nowrap']"
                 >
                 <td>
@@ -32,58 +32,57 @@ export default {
   name: 'commands-list',
   props: [],
   mounted () {
-    console.log("CommandsList mounted");
-    $('.commands.button').popup({popup: $('.commands.popup'), on: 'click' });
-    $('.ui.toggle.checkbox').checkbox();
+    // console.log('CommandsList mounted')
+    $('.commands.button').popup({ popup: $('.commands.popup'), on: 'click' })
+    $('.ui.toggle.checkbox').checkbox()
     // sync
-    this.refreshCommands();
+    this.refreshCommands()
   },
-  created() {
-      bus.$on('change_command',this.onCommandChanged);
+  created () {
+    bus.$on('change_command', this.onCommandChanged)
   },
-  beforeDestroy() {
-      bus.$off('change_command',this.onCommandChanged);
-      $('.ui.basic.unregister.modal').remove();
+  beforeDestroy () {
+    bus.$off('change_command', this.onCommandChanged)
+    $('.ui.basic.unregister.modal').remove()
   },
-  ready() {
-    console.log("command item ready");
+  ready () {
+    console.log('command item ready')
   },
   data () {
-    return  {
-        allcmds : false,
-        commands : {},
+    return {
+      allcmds: false,
+      commands: {}
     }
   },
   computed: {
-    orderedCommands: function() {
-      return _.orderBy(Object.values(this.commands),'id',-1);
+    orderedCommands: function () {
+      return _.orderBy(Object.values(this.commands), 'id', -1)
     }
   },
   watch: {
-      allcmds: 'showAllToggled'
+    allcmds: 'showAllToggled'
   },
   methods: {
-      showAllToggled() {
-          this.refreshCommands();
-      },
-      onCommandChanged(_id=null, op=null) {
-          this.refreshCommands();
-      },
-      refreshCommands: function() {
-          var url = axios.defaults.baseURL + '/commands';
-          if(!this.allcmds)
-              url += "?running=1";
-          axios.get(url)
-          .then(response => {
-              this.commands = response.data.result;
-              bus.$emit("num_commands",Object.keys(this.commands).length);
-          })
-          .catch(err => {
-              console.log("Error getting runnings commands: " + err);
-          })
-      },
+    showAllToggled () {
+      this.refreshCommands()
+    },
+    onCommandChanged (_id = null, op = null) {
+      this.refreshCommands()
+    },
+    refreshCommands: function () {
+      var url = axios.defaults.baseURL + '/commands'
+      if (!this.allcmds) { url += '?running=1' }
+      axios.get(url)
+        .then(response => {
+          this.commands = response.data.result
+          bus.$emit('num_commands', Object.keys(this.commands).length)
+        })
+        .catch(err => {
+          console.log('Error getting runnings commands: ' + err)
+        })
+    }
 
-  },
+  }
 }
 </script>
 

@@ -7,7 +7,7 @@
             </tr>
         </thead>
         <tbody v-if="build._meta">
-            <tr v-for="(info,src) in build._meta.src">
+            <tr v-for="(info,src) in build._meta.src" :key="src+info.version">
                 <td v-if="info.url"><a :href="info.url">{{src}}</a></td>
                 <td v-else>{{src}}</td>
                 <td>{{info.version}}</td>
@@ -22,22 +22,8 @@
 </template>
 
 <script>
-import axios from 'axios'
-import bus from './bus.js'
-import Vue from 'vue';
-
 export default {
-    name: 'build-sources',
-    props: ['build'],
-    mounted() {
-    },
-    beforeDestroy() {
-    },
-    components: { },
-    methods: {
-    },
+  name: 'build-sources',
+  props: ['build'],
 }
 </script>
-
-<style scoped>
-</style>

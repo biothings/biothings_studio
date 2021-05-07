@@ -23,7 +23,7 @@
             </div>
         </div>
         <table class="ui compact celled table" v-if="threads.running">
-            <tr v-for="(thread, pid) in threads.all" v-bind:class="[thread.job ? 'positive' : '', 'nowrap']">
+            <tr v-for="(thread, pid) in threads.all" v-bind:class="[thread.job ? 'positive' : '', 'nowrap']" :key="pid">
                 <td class="nowrap">
                     <div>
                         <i v-if="thread.job" class="ui notched circle loading icon"></i>
@@ -43,27 +43,12 @@
 </template>
 
 <script>
-import axios from 'axios'
-import bus from './bus.js'
-
 export default {
   name: 'threads-list',
   props: ['threads'],
-  methods: {
-  },
   mounted () {
-    console.log("ThreadsList mounted");
     $('.ui.toggle.checkbox')
-    .checkbox()
-    ;
-  },
-  ready() {
-    console.log("thread item ready");
-  },
-  watch: {
+      .checkbox()
   },
 }
 </script>
-
-<style>
-</style>

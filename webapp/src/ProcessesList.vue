@@ -19,7 +19,7 @@
         </div>
         <table class="ui nowrap compact celled table" v-if="Object.keys(processes.all).length">
             <tr v-for="(process, pid) in processes.all"
-                v-bind:class="[process.cpu.status == 'running'? 'positive' : '', 'nowrap']">
+                v-bind:class="[process.cpu.status == 'running'? 'positive' : '', 'nowrap']" :key="pid">
                 <td>
                     <div v-bind:data-tooltip="process.cpu.status">
                         <i v-if="process.cpu.status == 'running'" class="ui notched circle loading icon"></i>
@@ -42,27 +42,12 @@
 </template>
 
 <script>
-import axios from 'axios'
-import bus from './bus.js'
-
 export default {
   name: 'processes-list',
   props: ['processes'],
-  methods: {
-  },
   mounted () {
-    console.log("ProcessesList mounted");
     $('.ui.toggle.checkbox')
-    .checkbox()
-    ;
-  },
-  ready() {
-    console.log("process item ready");
-  },
-  watch: {
+      .checkbox()
   },
 }
 </script>
-
-<style>
-</style>

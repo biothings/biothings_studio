@@ -6,9 +6,7 @@
 
 export default {
   name: 'terminal-line',
-  props: ["line"],
-  computed: {
-  }
+  props: ['line'],
 }
 </script>
 

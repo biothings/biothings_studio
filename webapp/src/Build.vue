@@ -30,7 +30,7 @@
                     v-if="build.status == 'canceled'"></i>
             </div>
 
-            <div class="left aligned header" v-model="build">
+            <div class="left aligned header" v-if="build">
                 <small>
                     <router-link :to="{name:'build', params: {_id: build._id, color:color}}"><a>{{ build.target_name }}</a></router-link>
                 </small>
@@ -39,12 +39,12 @@
                 <div>
                     <i class="file outline icon"></i>
                     {{ build.count | currency('',0) }} document{{ build.count &gt; 1 ? "s" : "" }}
-                    <span class="right floated category" v-model="build" v-if="build._meta">{{ build._meta.build_version }}</span>
+                    <span class="right floated category" v-if="build && build._meta">{{ build._meta.build_version }}</span>
                 </div>
             </div>
             <div class="meta">
-                <span class="left floated category" v-model="build" v-if="build.jobs">Build time: {{ build.jobs | build_time | timesofar }}</span>
-                <span class="right floated time" v-model="build">Built {{ build.started_at | moment("from","now") }}</span>
+                <span class="left floated category" v-if="build && build.jobs">Build time: {{ build.jobs | build_time | timesofar }}</span>
+                <span class="right floated time" v-if="build">Built {{ build.started_at | moment("from","now") }}</span>
             </div>
 
             <div class="ui clearing divider"></div>
@@ -71,19 +71,19 @@
             </div>
         </div>
 
-        <div class="extra content" :class="actionable">
+        <div class="extra content light-grey" :class="actionable">
             <div class="ui icon buttons left floated mini">
-                <button class="ui button" :data-build_id="build._id" v-on:click="inspect">
+                <button class="ui button m-1" :data-build_id="build._id" v-on:click="inspect">
                     <i class="unhide icon" :data-build_id="build._id"></i>
                 </button>
             </div>
             <div class="ui icon buttons right floated mini">
-                <button class="ui button">
+                <button class="ui button m-1">
                     <i class="trash icon" @click="deleteBuild()"></i>
                 </button>
             </div>
             <div class="ui icon buttons right floated mini" v-if="!build.archived">
-                <button class="ui button">
+                <button class="ui button m-1">
                     <i :class="[build.archived ? 'archived' : '', 'archive icon']" @click="archiveBuild()"></i>
                 </button>
             </div>
@@ -147,7 +147,7 @@
 <script>
 import axios from 'axios'
 import bus from './bus.js'
-import Vue from 'vue';
+import Vue from 'vue'
 import BaseBuild from './BaseBuild.vue'
 import InspectForm from './InspectForm.vue'
 import BuildLogs from './BuildLogs.vue'
@@ -156,127 +156,125 @@ import BuildSources from './BuildSources.vue'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 
-function build_time(jobs) {
-    return jobs.map((q)=>q.time_in_s).reduce(
-            function(total, q) {
-                return total + q
-            }, 0);
+function build_time (jobs) {
+  return jobs.map((q) => q.time_in_s).reduce(
+    function (total, q) {
+      return total + q
+    }, 0)
 };
-Vue.filter('build_time',build_time);
+Vue.filter('build_time', build_time)
 
 export default {
-    name: 'build',
-    props: ['pbuild','color'],
-    mounted() {
-        $('.menu .item')
-        .tab({context: 'parent'})
-        ;
+  name: 'build',
+  props: ['pbuild', 'color'],
+  mounted () {
+    $('.menu .item')
+      .tab({ context: 'parent' })
+  },
+  created () {
+    bus.$on('build_updated', this.onBuildChanged)
+  },
+  beforeDestroy () {
+    bus.$off('build_updated', this.onBuildChanged)
+    $(`#${this.build._id}.ui.basic.deletebuild.modal`).remove()
+    $(`#${this.build._id}.ui.basic.archivebuild.modal`).remove()
+  },
+  data () {
+    return {
+      // this object is set by API call, whereas 'pbuild' prop
+      // is set by the parent
+      build_from_api: null
+    }
+  },
+  mixins: [BaseBuild, Loader, Actionable],
+  components: { InspectForm, BuildLogs, BuildStats, BuildSources },
+  computed: {
+    build: function () {
+      // select build from API call preferably
+      return this.build_from_api || this.pbuild
+    }
+  },
+  methods: {
+    displayError: function () {
+      var errs = []
+      if (this.build.jobs) {
+        var last = this.build.jobs[this.build.jobs.length - 1]
+        if (last && last.err) { errs.push(`Step '${last.step}' failed: ${last.err}`) }
+      }
+      if (errs.length == 0) {
+        // couldn't find an error, weird...
+        errs.push('Unknown error...')
+      }
+      return errs.join('<br>')
     },
-    created() {
-        bus.$on('build_updated',this.onBuildChanged);
+    deleteBuild: function () {
+      var self = this
+      $(`#${self.build._id}.ui.basic.deletebuild.modal`)
+        .modal('setting', {
+          onApprove: function () {
+            axios.delete(axios.defaults.baseURL + `/build/${self.build._id}`)
+              .then(response => {
+                console.log(response.data.result)
+                return true
+              })
+              .catch(err => {
+                console.log(err)
+                console.log('Error deleting build: ' + err.data.error)
+              })
+          }
+        })
+        .modal('show')
     },
-    beforeDestroy() {
-        bus.$off('build_updated',this.onBuildChanged);
-        $(`#${this.build._id}.ui.basic.deletebuild.modal`).remove();
-        $(`#${this.build._id}.ui.basic.archivebuild.modal`).remove();
+    archiveBuild: function () {
+      var self = this
+      $(`#${self.build._id}.ui.basic.archivebuild.modal`)
+        .modal('setting', {
+          onApprove: function () {
+            self.loading()
+            axios.post(axios.defaults.baseURL + `/build/${self.build._id}/archive`)
+              .then(response => {
+                console.log(response.data.result)
+                self.loaded()
+                return true
+              })
+              .catch(err => {
+                console.log(err)
+                self.loaderror(err)
+              })
+          }
+        })
+        .modal('show')
     },
-    data() {
-        return {
-            // this object is set by API call, whereas 'pbuild' prop
-            // is set by the parent
-            build_from_api: null,
+    onBuildChanged: function (_id = null, op = null) {
+      // this method acts as a dispatcher, reacting to change_build events, filtering
+      // them for the proper build
+      // _id null: event containing change about a build but we don't know which one
+      // (it should be captured by build-grid component
+      if (_id == null || this.build._id != _id) {
+        // console.log(`I'm ${this.build._id} but they want ${_id}`);
+        return
+      } else {
+        // console.log("_id was " + _id);
+        // deleted or archived builds (though replace_one could catch more than this command)
+        if (op == 'remove' || op == 'replace_one') {
+          // can't getBuild() when not there anymore,
+          // propagate a general change_build event
+          bus.$emit('change_build')
+        } else {
+          return this.getBuild()
         }
+      };
     },
-    mixins: [ BaseBuild, Loader, Actionable, ],
-    components: { InspectForm, BuildLogs, BuildStats, BuildSources, },
-    computed: {
-        build: function () {
-            // select build from API call preferably
-            return this.build_from_api || this.pbuild;
-        },
-    },
-    methods: {
-        displayError : function() {
-            var errs = [];
-            if (this.build.jobs) {
-                var last = this.build.jobs[this.build.jobs.length-1];
-                if(last && last.err)
-                    errs.push(`Step '${last.step}' failed: ${last.err}`);
-            }
-            if(errs.length == 0) {
-                // couldn't find an error, weird...
-                errs.push("Unknown error...");
-            }
-            return errs.join("<br>");
-        },
-        deleteBuild : function() {
-            var self = this;
-            $(`#${self.build._id}.ui.basic.deletebuild.modal`)
-            .modal("setting", {
-                onApprove: function () {
-                    axios.delete(axios.defaults.baseURL + `/build/${self.build._id}`)
-                    .then(response => {
-                        console.log(response.data.result)
-                        return true;
-                    })
-                    .catch(err => {
-                        console.log(err);
-                        console.log("Error deleting build: " + err.data.error);
-                    })
-                }
-            })
-            .modal("show");
-        },
-        archiveBuild : function() {
-            var self = this;
-            $(`#${self.build._id}.ui.basic.archivebuild.modal`)
-            .modal("setting", {
-                onApprove: function () {
-                    self.loading();
-                    axios.post(axios.defaults.baseURL + `/build/${self.build._id}/archive`)
-                    .then(response => {
-                        console.log(response.data.result)
-                        self.loaded();
-                        return true;
-                    })
-                    .catch(err => {
-                        console.log(err);
-                        self.loaderror(err);
-                    })
-                }
-            })
-            .modal("show");
-        },
-        onBuildChanged: function(_id=null, op=null) {
-            // this method acts as a dispatcher, reacting to change_build events, filtering
-            // them for the proper build
-            // _id null: event containing change about a build but we don't know which one
-            // (it should be captured by build-grid component
-            if(_id == null || this.build._id != _id) {
-                //console.log(`I'm ${this.build._id} but they want ${_id}`);
-                return;
-            } else {
-                //console.log("_id was " + _id);
-                // deleted or archived builds (though replace_one could catch more than this command)
-                if(op == "remove" || op == "replace_one") {
-                    // can't getBuild() when not there anymore,
-                    // propagate a general change_build event
-                    bus.$emit("change_build");
-                } else {
-                    return this.getBuild();
-                }
-            };
-        },
-        getBuild: function() {
-            axios.get(axios.defaults.baseURL + '/build/' + this.build._id)
-            .then(response => {
-                this.build_from_api = response.data.result;
-            })
-            .catch(err => {
-                console.log("Error getting build information: " + err);
-            })
-        },
-    },
+    getBuild: function () {
+      axios.get(axios.defaults.baseURL + '/build/' + this.build._id)
+        .then(response => {
+          this.build_from_api = response.data.result
+        })
+        .catch(err => {
+          console.log('Error getting build information: ' + err)
+        })
+    }
+  }
 }
 </script>
 
@@ -300,6 +298,8 @@ export default {
     }
 
   .archived {color:#208CBC;}
-
+  .card{
+    word-wrap: break-word;
+  }
 
 </style>

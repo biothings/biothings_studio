@@ -1,11 +1,11 @@
 <template>
     <span>
-    <div class="term terminput"><span>hub&gt;&nbsp;</span><input id="termcommand" class="term terminput termcommand"
+    <div class="term terminput"><span>hub&gt;&nbsp;</span>
+    <input id="termcommand" class="term terminput termcommand"
                type="text"
                placeholder="Type a command..."
                v-on:keydown.enter="send"
-               autofocus>
-        </input>
+               autofocus/>
     </div>
     </span>
 </template>
@@ -15,42 +15,36 @@ import axios from 'axios'
 
 export default {
   name: 'terminal-prompt',
-  props: ["prompt"],
-  computed: {
-  },
-  data () {
-    return  {
-    }
-  },
+  props: ['prompt'],
   methods: {
-      send(evt) {
-          var cmd = evt.target.value;
-          this.$parent.error = null;
-          var self = this;
-          axios.put(axios.defaults.baseURL + `/shell`,{"cmd":cmd},{validateStatus: false})
-          .then(response => {
-              // axios doesn't display error when response isn't 200, need to deal with that manually
-              // TODO: this would def benefit all api calls...
-              if(response.status >= 200 && response.status < 300) {
-                  $("#termcommand").val("");
-              } else {
-                  if(response.data.error) {
-                      self.$parent.error = response.data.error;
-                  } else {
-                      self.$parent.error = response.statusText;
-                  }
-              }
-              var d = $('#terminal');
-              d.scrollTop(d.prop("scrollHeight"));
-          })
-          .catch(err => {
-              if(err.message) {
-                  self.$parent.error = err.message;
-              } else {
-                  self.$parent.error = "Unknown error";
-              }
-          });
-      }
+    send (evt) {
+      var cmd = evt.target.value
+      this.$parent.error = null
+      var self = this
+      axios.put(axios.defaults.baseURL + '/shell', { cmd: cmd }, { validateStatus: false })
+        .then(response => {
+          // axios doesn't display error when response isn't 200, need to deal with that manually
+          // TODO: this would def benefit all api calls...
+          if (response.status >= 200 && response.status < 300) {
+            $('#termcommand').val('')
+          } else {
+            if (response.data.error) {
+              self.$parent.error = response.data.error
+            } else {
+              self.$parent.error = response.statusText
+            }
+          }
+          var d = $('#terminal')
+          d.scrollTop(d.prop('scrollHeight'))
+        })
+        .catch(err => {
+          if (err.message) {
+            self.$parent.error = err.message
+          } else {
+            self.$parent.error = 'Unknown error'
+          }
+        })
+    }
   }
 }
 </script>

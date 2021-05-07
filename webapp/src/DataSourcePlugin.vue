@@ -171,91 +171,88 @@
 
 <script>
 import axios from 'axios'
-import bus from './bus.js'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 import PluginPartExport from './PluginPartExport.vue'
 
 export default {
-    name: 'data-source-plugin',
-    mixins: [ Loader, Actionable, ],
-    props: ['source'],
-    mounted () {
+  name: 'data-source-plugin',
+  mixins: [Loader, Actionable],
+  props: ['source'],
+  mounted () {
+  },
+  beforeDestroy () {
+    $('.ui.basic.exportplugin.modal').remove()
+  },
+  components: { PluginPartExport },
+  data () {
+    return {
+      export_error: null,
+      export_results: {}
+    }
+  },
+  methods: {
+    onUpdatePlugin: function () {
+      var field = $(`.ui.plugin.form.${this.source._id}`).form('get field', 'release')
+      var release = null
+      if (field) { release = field.val() }
+      return this.dumpPlugin(release = release)
     },
-    beforeDestroy() {
-        $('.ui.basic.exportplugin.modal').remove();
+    showExportResults: function (res) {
+      this.export_results = res.data.result
+      console.log(res)
     },
-    components: { PluginPartExport },
-    data () {
-      return {
-        export_error: null,
-        export_results: {},
-      }
-    },
-    methods: {
-        onUpdatePlugin: function() {
-            var field = $(`.ui.plugin.form.${this.source._id}`).form('get field', "release");
-            var release = null;
-            if(field)
-                release = field.val();
-            return this.dumpPlugin(release=release);
-        },
-        showExportResults: function(res) {
-          this.export_results = res.data.result;
-          console.log(res);
-        },
-        onExportCode: function() {
-          // restore original state
-          $("#exportok").show();
-          $("#exportcancel").text("Cancel");
-          this.export_results = {};
-          var self = this;
-          $('.ui.basic.exportplugin.modal')
-          .modal("setting", {
-            detachable : false,
-            closable: false,
-            onApprove: function () {
-              self.loading();
-              self.export_error = null;
-              var parts = [];
-              $(".ui.exportform.form").form('get field', "dumper").prop("checked") && parts.push("dumper")
-              $(".ui.exportform.form").form('get field', "uploader").prop("checked") && parts.push("uploader")
-              $(".ui.exportform.form").form('get field', "mapping").prop("checked") && parts.push("mapping")
-              var purge = $(".ui.exportform.form").form('get field', "purge").prop("checked")
-              var data = {"what": parts, "purge": purge}
-              axios.put(axios.defaults.baseURL + `/dataplugin/${self.source._id}/export`,data)
+    onExportCode: function () {
+      // restore original state
+      $('#exportok').show()
+      $('#exportcancel').text('Cancel')
+      this.export_results = {}
+      var self = this
+      $('.ui.basic.exportplugin.modal')
+        .modal('setting', {
+          detachable: false,
+          closable: false,
+          onApprove: function () {
+            self.loading()
+            self.export_error = null
+            var parts = []
+            $('.ui.exportform.form').form('get field', 'dumper').prop('checked') && parts.push('dumper')
+            $('.ui.exportform.form').form('get field', 'uploader').prop('checked') && parts.push('uploader')
+            $('.ui.exportform.form').form('get field', 'mapping').prop('checked') && parts.push('mapping')
+            var purge = $('.ui.exportform.form').form('get field', 'purge').prop('checked')
+            var data = { what: parts, purge: purge }
+            axios.put(axios.defaults.baseURL + `/dataplugin/${self.source._id}/export`, data)
               .then(response => {
-                self.loaded();
+                self.loaded()
                 self.showExportResults(response)
-                $("#exportok").hide();
-                $("#exportcancel").text("Back");
-                $('.ui.basic.exportplugin.modal').modal("setting",{onDeny:function() {console.log("ok on valide");return true}});
+                $('#exportok').hide()
+                $('#exportcancel').text('Back')
+                $('.ui.basic.exportplugin.modal').modal('setting', { onDeny: function () { console.log('ok on valide'); return true } })
               })
               .catch(err => {
-                console.log("Error exporting plugin: " + err);
-                self.loaderror(err);
-                self.export_error = self.extractError(err);
+                console.log('Error exporting plugin: ' + err)
+                self.loaderror(err)
+                self.export_error = self.extractError(err)
               })
-              return false;
-            }
-          })
-          .modal("show");
-        },
-        dumpPlugin: function(release=null) {
-            // note: plugin name has the same name as the source
-            var data = null;
-            if(release != null && release != "")
-                data = {"release":release}
-            console.log(data);
-            axios.put(axios.defaults.baseURL + `/dataplugin/${this.source.name}/dump`,data)
-            .then(response => {
-                console.log(response.data.result)
-            })
-            .catch(err => {
-                console.log("Error update plugin: " + err);
-            })
-        },
+            return false
+          }
+        })
+        .modal('show')
     },
+    dumpPlugin: function (release = null) {
+      // note: plugin name has the same name as the source
+      var data = null
+      if (release != null && release != '') { data = { release: release } }
+      console.log(data)
+      axios.put(axios.defaults.baseURL + `/dataplugin/${this.source.name}/dump`, data)
+        .then(response => {
+          console.log(response.data.result)
+        })
+        .catch(err => {
+          console.log('Error update plugin: ' + err)
+        })
+    }
+  }
 }
 </script>
 

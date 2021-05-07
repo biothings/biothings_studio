@@ -78,7 +78,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import bus from './bus.js'
 import InspectForm from './InspectForm.vue'
 import MappingMap from './MappingMap.vue'
@@ -92,49 +91,52 @@ import DiffUtils from './DiffUtils.vue'
 import Actionable from './Actionable.vue'
 
 export default {
-    name: 'build-mapping',
-    props: ['build'],
-    mixins: [DiffUtils, Actionable, ], // for diff mapping
-    components: { InspectForm, MappingMap, JsonDiffResults, BuildReleases,
-                  BuildSources, BuildStats, BuildLogs, BuildConfig, },
-    mounted () {
-        console.log("BuildDetailed mounted");
+  name: 'build-mapping',
+  props: ['build'],
+  mixins: [DiffUtils, Actionable], // for diff mapping
+  components: {
+    InspectForm,
+    MappingMap,
+    JsonDiffResults,
+    BuildReleases,
+    BuildSources,
+    BuildStats,
+    BuildLogs,
+    BuildConfig
+  },
+  mounted () {
+    // console.log('BuildDetailed mounted')
+  },
+  updated () {
+    $('select.dropdown').dropdown()
+    $('.menu .item').tab()
+  },
+  computed: {
+    // a computed getter
+    maps: function () {
+      // organize mappings in a simple object, if mappings exist
+      var _maps = {}
+      if (this.build.mapping) {
+        // registered is the registered/active mapping found in src_master
+        _maps.registered_mapping = this.build.mapping
+      }
+      if (this.build.inspect && this.build.inspect.results) {
+        // inspected
+        _maps.inspect_mapping = this.build.inspect.results.mapping
+      }
+      if (Object.keys(_maps).length) { return _maps }
+      return null
+    }
+  },
+  methods: {
+    displayError: function () {
+      var errs = []
+      return errs.join('<br>')
     },
-    updated() {
-        $('select.dropdown').dropdown();
-        $('.menu .item').tab();
-    },
-    data () {
-        return {
-        }
-    },
-    computed: {
-        // a computed getter
-        maps: function () {
-            // organize mappings in a simple object, if mappings exist
-            var _maps = {};
-            if(this.build.mapping) {
-                // registered is the registered/active mapping found in src_master
-                _maps["registered_mapping"] = this.build.mapping;
-            }
-            if(this.build.inspect && this.build.inspect.results) {
-                // inspected
-                _maps["inspect_mapping"] = this.build.inspect.results.mapping;
-            }
-            if(Object.keys(_maps).length)
-                return _maps;
-            return null;
-        }
-    },
-    methods: {
-        displayError : function() {
-            var errs = [];
-            return errs.join("<br>");
-        },
-        inspect: function(event) {
-            bus.$emit("do_inspect",this.build._id);
-        },
-    },
+    inspect: function (event) {
+      bus.$emit('do_inspect', this.build._id)
+    }
+  }
 }
 </script>
 

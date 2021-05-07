@@ -15,7 +15,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="commit in section.upgrade.commits">
+                <tr v-for="(commit, i) in section.upgrade.commits" :key="commit.url+i">
                     <td>
                         <span v-if="commit.url">
                             <a :href="commit.url">{{commit.hash}}</a>
@@ -49,41 +49,27 @@ import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 
 export default {
-    name: 'commits',
-    props: ["section","codebase"],
-    components: { },
-    mixins : [ Loader, Actionable, ],
-    mounted () {
-    },
-    created() {
-    },
-    updated() {
-    },
-    beforeDestroy() {
-    },
-    data () {
-        return {}
-    },
-    computed: {
-    },
-    methods: {
-        upgrade: function(codebase) {
-            console.log(`Upgrading code for ${codebase}`);
-            var self = this;
-            this.loading();
-            axios.put(axios.defaults.baseURL + `/code/upgrade/${codebase}`)
-            .then(response => {
-                console.log(response.data.result)
-                self.loaded();
-                bus.$emit("restart_hub");
-                return true;
-            })
-            .catch(err => {
-                console.log(err);
-                self.loaderror(err);
-            })
-        }
-    },
+  name: 'commits',
+  props: ['section', 'codebase'],
+  mixins: [Loader, Actionable],
+  methods: {
+    upgrade: function (codebase) {
+      console.log(`Upgrading code for ${codebase}`)
+      var self = this
+      this.loading()
+      axios.put(axios.defaults.baseURL + `/code/upgrade/${codebase}`)
+        .then(response => {
+          console.log(response.data.result)
+          self.loaded()
+          bus.$emit('restart_hub')
+          return true
+        })
+        .catch(err => {
+          console.log(err)
+          self.loaderror(err)
+        })
+    }
+  }
 }
 </script>
 

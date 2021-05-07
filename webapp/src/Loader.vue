@@ -8,65 +8,56 @@
 <script>
 
 export default {
-    name: 'loader',
-    // Note: we don't declare "source", it must be defined in subclass/mixed
-    // (sometimes it's a prop, sometimes it's a data field)
-    mounted () {
-        $('#loader')
+  name: 'loader',
+  // Note: we don't declare "source", it must be defined in subclass/mixed
+  // (sometimes it's a prop, sometimes it's a data field)
+  mounted () {
+    $('#loader')
       .popup({
         on: 'hover'
-      });
+      })
+  },
+  methods: {
+    loaded: function () {
+      $('#loading').removeClass('flashing')
+      $('#loading').removeClass('blinking')
+      $('#loading').addClass('green')
+      $('#loader').attr('data-html', '<div>Page loaded</div>')
     },
-    components: { },
-    created() {
+    loadhide: function () {
+      $('#loading').removeClass('red')
+      this.loaded()
     },
-    beforeDestroy() {
+    loading: function () {
+      this.loadhide() // reset
+      $('#loading').addClass('flashing')
+      $('#loading').removeClass('studiogrey')
+      $('#loader').attr('data-html', '<div>Loading</div>')
     },
-    computed: {
+    extractError: function (err) {
+      // console.log(err)
+      var msg = ''
+      if (err.status != undefined) { msg += 'XHR code: ' + err.status + '<br>' }
+      if (err.data != undefined && err.data.error != undefined) { msg += 'Error: ' + err.data.error + '<br>' }
+      if (err.config) {
+        msg += err.config.method.toUpperCase() + " <a href='" + err.config.url + "'>" + err.config.url + '</a>'
+      }
+      if (err.message) {
+        msg += '<br>' + err.message
+      }
+      return msg
     },
-    methods: {
-        loaded: function() {
-            $("#loading").removeClass("flashing");
-            $("#loading").removeClass("blinking");
-            $("#loading").addClass("studiogrey");
-            $("#loader").attr("data-html",'<div>Page loaded</div>');
-        },
-        loadhide: function() {
-            $("#loading").removeClass("red");
-            this.loaded();
-        },
-        loading: function() {
-            this.loadhide(); // reset
-            $("#loading").addClass("flashing");
-            $("#loading").removeClass("studiogrey");
-            $("#loader").attr("data-html",'<div>Loading</div>');
-        },
-        extractError: function(err) {
-            console.log(err);
-            var msg = "";
-            if(err.status != undefined)
-                msg += "XHR code: " + err.status + "<br>";
-            if(err.data != undefined && err.data.error != undefined)
-                msg += "Error: " + err.data.error + "<br>";
-            if(err.config) {
-                msg += err.config.method.toUpperCase() + " <a href='" + err.config.url + "'>" + err.config.url + "</a>";
-            }
-            if(err.message) {
-                msg += "<br>" + err.message;
-            }
-            return msg;
-        },
-        loaderror: function(err) {
-            var msg = "<div><b>Error while loading page</b><br>";
-            msg += this.extractError(err);
-            msg += "</div>";
-            this.loaded();
-            $("#loading").removeClass("studiogrey");
-            $("#loading").addClass("red");
-            $("#loading").addClass("blinking");
-            $("#loader").attr("data-html",msg);
-        }
-    },
+    loaderror: function (err) {
+      var msg = '<div><b>Error while loading page</b><br>'
+      msg += this.extractError(err)
+      msg += '</div>'
+      this.loaded()
+      $('#loading').removeClass('studiogrey')
+      $('#loading').addClass('red')
+      $('#loading').addClass('blinking')
+      $('#loader').attr('data-html', msg)
+    }
+  }
 }
 </script>
 
@@ -86,13 +77,13 @@ export default {
 	animation: flash linear 0.4s infinite;
 }
 @-webkit-keyframes flash {
-	0% { opacity: 1; } 
-	50% { opacity: .1; } 
+	0% { opacity: 1; }
+	50% { opacity: .1; }
 	100% { opacity: 1; }
 }
 @keyframes flash {
-	0% { opacity: 1; } 
-	50% { opacity: .1; } 
+	0% { opacity: 1; }
+	50% { opacity: .1; }
 	100% { opacity: 1; }
 }
 
@@ -109,4 +100,3 @@ export default {
 }
 
 </style>
-

@@ -2,7 +2,7 @@
     <div id="logviewer" class="ui inverted segment" style="overflow-y: auto; width: 85vw; max-height: 73vh; max-width: 85vw;">
         <table class="ui single line super compact inverted table" v-if="records.length">
             <tbody>
-                <log-record v-for="record of records" v-bind:record="record"></log-record>
+                <log-record v-for="(record, i) of records" v-bind:record="record" :key="i+'r'"></log-record>
                 <!-- empty record to move real ones above scrollbar -->
                 <log-record v-bind:record="{'msg':'','logger':'','ts':'','level':''}"></log-record>
             </tbody>
@@ -17,51 +17,42 @@
 </template>
 
 <script>
-import axios from 'axios'
 import bus from './bus.js'
 import LogRecord from './LogRecord.vue'
 
 // TODO: this could be a setup in the app
-const MAX_RECORDS = 1000;
+const MAX_RECORDS = 1000
 
 export default {
   name: 'log-viewer',
-  props: [],
   components: { LogRecord },
-  mounted () {
-    console.log("LogViewer mounted");
+  created () {
+    bus.$on('log', this.onLog)
+    bus.$on('ws_connected', this.onWSConnected)
   },
-  created() {
-      bus.$on('log',this.onLog);
-      bus.$on('ws_connected',this.onWSConnected);
-  },
-  beforeDestroy() {
-      bus.$off('log',this.onLog);
-      bus.$off('ws_connected',this.onWSConnected);
-  },
-  ready() {
+  beforeDestroy () {
+    bus.$off('log', this.onLog)
+    bus.$off('ws_connected', this.onWSConnected)
   },
   data () {
-    return  {
-        records: [],
-        ws_connected: false,
+    return {
+      records: [],
+      ws_connected: false
     }
   },
-  watch: {
-  },
   methods: {
-      onLog(record) {
-          this.records.push(record);
-          while(this.records.length > MAX_RECORDS) {
-              this.records.shift();
-          }
-          var d = $('#logviewer');
-          d.scrollTop(d.prop("scrollHeight"));
-      },
-      onWSConnected(state) {
-          this.ws_connected = state;
+    onLog (record) {
+      this.records.push(record)
+      while (this.records.length > MAX_RECORDS) {
+        this.records.shift()
       }
-  },
+      var d = $('#logviewer')
+      d.scrollTop(d.prop('scrollHeight'))
+    },
+    onWSConnected (state) {
+      this.ws_connected = state
+    }
+  }
 }
 </script>
 

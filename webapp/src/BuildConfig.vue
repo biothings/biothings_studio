@@ -30,33 +30,19 @@
 </template>
 
 <script>
-import axios from 'axios'
-import bus from './bus.js'
-import Vue from 'vue';
 
 export default {
-    name: 'build-stats',
-    props: ['build'],
-    mounted() {
-    },
-    beforeDestroy() {
-    },
-    computed: {
-        others: function() {
-            var _d = {};
-            for(var k in this.build.build_config) {
-                if(["_id","name","sources","root","doc_type"].includes(k))
-                    continue
-                _d[k] = this.build.build_config[k];
-            }
-            return _d;
-        }
-    },
-    components: { },
-    methods: {
-    },
+  name: 'build-stats',
+  props: ['build'],
+  computed: {
+    others: function () {
+      var _d = {}
+      for (var k in this.build.build_config) {
+        if (['_id', 'name', 'sources', 'root', 'doc_type'].includes(k)) { continue }
+        _d[k] = this.build.build_config[k]
+      }
+      return _d
+    }
+  },
 }
 </script>
-
-<style scoped>
-</style>

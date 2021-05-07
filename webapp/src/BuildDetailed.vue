@@ -11,14 +11,14 @@
                     <div :class="['ui',color ? color : 'grey tiny', 'left floated', 'label conftag']">{{build.build_config.name}}</div>
                 </div>
                 <div class="left aligned description">
-                    <p>
+                    <div>
                         <div class="ui clearing divider"></div>
                         <div>
                             <i class="file outline icon"></i>
                             {{ build.count | currency('',0) }} document{{ build.count &gt; 1 ? "s" : "" }}
                         </div>
                         <br>
-                    </p>
+                    </div>
 
                     <p>
                         <div class="ui top attached pointing menu">
@@ -77,49 +77,58 @@ import DiffModal from './DiffModal.vue'
 import Loader from './Loader.vue'
 
 export default {
-    name: 'build-detailed',
-    props: ['_id','color'],
-    mixins: [ BaseBuild, Loader],
-    components: { InspectForm, BuildReleases, BuildMapping, DiffModal,
-                  BuildSources, BuildStats, BuildLogs, BuildConfig, Loader },
-    mounted () {
-        console.log("BuildDetailed mounted");
-        this.loadData();
+  name: 'build-detailed',
+  props: ['_id', 'color'],
+  mixins: [BaseBuild, Loader],
+  components: {
+    InspectForm,
+    BuildReleases,
+    BuildMapping,
+    DiffModal,
+    BuildSources,
+    BuildStats,
+    BuildLogs,
+    BuildConfig,
+    Loader
+  },
+  mounted () {
+    //console.log('BuildDetailed mounted')
+    this.loadData()
+  },
+  updated () {
+    $('select.dropdown').dropdown()
+    $('.menu .item').tab()
+  },
+  created () {
+    bus.$on('change_build', this.loadData)
+  },
+  beforeDestroy () {
+    bus.$off('change_build', this.loadData)
+  },
+  data () {
+    return {
+      build: null
+    }
+  },
+  methods: {
+    displayError: function () {
+      var errs = []
+      return errs.join('<br>')
     },
-    updated() {
-        $('select.dropdown').dropdown();
-        $('.menu .item').tab();
-    },
-    created() {
-        bus.$on('change_build',this.loadData);
-    },
-    beforeDestroy() {
-        bus.$off('change_build',this.loadData);
-    },
-    data () {
-        return {
-            build : null,
-        }
-    },
-    methods: {
-        displayError : function() {
-            var errs = [];
-            return errs.join("<br>");
-        },
-        loadData () {
-            var self = this;
-            this.loading();
-            axios.get(axios.defaults.baseURL + `/build/${this._id}`)
-            .then(response => {
-                self.build = response.data.result;
-                this.loaded();
-            })
-            .catch(err => {
-                console.log("Error getting build information: " + err);
-                this.loaderror(err);
-            })
-        },
-    },
+    loadData () {
+      var self = this
+      this.loading()
+      axios.get(axios.defaults.baseURL + `/build/${this._id}`)
+        .then(response => {
+          self.build = response.data.result
+          this.loaded()
+        })
+        .catch(err => {
+          console.log('Error getting build information: ' + err)
+          this.loaderror(err)
+        })
+    }
+  }
 }
 </script>
 

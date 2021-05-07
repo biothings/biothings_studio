@@ -31,7 +31,7 @@
     <!-- jobs (pendings) -->
     <button class="ui compact labeled icon button tiny"
       data-tooltip="Number of queued jobs"
-      data-position="top right"
+      data-position="bottom right"
       v-if="job_manager.queue">
       <i class="hourglass start icon"></i>
       {{job_manager.queue.thread.pending.length + job_manager.queue.process.pending.length }}
@@ -39,7 +39,7 @@
     <!-- memory -->
     <button class="ui compact labeled icon button tiny"
       data-tooltip="Amount of memory hub is currently using"
-      data-position="top right"
+      data-position="bottom right"
       v-if="job_manager.queue">
       <i class="right microchip icon"></i>
       {{ job_manager.memory | pretty_size}}
@@ -48,103 +48,98 @@
 </template>
 
 <script>
-import axios from 'axios';
-import CommandsList from './CommandsList.vue';
-import ProcessesList from './ProcessesList.vue';
-import ThreadsList from './ThreadsList.vue';
-import bus from './bus.js';
+import axios from 'axios'
+import CommandsList from './CommandsList.vue'
+import ProcessesList from './ProcessesList.vue'
+import ThreadsList from './ThreadsList.vue'
+import bus from './bus.js'
 
-const POLL_JOBS_INTERVAL = 3000; // when needed, poll job manager every X ms
+const POLL_JOBS_INTERVAL = 3000 // when needed, poll job manager every X ms
 
 export default {
   name: 'job-summary',
   mounted () {
-    console.log("JobSummary mounted");
-    this.getJobSummary();
+    this.getJobSummary()
     // setup menu
     $('.processes.button').popup({
-        popup: $('.processes.popup'),
-        on: 'click' ,
-        lastResort: 'top right',
-        onVisible: () => {this.onJobsOpened(true)},
-        onHide: () => {this.onJobsOpened(false)},
-    });
+      popup: $('.processes.popup'),
+      on: 'click',
+      lastResort: 'top right',
+      onVisible: () => { this.onJobsOpened(true) },
+      onHide: () => { this.onJobsOpened(false) }
+    })
     $('.threads.button').popup({
-        popup: $('.threads.popup'),
-        on: 'click' ,
-        lastResort: 'top right',
-        onVisible: () => {this.onJobsOpened(true)},
-        onHide: () => {this.onJobsOpened(false)},
-    });
+      popup: $('.threads.popup'),
+      on: 'click',
+      lastResort: 'top right',
+      onVisible: () => { this.onJobsOpened(true) },
+      onHide: () => { this.onJobsOpened(false) }
+    })
   },
-  created() {
-      bus.$on('num_commands',this.updateNumCommands);
+  created () {
+    bus.$on('num_commands', this.updateNumCommands)
   },
-  beforeDestroy() {
-      bus.$off('num_commands',this.updateNumCommands);
+  beforeDestroy () {
+    bus.$off('num_commands', this.updateNumCommands)
   },
   data () {
-    return  {
-      num_commands : 0,
-      job_manager : {},
-      processes : {},
-      threads : {},
-      show_allcmds : false,
-      jobs_interval: null,
-      //errors: [],
+    return {
+      num_commands: 0,
+      job_manager: {},
+      processes: {},
+      threads: {},
+      show_allcmds: false,
+      jobs_interval: null
+      // errors: [],
     }
   },
   watch: {
-      num_commands: function(newv,oldv) {
-          if(newv == 0) {
-              console.log("Stop polling jobs"),
-              this.stopPollJobs();
-          }
-          if(oldv == 0 && newv > 0) {
-              console.log("Start polling jobs"),
-              this.startPollJobs();
-          }
-      },
+    num_commands: function (newv, oldv) {
+      if (newv == 0) {
+        // console.log('Stop polling jobs'),
+        this.stopPollJobs()
+      }
+      if (oldv == 0 && newv > 0) {
+        // console.log('Start polling jobs'),
+        this.startPollJobs()
+      }
+    }
   },
-  components: { CommandsList, ProcessesList, ThreadsList, },
+  components: { CommandsList, ProcessesList, ThreadsList },
   methods: {
-    updateNumCommands: function(num) {
-        this.num_commands = num;
-        this.getJobSummary();
+    updateNumCommands: function (num) {
+      this.num_commands = num
+      this.getJobSummary()
     },
-    startPollJobs: function() {
-        if(this.jobs_interval == null)
-            this.jobs_interval = setInterval(this.getJobSummary,POLL_JOBS_INTERVAL);
+    startPollJobs: function () {
+      if (this.jobs_interval == null) { this.jobs_interval = setInterval(this.getJobSummary, POLL_JOBS_INTERVAL) }
     },
-    stopPollJobs: function() {
-        clearInterval(this.jobs_interval);
-        this.jobs_interval = null;
+    stopPollJobs: function () {
+      clearInterval(this.jobs_interval)
+      this.jobs_interval = null
     },
-    getJobSummary: function() {
+    getJobSummary: function () {
       axios.get(axios.defaults.baseURL + '/job_manager')
-      .then(response => {
-        this.job_manager = response.data.result;
-        this.processes = this.job_manager.queue.process;
-        this.threads = this.job_manager.queue.thread;
-      })
-      .catch(err => {
-        console.log("Error getting job manager information: " + err);
-      })
+        .then(response => {
+          this.job_manager = response.data.result
+          this.processes = this.job_manager.queue.process
+          this.threads = this.job_manager.queue.thread
+        })
+        .catch(err => {
+          console.log('Error getting job manager information: ' + err)
+        })
     },
-    onJobsOpened: function(do_poll) {
-        console.log(do_poll);
-        if(do_poll) {
-            // we force the poll
-            this.getJobSummary();
-            this.startPollJobs();
-        } else if(this.num_commands == 0) {
-            // but we let component to decide whether to continue polling or not
-            this.stopPollJobs();
-        }
-    },
+    onJobsOpened: function (do_poll) {
+      // console.log(do_poll)
+      if (do_poll) {
+        // we force the poll
+        this.getJobSummary()
+        this.startPollJobs()
+      } else if (this.num_commands == 0) {
+        // but we let component to decide whether to continue polling or not
+        this.stopPollJobs()
+      }
+    }
   }
 }
 </script>
-
-<style>
-</style>

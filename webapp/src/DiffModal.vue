@@ -18,28 +18,25 @@
 </template>
 
 <script>
-
-import axios from 'axios'
 import bus from './bus.js'
 import JsonDiffResults from './JsonDiffResults.vue'
 
 export default {
-    components : { JsonDiffResults, },
-    created() {
-        bus.$on("show_diffed",this.showDiffed);
-    },
-    beforeDestroy() {
-        bus.$off("show_diffed",this.showDiffed);
-        $(`.ui.diff.modal`).remove();
-    },
-    methods: {
-        showDiffed : function() {
-            $('.ui.diff.modal').modal({
-                observeChanges: true,
-            })
-            .modal("show")
-        },
-    },
+  components: { JsonDiffResults },
+  created () {
+    bus.$on('show_diffed', this.showDiffed)
+  },
+  beforeDestroy () {
+    bus.$off('show_diffed', this.showDiffed)
+    $('.ui.diff.modal').remove()
+  },
+  methods: {
+    showDiffed: function () {
+      $('.ui.diff.modal').modal({
+        observeChanges: true
+      })
+        .modal('show')
+    }
+  }
 }
-
 </script>

@@ -19,42 +19,25 @@
 </template>
 
 <script>
-import axios from 'axios'
 import bus from './bus.js'
 
 export default {
-    name: 'alert-restart',
-    props: ["event"],
-	mounted () {
-		console.log("AlertRestart mounted");
-        $('.mini.alert.modal')
-        .modal({
-            closable  : false,
-            onApprove : function() {
-                bus.$emit("reconnect");
-            }
-        })
-        .modal("show");
-	},
-    updated() {
-    },
-    created() {
-    },
-    beforeDestroy() {
-    },
-    watch: {
-    },
-    computed: {
-    },
-    data () {
-        return  {
+  name: 'alert-restart',
+  props: ['event'],
+  mounted () {
+    console.log('AlertRestart mounted')
+    $('.mini.alert.modal')
+      .modal({
+        closable: false,
+        onApprove: function () {
+          bus.$emit('reconnect')
         }
-    },
-    components: {  },
-    methods: {
+      })
+      .modal('show')
+  },
+  data () {
+    return {
     }
+  },
 }
 </script>
-
-<style>
-</style>

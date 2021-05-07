@@ -10,14 +10,14 @@
 
 export default {
   name: 'log-record',
-  props: ["record"],
+  props: ['record'],
   computed: {
-      level: function() {
-          return "level-" + this.record.level.toLowerCase();
-      },
-      ts: function() {
-          return this.record.ts.replace(/\..*/,"");
-      }
+    level: function () {
+      return 'level-' + this.record.level.toLowerCase()
+    },
+    ts: function () {
+      return this.record.ts.replace(/\..*/, '')
+    }
 
   }
 }

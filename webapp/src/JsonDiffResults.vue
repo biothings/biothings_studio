@@ -8,7 +8,7 @@
                 </tr>
             </thead>
             <tbody v-if="ops && ops.length">
-                <tr v-for="op in ops" v-if="ops.length" class="top aligned">
+                <tr v-for="op in ops" class="top aligned" :key="op.path">
                     <td>{{op.op}}</td>
                     <td>{{op.path}}</td>
                     <td>{{op.value}}</td>
@@ -21,33 +21,29 @@
 </template>
 
 <script>
-import axios from 'axios'
 import bus from './bus.js'
-import tablesort from 'jquery-tablesort'
 
 export default {
-    name: 'json-diff-results',
-    mounted () {
-        console.log("JsonDiffResults mounted");
-        $('table').tablesort();
-    },
-    created() {
-        bus.$on("diffed",this.setOps);
-    },
-    beforeDestroy() {
-        bus.$off("diffed",this.setOps);
-    },
-    data () {
-        return {
-            ops : null,
-        }
-    },
-    components: { },
-    methods: {
-        setOps : function(ops) {
-            this.ops = ops;
-        },
-    },
+  name: 'json-diff-results',
+  mounted () {
+    $('table').tablesort()
+  },
+  created () {
+    bus.$on('diffed', this.setOps)
+  },
+  beforeDestroy () {
+    bus.$off('diffed', this.setOps)
+  },
+  data () {
+    return {
+      ops: null
+    }
+  },
+  methods: {
+    setOps: function (ops) {
+      this.ops = ops
+    }
+  }
 }
 </script>
 

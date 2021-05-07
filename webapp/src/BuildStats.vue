@@ -7,7 +7,7 @@
             </tr>
         </thead>
         <tbody v-if="build._meta">
-            <tr v-for="(count,stat) in build._meta.stats">
+            <tr v-for="(count,stat) in build._meta.stats" :key="count+stat">
                 <td >{{stat}}</td>
                 <td>{{count | currency("",0)}}</td>
             </tr>
@@ -21,22 +21,9 @@
 </template>
 
 <script>
-import axios from 'axios'
-import bus from './bus.js'
-import Vue from 'vue';
 
 export default {
-    name: 'build-stats',
-    props: ['build'],
-    mounted() {
-    },
-    beforeDestroy() {
-    },
-    components: { },
-    methods: {
-    },
+  name: 'build-stats',
+  props: ['build'],
 }
 </script>
-
-<style scoped>
-</style>

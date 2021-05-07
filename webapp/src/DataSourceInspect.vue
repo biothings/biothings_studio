@@ -8,7 +8,7 @@
                 <a :class="['green item', i === 0 ? 'active' : '']" v-for="(_,subsrc,i) in maps" :data-tab="subsrc">{{subsrc}}</a>
             </div>
         </span>
-        <div :class="['ui bottom attached tab segment', i === 0 ? 'active' : '']" v-for="(data,subsrc,i) in maps" :data-tab="subsrc" v-if="maps">
+        <div :class="['ui bottom attached tab segment', i === 0 ? 'active' : '']" v-for="(data,subsrc,i) in maps" :key="i" :data-tab="subsrc" v-if="maps">
             <p>These are the results for the different inspection mode found for source <b>{{subsrc}}</b></p>
             <table class="ui celled table">
                 <thead>
@@ -28,7 +28,7 @@
                 <tbody>
                     <tr class="top aligned">
                         <td>
-                            <type-map v-bind:map="maps[subsrc]['inspect_type']" 
+                            <type-map v-bind:map="maps[subsrc]['inspect_type']"
                                 v-bind:map_id="'tab_inspect_type'"
                                 v-if="maps[subsrc]">
                             </type-map>
@@ -60,44 +60,41 @@ import MappingMap from './MappingMap.vue'
 import Utils from './Utils.vue'
 
 export default {
-    name: 'data-source-inspect',
-    props: ['_id','maps'],
-    mixins: [Utils],
-    mounted () {
-        $('.menu .item').tab();
-        $('#maps .item:first').addClass('active');
-        $('.tab:first').addClass('active');
+  name: 'data-source-inspect',
+  props: ['_id', 'maps'],
+  mixins: [Utils],
+  mounted () {
+    $('.menu .item').tab()
+    $('#maps .item:first').addClass('active')
+    $('.tab:first').addClass('active')
+  },
+  components: { TypeMap, MappingMap },
+  methods: {
+    inspect: function () {
+      var self = this
+      $(`#inspect-${this._id}.ui.basic.inspect.modal`)
+        .modal('setting', {
+          onApprove: function () {
+            var modes = $(`#inspect-${self._id}`).find('#select-mode').val()
+            var dp = $(`#inspect-${self._id}`).find('#select-data_provider').val()
+            axios.put(axios.defaults.baseURL + '/inspect',
+              { data_provider: [dp, self._id], mode: modes })
+              .then(response => {
+                console.log(response.data.result)
+                bus.$emit('refresh_sources')
+              })
+              .catch(err => {
+                console.log('Error getting job manager information: ' + err)
+              })
+          }
+        })
+        .modal('show')
     },
-    components: {TypeMap, MappingMap},
-    methods: {
-        inspect: function() {
-            var self = this;
-            $(`#inspect-${this._id}.ui.basic.inspect.modal`)
-            .modal("setting", {
-                onApprove: function () {
-                    var modes = $(`#inspect-${self._id}`).find("#select-mode").val();
-                    var dp = $(`#inspect-${self._id}`).find("#select-data_provider").val();
-                    axios.put(axios.defaults.baseURL + '/inspect',
-                              {"data_provider" : [dp,self._id],"mode":modes})
-                    .then(response => {
-                        console.log(response.data.result)
-                        bus.$emit("refresh_sources");
-                    })
-                    .catch(err => {
-                        console.log("Error getting job manager information: " + err);
-                    })
-                }
-            })
-            .modal("show");
-        },
-        saveMapping: function(map_elem_id,subsrc, dest) {
-            var html = $(`#${map_elem_id}`).html();
-            var json = this.html2json(html);
-            bus.$emit("save_mapping",subsrc,json,'inspect');
-        }
-    },
+    saveMapping: function (map_elem_id, subsrc, dest) {
+      var html = $(`#${map_elem_id}`).html()
+      var json = this.html2json(html)
+      bus.$emit('save_mapping', subsrc, json, 'inspect')
+    }
+  }
 }
 </script>
-
-<style>
-</style>

@@ -85,7 +85,6 @@
 </template>
 
 <script>
-import Vue from 'vue'
 import axios from 'axios'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
@@ -93,69 +92,60 @@ import AsyncCommandLauncher from './AsyncCommandLauncher.vue'
 import StandaloneReleaseVersions from './StandaloneReleaseVersions.vue'
 import bus from './bus.js'
 
-
 export default {
-    name: 'standalone-release',
-    props: ['name', 'url'],
-    mixins: [ AsyncCommandLauncher, Loader, Actionable, ],
-    mounted () {
-        this.refresh();
-    },
-    updated() {
-    },
-    created() {
-    },
-    beforeDestroy() {
-    },
-    watch: {
-    },
-    data () {
-        return  {
-			backend : {},
-            backend_error : null,
-        }
-    },
-    computed: {
-        encoded_name: function() {
-            return btoa(this.name).replace(/=/g,"_");
-        }
-    },
-    components: { StandaloneReleaseVersions, },
-    methods: {
-        refresh: function() {
-			this.refreshBackend();
-            bus.$emit("refresh_standalone",this.name);
-        },
-        refreshBackend: function() {
-            var self = this;
-            self.backend_error = null;
-            var cmd = function() { self.loading(); return axios.get(axios.defaults.baseURL + `/standalone/${self.name}/backend`) }
-			// results[0]: async command can produce multiple results (cmd1() && cmd2), but here we know we'll have only one
-            var onSuccess = function(response) { self.backend = response.data.result.results[0]; }
-            var onError = function(err) { console.log(err); self.loaderror(err); self.backend_error = self.extractAsyncError(err);}
-            this.launchAsyncCommand(cmd,onSuccess,onError)
-		},
-        resetBackend: function() {
-            var self = this;
-            self.backend_error = null;
-            var cmd = function() { self.loading(); return axios.delete(axios.defaults.baseURL + `/standalone/${self.name}/backend`) }
-			// results[0]: async command can produce multiple results (cmd1() && cmd2), but here we know we'll have only one
-            var onSuccess = function(response) { self.refreshBackend(); }
-            var onError = function(err) { console.log(err); self.loaderror(err); self.backend_error = self.extractAsyncError(err);}
-            this.launchAsyncCommand(cmd,onSuccess,onError)
-        },
-        reset: function() {
-            var self = this;
-            $(`.ui.basic.reset.modal.${this.encoded_name}`)
-            .modal("setting", {
-                onApprove: function () {
-                    self.resetBackend()
-                }
-            })
-            .modal(`show`);
-        }
-
+  name: 'standalone-release',
+  props: ['name', 'url'],
+  mixins: [AsyncCommandLauncher, Loader, Actionable],
+  mounted () {
+    this.refresh()
+  },
+  data () {
+    return {
+      backend: {},
+      backend_error: null
     }
+  },
+  computed: {
+    encoded_name: function () {
+      return btoa(this.name).replace(/=/g, '_')
+    }
+  },
+  components: { StandaloneReleaseVersions },
+  methods: {
+    refresh: function () {
+      this.refreshBackend()
+      bus.$emit('refresh_standalone', this.name)
+    },
+    refreshBackend: function () {
+      var self = this
+      self.backend_error = null
+      var cmd = function () { self.loading(); return axios.get(axios.defaults.baseURL + `/standalone/${self.name}/backend`) }
+      // results[0]: async command can produce multiple results (cmd1() && cmd2), but here we know we'll have only one
+      var onSuccess = function (response) { self.backend = response.data.result.results[0] }
+      var onError = function (err) { console.log(err); self.loaderror(err); self.backend_error = self.extractAsyncError(err) }
+      this.launchAsyncCommand(cmd, onSuccess, onError)
+    },
+    resetBackend: function () {
+      var self = this
+      self.backend_error = null
+      var cmd = function () { self.loading(); return axios.delete(axios.defaults.baseURL + `/standalone/${self.name}/backend`) }
+      // results[0]: async command can produce multiple results (cmd1() && cmd2), but here we know we'll have only one
+      var onSuccess = function (response) { self.refreshBackend() }
+      var onError = function (err) { console.log(err); self.loaderror(err); self.backend_error = self.extractAsyncError(err) }
+      this.launchAsyncCommand(cmd, onSuccess, onError)
+    },
+    reset: function () {
+      var self = this
+      $(`.ui.basic.reset.modal.${this.encoded_name}`)
+        .modal('setting', {
+          onApprove: function () {
+            self.resetBackend()
+          }
+        })
+        .modal('show')
+    }
+
+  }
 }
 </script>
 

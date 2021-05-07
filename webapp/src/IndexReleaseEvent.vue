@@ -34,7 +34,7 @@
                           </tr>
                         </thead>
                         <tbody>
-                          <tr v-for="info,name in build.snapshot" class="item">
+                          <tr v-for="info,name in build.snapshot" class="item" :key="name">
                             <td>
                                 <a>{{name}}</a>
                                 <publish-summary v-if="build.publish && build.publish.full && build.publish.full.hasOwnProperty(name)":publish="build.publish.full[name]" :type="type"></publish-summary>
@@ -71,7 +71,7 @@
                             <label>Select an environment, snapshot will be created according to its configuration:</label>
                             <div>
                                 <select class="ui fluid snapshotenv dropdown" name="snapshot_env" v-model="selected_snapshot_env">
-                                    <option v-for="_,env in snapshot_envs">{{ env }}</option>
+                                    <option v-for="_,env in snapshot_envs" :key="env">{{ env }}</option>
                                 </select>
                                 <br>
                                 <br>
@@ -178,132 +178,132 @@
             </div>
         </div>
 
-
     </div>
 </template>
 
 <script>
 import axios from 'axios'
 import bus from './bus.js'
-import Vue from 'vue';
-import ReleaseNoteSummary from './ReleaseNoteSummary.vue';
-import BaseReleaseEvent from './BaseReleaseEvent.vue';
-import PublishSummary from './PublishSummary.vue';
+import ReleaseNoteSummary from './ReleaseNoteSummary.vue'
+import BaseReleaseEvent from './BaseReleaseEvent.vue'
+import PublishSummary from './PublishSummary.vue'
 
 export default {
-    name: 'index-release-event',
-    mixins: [ BaseReleaseEvent, ],
-    props: ['release','build','type'],
-    mounted() {
-    },
-    beforeDestroy() {
-        $(`.ui.basic.createsnapshot.modal.${this.release.index_name}`).remove();
-    },
-    components: { ReleaseNoteSummary, PublishSummary, },
-    data () {
-        return {
-            snapshot_envs : {},
-            error : null,
-            selected_snapshot_env : null,
-            selected_snapshot: null,
-            snapshot_name : null,
-            selected_release_note: null,
-        }
-    },
-    computed: {
-        num_indexed: function() {
-            return this.release.count || 0;
-        },
-        release_id: function() {
-            return this.release.index_name;
-        },
-    },
-    methods: {
-        displayError : function() {
-        },
-        snapshot(release) {
-            var self = this;
-            self.error = null;
-            self.loading();
-            axios.get(axios.defaults.baseURL + '/snapshot_manager')
-            .then(response => {
-                self.snapshot_envs = response.data.result.env;
-                $(".ui.snapshotenv.dropdown").dropdown();
-                self.loaded();
-            })
-            .catch(err => {
-                console.log("Error getting snapshot environments: ");
-                console.log(err);
-                self.loaderror(err);
-                self.error = err;
-            })
-            $(`.ui.basic.createsnapshot.modal.${this.release.index_name}`)
-            .modal("setting", {
-                detachable : false,
-                closable: false,
-                onApprove: function () {
-                    self.loading();
-                    if(!self.selected_snapshot_env)
-                        return;
-                    axios.put(axios.defaults.baseURL + `/snapshot`,
-                        {"snapshot_env" : self.selected_snapshot_env,
-                         "index" : self.release.index_name,
-                         "snapshot" : self.snapshot_name})
-                    .then(response => {
-                        bus.$emit("reload_build_detailed");
-                        self.loaded();
-                        return response.data.result;
-                    })
-                    .catch(err => {
-                        console.log("Error creating snapshot: ");
-                        console.log(err);
-                        self.loaderror(err);
-                    })
-                }
-            })
-            .modal("show");
-        },
-        publish: function(release,snapshot_name,current_build) {
-            console.log(`snapshot_name ${snapshot_name} current_build ${current_build}`);
-            var self = this;
-            self.error = null;
-            self.getReleaseEnvironments();
-            self.selected_current = current_build;
-            self.selected_snapshot = snapshot_name;
-            $(`.ui.basic.publishrelease.modal.${this.release_id}`)
-            .modal("setting", {
-                detachable : false,
-                closable: false,
-                onApprove: function () {
-                    // more than one release note, user has to choose
-                    console.log(`rt ${self.selected_release_note} l ${self.build.release_note}`);
-                    if(!self.selected_release_note && Object.keys(self.build.release_note).length) {
-                        self.publish_error = "Multiple release note found, please select one";
-                        return false;
-                    }
-                    var params = {"publisher_env" : self.selected_release_env,
-                        "build_name" : self.selected_current,
-                        "previous_build" : self.selected_release_note,
-                        "snapshot" : snapshot_name};
-                    if(!self.selected_release_env)
-                        return false;
-                    self.loading();
-                    axios.post(axios.defaults.baseURL + `/publish/full`,params)
-                    .then(response => {
-                        bus.$emit("reload_build_detailed");
-                        self.loaded();
-                        return response.data.result;
-                    })
-                    .catch(err => {
-                        console.log("Error publishing release: ");
-                        console.log(err);
-                        self.loaderror(err);
-                    })
-                }
-            })
-            .modal("show");
-        },
+  name: 'index-release-event',
+  mixins: [BaseReleaseEvent],
+  props: ['release', 'build', 'type'],
+  mounted () {
+  },
+  beforeDestroy () {
+    $(`.ui.basic.createsnapshot.modal.${this.release.index_name}`).remove()
+  },
+  components: { ReleaseNoteSummary, PublishSummary },
+  data () {
+    return {
+      snapshot_envs: {},
+      error: null,
+      selected_snapshot_env: null,
+      selected_snapshot: null,
+      snapshot_name: null,
+      selected_release_note: null
     }
+  },
+  computed: {
+    num_indexed: function () {
+      return this.release.count || 0
+    },
+    release_id: function () {
+      return this.release.index_name
+    }
+  },
+  methods: {
+    displayError: function () {
+    },
+    snapshot (release) {
+      var self = this
+      self.error = null
+      self.loading()
+      axios.get(axios.defaults.baseURL + '/snapshot_manager')
+        .then(response => {
+          self.snapshot_envs = response.data.result.env
+          $('.ui.snapshotenv.dropdown').dropdown()
+          self.loaded()
+        })
+        .catch(err => {
+          console.log('Error getting snapshot environments: ')
+          console.log(err)
+          self.loaderror(err)
+          self.error = err
+        })
+      $(`.ui.basic.createsnapshot.modal.${this.release.index_name}`)
+        .modal('setting', {
+          detachable: false,
+          closable: false,
+          onApprove: function () {
+            self.loading()
+            if (!self.selected_snapshot_env) { return }
+            axios.put(axios.defaults.baseURL + '/snapshot',
+              {
+                snapshot_env: self.selected_snapshot_env,
+                index: self.release.index_name,
+                snapshot: self.snapshot_name
+              })
+              .then(response => {
+                bus.$emit('reload_build_detailed')
+                self.loaded()
+                return response.data.result
+              })
+              .catch(err => {
+                console.log('Error creating snapshot: ')
+                console.log(err)
+                self.loaderror(err)
+              })
+          }
+        })
+        .modal('show')
+    },
+    publish: function (release, snapshot_name, current_build) {
+      console.log(`snapshot_name ${snapshot_name} current_build ${current_build}`)
+      var self = this
+      self.error = null
+      self.getReleaseEnvironments()
+      self.selected_current = current_build
+      self.selected_snapshot = snapshot_name
+      $(`.ui.basic.publishrelease.modal.${this.release_id}`)
+        .modal('setting', {
+          detachable: false,
+          closable: false,
+          onApprove: function () {
+            // more than one release note, user has to choose
+            console.log(`rt ${self.selected_release_note} l ${self.build.release_note}`)
+            if (!self.selected_release_note && Object.keys(self.build.release_note).length) {
+              self.publish_error = 'Multiple release note found, please select one'
+              return false
+            }
+            var params = {
+              publisher_env: self.selected_release_env,
+              build_name: self.selected_current,
+              previous_build: self.selected_release_note,
+              snapshot: snapshot_name
+            }
+            if (!self.selected_release_env) { return false }
+            self.loading()
+            axios.post(axios.defaults.baseURL + '/publish/full', params)
+              .then(response => {
+                bus.$emit('reload_build_detailed')
+                self.loaded()
+                return response.data.result
+              })
+              .catch(err => {
+                console.log('Error publishing release: ')
+                console.log(err)
+                self.loaderror(err)
+              })
+          }
+        })
+        .modal('show')
+    }
+  }
 }
 </script>
 

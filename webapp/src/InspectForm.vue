@@ -58,7 +58,7 @@
                 <div class="ui fluid grid">
                     <div class="four wide column">
                         <div class="ui inverted input">
-                            <input type="text" id="limit" placeholder="Limit...">
+                            <input type="text" class="limit-input" placeholder="Limit...">
                         </div>
                     </div>
                     <div class="twelve wide column">
@@ -79,7 +79,7 @@
                 <div class="ui fluid grid">
                     <div class="four wide column">
                         <div class="ui inverted input">
-                            <input type="text" id="sample" placeholder="Sampling (eg. 0.5)...">
+                            <input type="text" class="sample-input" placeholder="Sampling (eg. 0.5)...">
                         </div>
                     </div>
                     <div class="twelve wide column">
@@ -123,76 +123,66 @@ import axios from 'axios'
 import bus from './bus.js'
 
 export default {
-    name: 'inspect-form',
-    props: ['_id'],
-    mounted () {
-        $('select.dropdown').dropdown();
-    },
-    created() {
-        bus.$on('do_inspect',this.inspect);
-    },
-    beforeDestroy() {
-        bus.$off('do_inspect',this.inspect);
-        $(`#inspect-${this._id}.ui.basic.inspect.modal`).remove();
-    },
-    data () {
-        return {
-            limit_error: null,
-            sample_error: null,
-        }
-    },
-    methods: {
-        inspect: function(data_provider) {
-            if(typeof data_provider == "string") {
-                // target collection
-                var _id = data_provider;
-            } else {
-                // source collection, format ["src",id]
-                var _id = data_provider[1];
+  name: 'inspect-form',
+  props: ['_id'],
+  mounted () {
+    $('select.dropdown').dropdown()
+  },
+  created () {
+    bus.$on('do_inspect', this.inspect)
+  },
+  beforeDestroy () {
+    bus.$off('do_inspect', this.inspect)
+    $(`#inspect-${this._id}.ui.basic.inspect.modal`).remove()
+  },
+  data () {
+    return {
+      limit_error: null,
+      sample_error: null
+    }
+  },
+  methods: {
+    inspect: function (data_provider) {
+      if (typeof data_provider === 'string') {
+        // target collection
+        var _id = data_provider
+      } else {
+        // source collection, format ["src",id]
+        var _id = data_provider[1]
+      }
+      var self = this
+      $(`#inspect-${_id}.ui.basic.inspect.modal`)
+        .modal('setting', {
+          onApprove: function () {
+            var modes = $(`#inspect-${_id}`).find('#select-mode').val()
+            var limit = $(`#inspect-${_id}`).find('.limit-input').val()
+            var sample = $(`#inspect-${_id}`).find('.sample-input').val()
+            var params = { data_provider: data_provider, mode: modes }
+            if (limit) {
+              var plimit = parseInt(limit)
+              if (plimit) { params.limit = plimit } else {
+                self.limit_error = `"${limit}" is not an integer`
+                return false
+              }
             }
-            var self = this;
-            $(`#inspect-${_id}.ui.basic.inspect.modal`)
-            .modal("setting", {
-                onApprove: function () {
-                    var modes = $(`#inspect-${_id}`).find("#select-mode").val();
-                    var limit = $(`#inspect-${_id}`).find("#limit").val();
-                    var sample = $(`#inspect-${_id}`).find("#sample").val();
-                    var params = {"data_provider" : data_provider,"mode":modes};
-                    if(limit) {
-                        var plimit = parseInt(limit);
-                        if(plimit)
-                            params["limit"] = plimit;
-                        else {
-                            self.limit_error = `"${limit}" is not an integer`;
-                            return false;
-                        }
-                    }
-                    if(sample) {
-                        var psample = parseFloat(sample);
-                        if(psample)
-                            params["sample"] = psample;
-                        else {
-                            if(psample == 0)
-                                self.sample_error = "Sample must be greater than zero...";
-                            else
-                                self.sample_error = `"${sample}" is not a float`;
-                            return false
-                        }
-                    }
-                    axios.put(axios.defaults.baseURL + '/inspect',params)
-                    .then(response => {
-                        console.log(response.data.result)
-                    })
-                    .catch(err => {
-                        console.log("Error getting job manager information: " + err);
-                    })
-                }
-            })
-            .modal("show");
-        },
-    },
+            if (sample) {
+              var psample = parseFloat(sample)
+              if (psample) { params.sample = psample } else {
+                if (psample == 0) { self.sample_error = 'Sample must be greater than zero...' } else { self.sample_error = `"${sample}" is not a float` }
+                return false
+              }
+            }
+            axios.put(axios.defaults.baseURL + '/inspect', params)
+              .then(response => {
+                console.log(response.data.result)
+              })
+              .catch(err => {
+                console.log('Error getting job manager information: ' + err)
+              })
+          }
+        })
+        .modal('show')
+    }
+  }
 }
 </script>
-
-<style>
-</style>

@@ -12,7 +12,7 @@
             </div>
         </div>
 
-        <div class="event" v-for="job in build.jobs">
+        <div class="event" v-for="(job, i) in build.jobs" :key="job.status+i">
             <i class="ui green checkmark icon" v-if="job.status == 'success'"></i>
             <i class="ui orange exclamation circle icon" v-else-if="job.status == 'canceled'"></i>
             <i class="ui red warning sign icon" v-else-if="job.status == 'failed'"></i>
@@ -40,22 +40,8 @@
 </template>
 
 <script>
-import axios from 'axios'
-import bus from './bus.js'
-import Vue from 'vue';
-
 export default {
-    name: 'build-logs',
-    props: ['build'],
-    mounted() {
-    },
-    beforeDestroy() {
-    },
-    components: { },
-    methods: {
-    },
+  name: 'build-logs',
+  props: ['build'],
 }
 </script>
-
-<style scoped>
-</style>

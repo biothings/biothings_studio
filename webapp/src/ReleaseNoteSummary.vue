@@ -12,7 +12,7 @@
                           </tr>
                         </thead>
                         <tbody>
-                          <tr v-for="reln in release_notes">
+                          <tr v-for="reln in release_notes" :key="reln.changes.old.name">
                             <td v-if="type == 'incremental'">{{ release_id }} </td>
                             <!-- don't know why, reln.changes.old.name is undefined here for incremental,
                                  but not in display() call... take it somewhere else -->
@@ -62,7 +62,7 @@
                             <br>
                             <select class="ui fluid previousbuilds dropdown" name="previous_build">
                                 <option value="none">None (no comparison)</option>
-                                <option v-for="build_name in compats" :value="build_name">{{build_name}}</option>
+                                <option v-for="build_name in compats" :value="build_name" :key="build_name">{{build_name}}</option>
                             </select>
                         </div>
                         <div class="eight wide column">
@@ -115,173 +115,168 @@
 
 <script>
 import axios from 'axios'
-import bus from './bus.js'
-import Vue from 'vue';
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 
 export default {
-    name: 'release-note-summary',
-    mixins: [ Loader, Actionable, ],
-    props: ['release','build','type'],
-    mounted() {
-        this.normalizeReleaseNotes();
-    },
-    created() {
-    },
-    beforeDestroy() {
-        $('.ui.basic.genrelnote.modal').remove();
-        $('.ui.basic.disprelnote.modal').remove();
-    },
-    components: {  },
-    data () {
-        return {
-            error : null,
-            list_builds_error : null,
-            compats : {},
-            release_note_content: null,
-            release_notes : [],
-        }
-    },
-    computed: {
-        release_id: function() {
-            if(this.type == 'full') {
-                return this.release.index_name;
-            } else {
-                // id in that case is the build against which the diff's been computed
-                // not really well named, but we can live with that, right ?
-                return this.release.old.backend;
-            }
-        },
-    },
-    watch: {
-        build: function(newv,oldv) {
-            if(newv != oldv) {
-                this.normalizeReleaseNotes();
-            }
-        }
-    },
-    methods: {
-        displayError : function() {
-        },
-        display: function(old=null) {
-            this.error = null;
-            if(this.type == "incremental") {
-                var oldb = this.release_id;
-                var newb = this.release.new.backend;
-            } else {
-                var oldb = old;
-                var newb = this.release_id;
-            }
-            var self = this;
-            var qargs = `old=${oldb}&new=${newb}`;
-            self.loading();
-            axios.get(axios.defaults.baseURL + '/release_note?' + qargs)
-            .then(response => {
-                self.release_note_content = response.data.result;
-                self.loaded();
-                $(`.ui.basic.disprelnote.modal.${self.type}.${self.release_id} pre`).text(response.data.result);
-                $(`.ui.basic.disprelnote.modal.${self.type}.${self.release_id}`)
-                .modal("setting", {
-                    detachable : false,
-                    closable: false,
-                })
-                .modal("show");
-            })
-            .catch(err => {
-                console.log("Error retrieving release note: ");
-                self.loaderror(err);
-                self.error = self.extractError(err);
-                throw err;
-            })
-        },
-        normalizeReleaseNotes: function() {
-            // case 1: incremental
-            // build document contains release notes, and there's one that's been generated
-            // with our current release (old = collection against which we compute the diff)
-            if(this.build.release_note) {
-                // deep copy so we don't change original object
-                var rels = JSON.parse(JSON.stringify(this.build.release_note));
-                if(this.type == "incremental") {
-                    if(rels.hasOwnProperty(this.release.old.backend)) {
-                        var rel = rels[this.release.old.backend];
-                        rel["changes"]["old"]["name"] = self.release_id; // old collection name
-                        this.release_notes = [rel];
-                    }
-                } else {
-                    var relnotes = [];
-                    for(var versus in rels) {
-                        var rel = rels[versus];
-                        // add old collection name in order to display it later
-                        rel["changes"]["old"]["name"] = versus;
-                        relnotes.push(rel);
-                    }
-                    this.release_notes = relnotes;
-                }
-            }
-        },
-        generate: function() {
-            this.error = null;
-            var self = this;
-            if(this.type == "full") {
-                self.loading();
-                axios.get(axios.defaults.baseURL + '/builds')
-                .then(response => {
-                    var builds = response.data.result;
-                    this.compats = this.selectCompatibles(builds);
-                    $(".ui.previousbuilds.dropdown").dropdown();
-                    self.loaded();
-                })
-                .catch(err => {
-                    console.log("Error getting previous builds: ");
-                    self.loaderror(err);
-                    self.list_builds_error = self.extractError(err);
-                })
-            }
-            $(`.ui.basic.genrelnote.modal.${this.release_id}`)
-            .modal("setting", {
-                detachable : false,
-                closable: false,
-                onApprove: function () {
-                    var note = $(`.ui.form.${self.release_id} textarea[name=note]`).val();
-                    if(self.type == "full") {
-                        var newb = self.release_id;
-                        var oldb = $(`.ui.form.${self.release_id} select[name=previous_build]`).val();
-                    } else {
-                        var oldb = self.release.old.backend;
-                        var newb = self.release.new.backend;
-                    }
-                    self.loading();
-                    axios.put(axios.defaults.baseURL + `/release_note/create`,
-                    {"old" : oldb, "new" : newb, "note" : note})
-                    .then(response => {
-                        self.loaded();
-                        return response.data.result;
-                    })
-                    .catch(err => {
-                        console.log("Error generating release note: ");
-                        self.loaderror(err);
-                        self.error = self.extractError(err);
-                        return false;
-                    })
-                }
-            })
-            .modal("show");
-        },
-        selectCompatibles(builds) {
-            var _compat = [];
-            var self = this;
-            $.each(builds, function(i) {
-                var b = builds[i];
-                // comes from same build config and builds other than current one
-                if(b.build_config._id == self.build.build_config._id && 
-                  b._id != self.build._id) {
-                    _compat.push(b._id);
-                }
-            });
-            return _compat;
-        },
+  name: 'release-note-summary',
+  mixins: [Loader, Actionable],
+  props: ['release', 'build', 'type'],
+  mounted () {
+    this.normalizeReleaseNotes()
+  },
+  beforeDestroy () {
+    $('.ui.basic.genrelnote.modal').remove()
+    $('.ui.basic.disprelnote.modal').remove()
+  },
+  data () {
+    return {
+      error: null,
+      list_builds_error: null,
+      compats: {},
+      release_note_content: null,
+      release_notes: []
     }
+  },
+  computed: {
+    release_id: function () {
+      if (this.type == 'full') {
+        return this.release.index_name
+      } else {
+        // id in that case is the build against which the diff's been computed
+        // not really well named, but we can live with that, right ?
+        return this.release.old.backend
+      }
+    }
+  },
+  watch: {
+    build: function (newv, oldv) {
+      if (newv != oldv) {
+        this.normalizeReleaseNotes()
+      }
+    }
+  },
+  methods: {
+    displayError: function () {
+    },
+    display: function (old = null) {
+      this.error = null
+      if (this.type == 'incremental') {
+        var oldb = this.release_id
+        var newb = this.release.new.backend
+      } else {
+        var oldb = old
+        var newb = this.release_id
+      }
+      var self = this
+      var qargs = `old=${oldb}&new=${newb}`
+      self.loading()
+      axios.get(axios.defaults.baseURL + '/release_note?' + qargs)
+        .then(response => {
+          self.release_note_content = response.data.result
+          self.loaded()
+          $(`.ui.basic.disprelnote.modal.${self.type}.${self.release_id} pre`).text(response.data.result)
+          $(`.ui.basic.disprelnote.modal.${self.type}.${self.release_id}`)
+            .modal('setting', {
+              detachable: false,
+              closable: false
+            })
+            .modal('show')
+        })
+        .catch(err => {
+          console.log('Error retrieving release note: ')
+          self.loaderror(err)
+          self.error = self.extractError(err)
+          throw err
+        })
+    },
+    normalizeReleaseNotes: function () {
+      // case 1: incremental
+      // build document contains release notes, and there's one that's been generated
+      // with our current release (old = collection against which we compute the diff)
+      if (this.build.release_note) {
+        // deep copy so we don't change original object
+        var rels = JSON.parse(JSON.stringify(this.build.release_note))
+        if (this.type == 'incremental') {
+          if (rels.hasOwnProperty(this.release.old.backend)) {
+            var rel = rels[this.release.old.backend]
+            rel.changes.old.name = self.release_id // old collection name
+            this.release_notes = [rel]
+          }
+        } else {
+          var relnotes = []
+          for (var versus in rels) {
+            var rel = rels[versus]
+            // add old collection name in order to display it later
+            rel.changes.old.name = versus
+            relnotes.push(rel)
+          }
+          this.release_notes = relnotes
+        }
+      }
+    },
+    generate: function () {
+      this.error = null
+      var self = this
+      if (this.type == 'full') {
+        self.loading()
+        axios.get(axios.defaults.baseURL + '/builds')
+          .then(response => {
+            var builds = response.data.result
+            this.compats = this.selectCompatibles(builds)
+            $('.ui.previousbuilds.dropdown').dropdown()
+            self.loaded()
+          })
+          .catch(err => {
+            console.log('Error getting previous builds: ')
+            self.loaderror(err)
+            self.list_builds_error = self.extractError(err)
+          })
+      }
+      $(`.ui.basic.genrelnote.modal.${this.release_id}`)
+        .modal('setting', {
+          detachable: false,
+          closable: false,
+          onApprove: function () {
+            var note = $(`.ui.form.${self.release_id} textarea[name=note]`).val()
+            if (self.type == 'full') {
+              var newb = self.release_id
+              var oldb = $(`.ui.form.${self.release_id} select[name=previous_build]`).val()
+            } else {
+              var oldb = self.release.old.backend
+              var newb = self.release.new.backend
+            }
+            self.loading()
+            axios.put(axios.defaults.baseURL + '/release_note/create',
+              { old: oldb, new: newb, note: note })
+              .then(response => {
+                self.loaded()
+                return response.data.result
+              })
+              .catch(err => {
+                console.log('Error generating release note: ')
+                self.loaderror(err)
+                self.error = self.extractError(err)
+                return false
+              })
+          }
+        })
+        .modal('show')
+    },
+    selectCompatibles (builds) {
+      var _compat = []
+      var self = this
+      $.each(builds, function (i) {
+        var b = builds[i]
+        // comes from same build config and builds other than current one
+        if (b.build_config._id == self.build.build_config._id &&
+                  b._id != self.build._id) {
+          _compat.push(b._id)
+        }
+      })
+      return _compat
+    }
+  }
 }
 </script>
 

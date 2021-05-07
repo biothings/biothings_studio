@@ -10,8 +10,8 @@
                     v-if="api.status == 'failed'"></i>
             </div>
 
-            <div class="left aligned header" v-model="api">
-                <a>{{ api._id }}</a>
+            <div class="ui blue header" v-if="api">
+                <h3>{{ api._id }}</h3>
             </div>
             <div class="left aligned description">
                 <div v-if="api.status == 'running'">
@@ -34,20 +34,26 @@
                     <table class="ui celled table">
                         <tbody>
                             <tr>
-                                <td>ElasticSearch host</td>
-                                <td><a :href="api.config.es_host">{{api.config.es_host}}</a></td>
+                                <td><small>ElasticSearch host</small></td>
+                                <td><a :href="api.config.es_host"><small>{{api.config.es_host}}</small></a></td>
                             </tr>
                             <tr>
-                                <td>Index</td>
-                                <td>{{api.config.index}}</td>
+                                <td><small>Index</small></td>
+                                <td class="word-break">
+                                  <small>{{api.config.index}}</small>
+                                </td>
                             </tr>
                             <tr>
-                                <td>Document type</td>
-                                <td>{{api.config.doc_type}}</td>
+                                <td><small>Document type</small></td>
+                                <td class="word-break">
+                                  <small>{{api.config.doc_type}}</small>
+                                </td>
                             </tr>
                             <tr>
-                                <td>API port</td>
-                                <td>{{api.config.port}}</td>
+                                <td><small>API port</small></td>
+                                <td>
+                                  <small>{{api.config.port}}</small>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -55,7 +61,7 @@
             </div>
         </div>
 
-        <div class="extra content" :class="actionable">
+        <div class="extra content light-grey" :class="actionable">
             <div class="ui icon buttons left floated mini" v-if="api.status != 'running'">
                 <button class="ui button" v-on:click="startAPI">
                     <i class="play icon"></i>
@@ -98,94 +104,89 @@
 
 <script>
 import axios from 'axios'
-import bus from './bus.js'
-import Vue from 'vue';
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 
 export default {
-    name: 'api',
-    mixins: [ Loader, Actionable, ],
-    props: ['api',],
-    mounted() {
-        $('.menu .item')
-        .tab()
-        ;
+  name: 'API',
+  mixins: [Loader, Actionable],
+  props: ['api'],
+  mounted () {
+    $('.menu .item')
+      .tab()
+  },
+  beforeDestroy () {
+    $(`#${this.api._id}.ui.basic.deleteapi.modal`).remove()
+  },
+  data () {
+    return {
+      errors: []
+    }
+  },
+  components: { },
+  computed: {
+    url_metadata: function () {
+      return this.api.url + '/metadata'
     },
-    beforeDestroy() {
-        $(`#${this.api._id}.ui.basic.deleteapi.modal`).remove();
+    url_query: function () {
+      return this.api.url + '/query?q=*'
+    }
+  },
+  methods: {
+    displayError: function () {
+      var errs = []
+      if (this.api.err) { errs.push(this.api.err) }
+      return errs.join('<br>')
     },
-    data () {
-        return {
-            errors : [],
-        }
+    deleteAPI: function (event) {
+      console.log(event)
+      var api_id = $(event.target).attr('data-api_id')
+      // filter Api component to open correct modal
+      console.log(`${api_id} ${this.api._id}`)
+      if (!api_id || api_id != this.api._id) {
+        console.log('nope')
+        return
+      }
+      var self = this
+      $(`#${this.api._id.replace('.', '\\.')}.ui.basic.deleteapi.modal`)
+        .modal('setting', {
+          onApprove: function () {
+            self.loading()
+            axios.delete(axios.defaults.baseURL + '/api', { data: { api_id: self.api._id } })
+              .then(response => {
+                console.log(response.data.result)
+                self.loaded()
+                return true
+              })
+              .catch(err => {
+                console.log(err)
+                console.log('Error deleting api: ' + err.data.error)
+                self.loaderror(err)
+              })
+          }
+        })
+        .modal('show')
     },
-    components: { },
-    computed : {
-        url_metadata : function() {
-            return this.api.url + "/metadata";
-        },
-        url_query: function() {
-            return this.api.url + `/query?q=*`;
-        }
+    startStopAPI: function (mode) {
+      this.loading()
+      axios.put(axios.defaults.baseURL + `/api/${this.api._id}/${mode}`)
+        .then(response => {
+          this.loaded()
+          console.log(response.data.result)
+        })
+        .catch(err => {
+          console.log(err)
+          console.log(`Error ${mode}ing api: ` + err.data.error)
+          this.loaderror(err)
+        })
     },
-    methods: {
-        displayError : function() {
-            var errs = [];
-            if(this.api.err) 
-                errs.push(this.api.err);
-            return errs.join("<br>");
-        },
-        deleteAPI: function(event) {
-            console.log(event);
-            var api_id = $(event.target).attr("data-api_id");
-            // filter Api component to open correct modal
-            console.log(`${api_id} ${this.api._id}`);
-            if(!api_id || api_id != this.api._id) {
-                console.log("nope");
-                return;
-            }
-            var self = this;
-            $(`#${this.api._id.replace(".","\\.")}.ui.basic.deleteapi.modal`)
-            .modal("setting", {
-                onApprove: function () {
-                    self.loading();
-                    axios.delete(axios.defaults.baseURL + '/api',{"data":{"api_id":self.api._id}})
-                    .then(response => {
-                        console.log(response.data.result)
-                        self.loaded();
-                        return true;
-                    })
-                    .catch(err => {
-                        console.log(err);
-                        console.log("Error deleting api: " + err.data.error);
-                        self.loaderror(err);
-                    })
-                }
-            })
-            .modal("show");
-        },
-        startStopAPI: function(mode) {
-            this.loading();
-            axios.put(axios.defaults.baseURL + `/api/${this.api._id}/${mode}`)
-            .then(response => {
-                this.loaded();
-                console.log(response.data.result);
-            })
-            .catch(err => {
-                 console.log(err);
-                 console.log(`Error ${mode}ing api: ` + err.data.error);
-                 this.loaderror(err);
-            });
-
-        },
-        startAPI: function() {
-            return this.startStopAPI("start");
-        },
-        stopAPI: function() {
-            return this.startStopAPI("stop");
-        },
+    startAPI: function () {
+      return this.startStopAPI('start')
     },
+    stopAPI: function () {
+      return this.startStopAPI('stop')
+    }
+  }
 }
 </script>
 
@@ -203,5 +204,9 @@ export default {
   a {
         color: #930000;
     }
+
+  .word-break{
+    word-break: break-word;
+  }
 
 </style>

@@ -20,32 +20,32 @@ import axios from 'axios'
 import bus from './bus.js'
 
 export default {
-    name: 'alert-stop',
-    props: ["event"],
-	mounted () {
-		console.log("AlertStop mounted");
-		$('.mini.alert.modal')
-		.modal('setting', 'closable', false)
-        .modal("show");
-	},
-    updated() {
-    },
-    created() {
-    },
-    beforeDestroy() {
-        bus.$on('alert',this.onAlert);
-    },
-    watch: {
-    },
-    computed: {
-    },
-    data () {
-        return  {
-        }
-    },
-    components: {  },
-    methods: {
+  name: 'alert-stop',
+  props: ['event'],
+  mounted () {
+    console.log('AlertStop mounted')
+    $('.mini.alert.modal')
+      .modal('setting', 'closable', false)
+      .modal('show')
+  },
+  updated () {
+  },
+  created () {
+  },
+  beforeDestroy () {
+    bus.$on('alert', this.onAlert)
+  },
+  watch: {
+  },
+  computed: {
+  },
+  data () {
+    return {
     }
+  },
+  components: { },
+  methods: {
+  }
 }
 </script>
 

@@ -31,23 +31,9 @@
 </template>
 
 <script>
-import axios from 'axios'
-import bus from './bus.js'
-
 export default {
-    name: 'plugin-part-export',
-    props: ['part','ptype'],
-    mounted () {
-    },
-    beforeDestroy() {
-    },
-    components: { },
-    data () {
-      return {
-      }
-    },
-    methods: {
-    },
+  name: 'plugin-part-export',
+  props: ['part', 'ptype'],
 }
 </script>
 

@@ -151,106 +151,98 @@
 
 <script>
 import Vue from 'vue'
-import axios from 'axios'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 import bus from './bus.js'
 
-
 export default {
-	name: 'standalone-wizard',
-	mixins: [ Loader, Actionable, ],
-	mounted () {
-        console.log("StandaloneWizard mounted");
-        this.setup();
-        if(Object.keys(this.config).length) {
-            this.fetchConfigKeys();
-        }
-	},
-	updated() {
-	},
-	created() {
-        bus.$on("current_config",this.onConfig);
-	},
-	beforeDestroy() {
-        bus.$off("current_config",this.onConfig);
-	},
-    watch: {
-        config: function(newv,oldv) {
-            if(newv != oldv) {
-                this.fetchConfigKeys();
-            }
-        }
-    },
-	data () {
-		return  {
-            config: {},
-            access_key: null,
-            secret_key: null,
-            hub_name: null,
-            hub_icon: null,
-            version_urls: [],
-            dirty_conf: false,
-		}
-	},
-    computed: {
-    },
-	components: { },
-	methods: {
-        setup: function() {
-            // make sure we have access to current config
-            if(!Vue.config.hub_config) {
-                // force a reload of config to get it there
-                bus.$emit("change_config");
-            } else {
-                this.config = Vue.config.hub_config;
-            }
-
-            // wizard steps
-            var setStep = function(id){
-                // update steps
-                $('#'+id).addClass('active').nextAll().removeClass('active');
-                $('#'+id).prevAll().removeClass('active');
-                // update segment
-                $('.segment.'+id).show();
-                $('.segment.'+id).nextAll().not(".steps").hide();
-                $('.segment.'+id).prevAll().not(".steps").hide();
-            };
-            $('.step').click(function(){
-                setStep($(this).attr('id'));
-            })
-            // init
-            setStep("credentials");
-        },
-        onConfig: function(conf) {
-            this.config = conf.scope.config;
-            this.dirty_conf = conf._dirty;
-        },
-        fetchConfigKeys: function() {
-            this.access_key = this.config.STANDALONE_AWS_CREDENTIALS && this.config.STANDALONE_AWS_CREDENTIALS["value"].AWS_ACCESS_KEY_ID;
-            this.secret_key = this.config.STANDALONE_AWS_CREDENTIALS && this.config.STANDALONE_AWS_CREDENTIALS["value"].AWS_SECRET_ACCESS_KEY;
-            this.version_urls = this.config.VERSION_URLS && this.config.VERSION_URLS["value"].join("\n");
-            this.hub_name = this.config.HUB_NAME["value"];
-            this.hub_icon = this.config.HUB_ICON["value"];
-        },
-        restartHub: function() {
-            bus.$emit("restart_hub");
-        },
-        saveVersionURLs: function() {
-            var arr = this.version_urls.split('\n').filter(function (el) {
-                return el != "";
-            });
-            bus.$emit("save_config_param",{"name":"VERSION_URLS","value": JSON.stringify(arr)});
-        },
-        saveKeys: function() {
-            var dat = {"AWS_ACCESS_KEY_ID" : this.access_key, "AWS_SECRET_ACCESS_KEY" : this.secret_key};
-            bus.$emit("save_config_param",{"name":"STANDALONE_AWS_CREDENTIALS","value":JSON.stringify(dat)});
-        },
-        saveMisc: function() {
-            bus.$emit("save_config_param",{"name":"HUB_NAME","value":JSON.stringify(this.hub_name)});
-            bus.$emit("save_config_param",{"name":"HUB_ICON","value":JSON.stringify(this.hub_icon)});
-        }
+  name: 'standalone-wizard',
+  mixins: [Loader, Actionable],
+  mounted () {
+    this.setup()
+    if (Object.keys(this.config).length) {
+      this.fetchConfigKeys()
     }
+  },
+  created () {
+    bus.$on('current_config', this.onConfig)
+  },
+  beforeDestroy () {
+    bus.$off('current_config', this.onConfig)
+  },
+  watch: {
+    config: function (newv, oldv) {
+      if (newv != oldv) {
+        this.fetchConfigKeys()
+      }
+    }
+  },
+  data () {
+    return {
+      config: {},
+      access_key: null,
+      secret_key: null,
+      hub_name: null,
+      hub_icon: null,
+      version_urls: [],
+      dirty_conf: false
+    }
+  },
+  methods: {
+    setup: function () {
+      // make sure we have access to current config
+      if (!Vue.config.hub_config) {
+        // force a reload of config to get it there
+        bus.$emit('change_config')
+      } else {
+        this.config = Vue.config.hub_config
+      }
+
+      // wizard steps
+      var setStep = function (id) {
+        // update steps
+        $('#' + id).addClass('active').nextAll().removeClass('active')
+        $('#' + id).prevAll().removeClass('active')
+        // update segment
+        $('.segment.' + id).show()
+        $('.segment.' + id).nextAll().not('.steps').hide()
+        $('.segment.' + id).prevAll().not('.steps').hide()
+      }
+      $('.step').click(function () {
+        setStep($(this).attr('id'))
+      })
+      // init
+      setStep('credentials')
+    },
+    onConfig: function (conf) {
+      this.config = conf.scope.config
+      this.dirty_conf = conf._dirty
+    },
+    fetchConfigKeys: function () {
+      this.access_key = this.config.STANDALONE_AWS_CREDENTIALS && this.config.STANDALONE_AWS_CREDENTIALS.value.AWS_ACCESS_KEY_ID
+      this.secret_key = this.config.STANDALONE_AWS_CREDENTIALS && this.config.STANDALONE_AWS_CREDENTIALS.value.AWS_SECRET_ACCESS_KEY
+      this.version_urls = this.config.VERSION_URLS && this.config.VERSION_URLS.value.join('\n')
+      this.hub_name = this.config.HUB_NAME.value
+      this.hub_icon = this.config.HUB_ICON.value
+    },
+    restartHub: function () {
+      bus.$emit('restart_hub')
+    },
+    saveVersionURLs: function () {
+      var arr = this.version_urls.split('\n').filter(function (el) {
+        return el != ''
+      })
+      bus.$emit('save_config_param', { name: 'VERSION_URLS', value: JSON.stringify(arr) })
+    },
+    saveKeys: function () {
+      var dat = { AWS_ACCESS_KEY_ID: this.access_key, AWS_SECRET_ACCESS_KEY: this.secret_key }
+      bus.$emit('save_config_param', { name: 'STANDALONE_AWS_CREDENTIALS', value: JSON.stringify(dat) })
+    },
+    saveMisc: function () {
+      bus.$emit('save_config_param', { name: 'HUB_NAME', value: JSON.stringify(this.hub_name) })
+      bus.$emit('save_config_param', { name: 'HUB_ICON', value: JSON.stringify(this.hub_icon) })
+    }
+  }
 }
 </script>
 

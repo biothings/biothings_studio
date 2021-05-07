@@ -73,31 +73,25 @@
 </template>
 
 <script>
-import axios from 'axios'
-import bus from './bus.js'
 import Actionable from './Actionable.vue'
 
 export default {
-    name: 'data-source-dump',
-    props: ['source'],
-    mounted () {
-        $('.ui.checkbox')
-        .checkbox();
-    },
-    mixins: [Actionable, ],
-    components: { },
-    methods: {
-        do_dump() {
-            var field = $(`.ui.dump.form.${this.source._id}`).form('get field', "force");
-            var force = null;
-            if(field)
-                force = field.is(':checked')
-            console.log(force);
-            return this.$parent.dump(null,force);
-        },
-    },
+  name: 'data-source-dump',
+  props: ['source'],
+  mounted () {
+    $('.ui.checkbox')
+      .checkbox()
+  },
+  mixins: [Actionable],
+  components: { },
+  methods: {
+    do_dump () {
+      var field = $(`.ui.dump.form.${this.source._id}`).form('get field', 'force')
+      var force = null
+      if (field) { force = field.is(':checked') }
+      console.log(force)
+      return this.$parent.dump(null, force)
+    }
+  }
 }
 </script>
-
-<style>
-</style>

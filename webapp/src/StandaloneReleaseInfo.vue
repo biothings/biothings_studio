@@ -104,34 +104,14 @@
 </template>
 
 <script>
-import Vue from 'vue'
-import bus from './bus.js'
-
-
 export default {
-    name: 'standalone-release-info',
-    props: ['selected_version'],
-    mixins: [ ],
-    mounted () {
-    },
-    updated() {
-    },
-    created() {
-    },
-    beforeDestroy() {
-    },
-    watch: {
-    },
-    data () {
-        return  {
-            info_error: null,
-        }
-    },
-    computed: {
-    },
-    components: { },
-    methods: {
-    },
+  name: 'standalone-release-info',
+  props: ['selected_version'],
+  data () {
+    return {
+      info_error: null
+    }
+  },
 }
 </script>
 

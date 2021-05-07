@@ -9,266 +9,255 @@
  *
  */
 
-;(function ( $, window, document, undefined ) {
+;(function ($, window, document, undefined) {
+  'use strict'
 
-  "use strict";
-
-  $.fn.colorize = function(parameters) {
+  $.fn.colorize = function (parameters) {
     var
-      settings          = ( $.isPlainObject(parameters) )
+      settings = ($.isPlainObject(parameters))
         ? $.extend(true, {}, $.fn.colorize.settings, parameters)
-        : $.extend({}, $.fn.colorize.settings),
-      // hoist arguments
-      moduleArguments = arguments || false
-    ;
+        : $.extend({}, $.fn.colorize.settings)
+    // hoist arguments
+    var moduleArguments = arguments || false
+
     $(this)
-      .each(function(instanceIndex) {
-
+      .each(function (instanceIndex) {
         var
-          $module         = $(this),
+          $module = $(this)
 
-          mainCanvas      = $('<canvas />')[0],
-          imageCanvas     = $('<canvas />')[0],
-          overlayCanvas   = $('<canvas />')[0],
+        var mainCanvas = $('<canvas />')[0]
+        var imageCanvas = $('<canvas />')[0]
+        var overlayCanvas = $('<canvas />')[0]
 
-          backgroundImage = new Image(),
+        var backgroundImage = new Image()
 
-          // defs
-          mainContext,
-          imageContext,
-          overlayContext,
+        // defs
+        var mainContext
+        var imageContext
+        var overlayContext
 
-          image,
-          imageName,
+        var image
+        var imageName
 
-          width,
-          height,
+        var width
+        var height
 
-          // shortcuts
-          colors    = settings.colors,
-          paths     = settings.paths,
-          namespace = settings.namespace,
-          error     = settings.error,
+        // shortcuts
+        var colors = settings.colors
+        var paths = settings.paths
+        var namespace = settings.namespace
+        var error = settings.error
 
-          // boilerplate
-          instance   = $module.data('module-' + namespace),
-          module
-        ;
+        // boilerplate
+        var instance = $module.data('module-' + namespace)
+        var module
 
         module = {
 
-          checkPreconditions: function() {
-            module.debug('Checking pre-conditions');
+          checkPreconditions: function () {
+            module.debug('Checking pre-conditions')
 
-            if( !$.isPlainObject(colors) || $.isEmptyObject(colors) ) {
-              module.error(error.undefinedColors);
-              return false;
+            if (!$.isPlainObject(colors) || $.isEmptyObject(colors)) {
+              module.error(error.undefinedColors)
+              return false
             }
-            return true;
+            return true
           },
 
-          async: function(callback) {
-            if(settings.async) {
-              setTimeout(callback, 0);
-            }
-            else {
-              callback();
-            }
-          },
-
-          getMetadata: function() {
-            module.debug('Grabbing metadata');
-            image     = $module.data('image') || settings.image || undefined;
-            imageName = $module.data('name')  || settings.name  || instanceIndex;
-            width     = settings.width        || $module.width();
-            height    = settings.height       || $module.height();
-            if(width === 0 || height === 0) {
-              module.error(error.undefinedSize);
+          async: function (callback) {
+            if (settings.async) {
+              setTimeout(callback, 0)
+            } else {
+              callback()
             }
           },
 
-          initialize: function() {
-            module.debug('Initializing with colors', colors);
-            if( module.checkPreconditions() ) {
+          getMetadata: function () {
+            module.debug('Grabbing metadata')
+            image = $module.data('image') || settings.image || undefined
+            imageName = $module.data('name') || settings.name || instanceIndex
+            width = settings.width || $module.width()
+            height = settings.height || $module.height()
+            if (width === 0 || height === 0) {
+              module.error(error.undefinedSize)
+            }
+          },
 
-              module.async(function() {
-                module.getMetadata();
-                module.canvas.create();
+          initialize: function () {
+            module.debug('Initializing with colors', colors)
+            if (module.checkPreconditions()) {
+              module.async(function () {
+                module.getMetadata()
+                module.canvas.create()
 
-                module.draw.image(function() {
-                  module.draw.colors();
-                  module.canvas.merge();
-                });
+                module.draw.image(function () {
+                  module.draw.colors()
+                  module.canvas.merge()
+                })
                 $module
                   .data('module-' + namespace, module)
-                ;
-              });
+              })
             }
           },
 
-          redraw: function() {
-            module.debug('Redrawing image');
-            module.async(function() {
-              module.canvas.clear();
-              module.draw.colors();
-              module.canvas.merge();
-            });
+          redraw: function () {
+            module.debug('Redrawing image')
+            module.async(function () {
+              module.canvas.clear()
+              module.draw.colors()
+              module.canvas.merge()
+            })
           },
 
           change: {
-            color: function(colorName, color) {
-              module.debug('Changing color', colorName);
-              if(colors[colorName] === undefined) {
-                module.error(error.missingColor);
-                return false;
+            color: function (colorName, color) {
+              module.debug('Changing color', colorName)
+              if (colors[colorName] === undefined) {
+                module.error(error.missingColor)
+                return false
               }
-              colors[colorName] = color;
-              module.redraw();
+              colors[colorName] = color
+              module.redraw()
             }
           },
 
           canvas: {
-            create: function() {
-              module.debug('Creating canvases');
+            create: function () {
+              module.debug('Creating canvases')
 
-              mainCanvas.width     = width;
-              mainCanvas.height    = height;
-              imageCanvas.width    = width;
-              imageCanvas.height   = height;
-              overlayCanvas.width  = width;
-              overlayCanvas.height = height;
+              mainCanvas.width = width
+              mainCanvas.height = height
+              imageCanvas.width = width
+              imageCanvas.height = height
+              overlayCanvas.width = width
+              overlayCanvas.height = height
 
-              mainContext    = mainCanvas.getContext('2d');
-              imageContext   = imageCanvas.getContext('2d');
-              overlayContext = overlayCanvas.getContext('2d');
+              mainContext = mainCanvas.getContext('2d')
+              imageContext = imageCanvas.getContext('2d')
+              overlayContext = overlayCanvas.getContext('2d')
 
               $module
-                .append( mainCanvas )
-              ;
-              mainContext    = $module.children('canvas')[0].getContext('2d');
+                .append(mainCanvas)
+
+              mainContext = $module.children('canvas')[0].getContext('2d')
             },
-            clear: function(context) {
-              module.debug('Clearing canvas');
-              overlayContext.fillStyle = '#FFFFFF';
-              overlayContext.fillRect(0, 0, width, height);
+            clear: function (context) {
+              module.debug('Clearing canvas')
+              overlayContext.fillStyle = '#FFFFFF'
+              overlayContext.fillRect(0, 0, width, height)
             },
-            merge: function() {
-              if( !$.isFunction(mainContext.blendOnto) ) {
-                module.error(error.missingPlugin);
-                return;
+            merge: function () {
+              if (!$.isFunction(mainContext.blendOnto)) {
+                module.error(error.missingPlugin)
+                return
               }
-              mainContext.putImageData( imageContext.getImageData(0, 0, width, height), 0, 0);
-              overlayContext.blendOnto(mainContext, 'multiply');
+              mainContext.putImageData(imageContext.getImageData(0, 0, width, height), 0, 0)
+              overlayContext.blendOnto(mainContext, 'multiply')
             }
           },
 
           draw: {
 
-            image: function(callback) {
-              module.debug('Drawing image');
-              callback = callback || function(){};
-              if(image) {
-                backgroundImage.src    = image;
-                backgroundImage.onload = function() {
-                  imageContext.drawImage(backgroundImage, 0, 0);
-                  callback();
-                };
-              }
-              else {
-                module.error(error.noImage);
-                callback();
+            image: function (callback) {
+              module.debug('Drawing image')
+              callback = callback || function () {}
+              if (image) {
+                backgroundImage.src = image
+                backgroundImage.onload = function () {
+                  imageContext.drawImage(backgroundImage, 0, 0)
+                  callback()
+                }
+              } else {
+                module.error(error.noImage)
+                callback()
               }
             },
 
-            colors: function() {
-              module.debug('Drawing color overlays', colors);
-              $.each(colors, function(colorName, color) {
-                settings.onDraw(overlayContext, imageName, colorName, color);
-              });
+            colors: function () {
+              module.debug('Drawing color overlays', colors)
+              $.each(colors, function (colorName, color) {
+                settings.onDraw(overlayContext, imageName, colorName, color)
+              })
             }
 
           },
 
-          debug: function(message, variableName) {
-            if(settings.debug) {
-              if(variableName !== undefined) {
-                console.info(settings.name + ': ' + message, variableName);
-              }
-              else {
-                console.info(settings.name + ': ' + message);
+          debug: function (message, variableName) {
+            if (settings.debug) {
+              if (variableName !== undefined) {
+                console.info(settings.name + ': ' + message, variableName)
+              } else {
+                console.info(settings.name + ': ' + message)
               }
             }
           },
-          error: function(errorMessage) {
-            console.warn(settings.name + ': ' + errorMessage);
+          error: function (errorMessage) {
+            console.warn(settings.name + ': ' + errorMessage)
           },
-          invoke: function(methodName, context, methodArguments) {
+          invoke: function (methodName, context, methodArguments) {
             var
               method
-            ;
-            methodArguments = methodArguments || Array.prototype.slice.call( arguments, 2 );
 
-            if(typeof methodName == 'string' && instance !== undefined) {
-              methodName = methodName.split('.');
-              $.each(methodName, function(index, name) {
-                if( $.isPlainObject( instance[name] ) ) {
-                  instance = instance[name];
-                  return true;
+            methodArguments = methodArguments || Array.prototype.slice.call(arguments, 2)
+
+            if (typeof methodName === 'string' && instance !== undefined) {
+              methodName = methodName.split('.')
+              $.each(methodName, function (index, name) {
+                if ($.isPlainObject(instance[name])) {
+                  instance = instance[name]
+                  return true
+                } else if ($.isFunction(instance[name])) {
+                  method = instance[name]
+                  return true
                 }
-                else if( $.isFunction( instance[name] ) ) {
-                  method = instance[name];
-                  return true;
-                }
-                module.error(settings.error.method);
-                return false;
-              });
+                module.error(settings.error.method)
+                return false
+              })
             }
-            return ( $.isFunction( method ) )
+            return ($.isFunction(method))
               ? method.apply(context, methodArguments)
               : false
-            ;
           }
 
-        };
-        if(instance !== undefined && moduleArguments) {
+        }
+        if (instance !== undefined && moduleArguments) {
           // simpler than invoke realizing to invoke itself (and losing scope due prototype.call()
-          if(moduleArguments[0] == 'invoke') {
-            moduleArguments = Array.prototype.slice.call( moduleArguments, 1 );
+          if (moduleArguments[0] == 'invoke') {
+            moduleArguments = Array.prototype.slice.call(moduleArguments, 1)
           }
-          return module.invoke(moduleArguments[0], this, Array.prototype.slice.call( moduleArguments, 1 ) );
+          return module.invoke(moduleArguments[0], this, Array.prototype.slice.call(moduleArguments, 1))
         }
         // initializing
-        module.initialize();
+        module.initialize()
       })
-    ;
-    return this;
-  };
+
+    return this
+  }
 
   $.fn.colorize.settings = {
-    name      : 'Image Colorizer',
-    debug     : true,
-    namespace : 'colorize',
+    name: 'Image Colorizer',
+    debug: true,
+    namespace: 'colorize',
 
-    onDraw    : function(overlayContext, imageName, colorName, color) {},
+    onDraw: function (overlayContext, imageName, colorName, color) {},
 
     // whether to block execution while updating canvas
-    async     : true,
+    async: true,
     // object containing names and default values of color regions
-    colors    : {},
+    colors: {},
 
     metadata: {
-      image : 'image',
-      name  : 'name'
+      image: 'image',
+      name: 'name'
     },
 
     error: {
-      noImage         : 'No tracing image specified',
-      undefinedColors : 'No default colors specified.',
-      missingColor    : 'Attempted to change color that does not exist',
-      missingPlugin   : 'Blend onto plug-in must be included',
-      undefinedHeight : 'The width or height of image canvas could not be automatically determined. Please specify a height.'
+      noImage: 'No tracing image specified',
+      undefinedColors: 'No default colors specified.',
+      missingColor: 'Attempted to change color that does not exist',
+      missingPlugin: 'Blend onto plug-in must be included',
+      undefinedHeight: 'The width or height of image canvas could not be automatically determined. Please specify a height.'
     }
 
-  };
-
-})( jQuery, window , document );
+  }
+})(jQuery, window, document)

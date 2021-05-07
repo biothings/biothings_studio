@@ -17,39 +17,21 @@
 </template>
 
 <script>
-import axios from 'axios'
-import bus from './bus.js'
-import Vue from 'vue';
 import Loader from './Loader.vue'
 
 export default {
-    name: 'publish-summary',
-    mixins: [ Loader, ],
-    props: ['publish','type'],
-    mounted() {
-    },
-    created() {
-    },
-    beforeDestroy() {
-    },
-    components: {  },
-    data () {
-        return {
-        }
-    },
-    computed: {
-        version_url: function() {
-            var url = new URL(this.publish.metadata.url);
-            var parts = url.pathname.split("/").slice(0,-1);
-            parts.push("versions.json");
-            url.pathname = parts.join("/");
-            return url.toString();
-        }
-    },
-    watch: {
-    },
-    methods: {
+  name: 'publish-summary',
+  mixins: [Loader],
+  props: ['publish', 'type'],
+  computed: {
+    version_url: function () {
+      var url = new URL(this.publish.metadata.url)
+      var parts = url.pathname.split('/').slice(0, -1)
+      parts.push('versions.json')
+      url.pathname = parts.join('/')
+      return url.toString()
     }
+  },
 }
 </script>
 

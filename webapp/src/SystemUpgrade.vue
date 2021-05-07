@@ -22,38 +22,19 @@
                     </p>
                 </div>
             </div>
-
     </div>
 </template>
 
 <script>
-import Vue from 'vue';
-import axios from 'axios'
-import bus from './bus.js'
 import Commits from './Commits.vue'
 
 export default {
-    name: 'system-upgrade',
-    props: ["app_version","biothings_version"],
-    components: { Commits, },
-    mixins : [ ],
-    mounted () {
-        $('.ui.sections.accordion').accordion();
-    },
-    created() {
-    },
-    updated() {
-    },
-    beforeDestroy() {
-    },
-    data () {
-        return {
-        }
-    },
-    computed: {
-    },
-    methods: {
-    },
+  name: 'system-upgrade',
+  props: ['app_version', 'biothings_version'],
+  components: { Commits },
+  mounted () {
+    $('.ui.sections.accordion').accordion()
+  },
 }
 </script>
 

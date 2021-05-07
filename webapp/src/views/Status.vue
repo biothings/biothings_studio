@@ -1,5 +1,4 @@
 <template>
-
     <div class="ui two column centered grid">
         <div class="four column centered row">
         </div>
@@ -80,7 +79,6 @@
             </div>
         </div>
 
-
         <div class="four column centered row">
         </div>
         <div class="eight wide column centered row">
@@ -90,7 +88,7 @@
                 <div class="column centered">
 
                     <div class="ui feed">
-                        <div class="event" v-for="(newd,conf) in whatsnew">
+                        <div class="event" v-for="(newd,conf) in whatsnew" :key="newd.old_build.name">
                             <div class="label">
                                 <i class="cubes icon"></i>
                             </div>
@@ -104,7 +102,7 @@
                                         Previous build was <i>{{ newd.old_build.name }}</i>, built on {{ newd.old_build.built_at | moment('lll') }}
                                     </div>
                                 </div>
-                                <div class="mymeta" v-for="(srcd,src) in newd.sources">
+                                <div class="mymeta" v-for="(srcd,src) in newd.sources" :key="srcd.old.version">
                                     <i class="database icon"></i><b>{{src}}</b>: {{srcd.old.version}} <i class="small arrow right icon"></i> {{srcd.new.version}}
                                     <i>({{srcd.new.downloaded_at | moment("from","now")}})</i>
                                 </div>
@@ -119,66 +117,58 @@
             <span v-else>Not much, nothing happened recently...</span>
             </div>
 
-
         </div>
 
     </div>
 </template>
 
 <script>
-import Loader from './Loader.vue'
+import Loader from '../Loader.vue'
 import axios from 'axios'
-import bus from './bus.js'
-
 
 export default {
   name: 'status',
-  mixins: [ Loader, ],
+  mixins: [Loader],
   mounted () {
-    console.log("Status mounted");
-    this.refreshStatus();
-    this.refreshWhatsNew();
-  },
-  created() {
-  },
-  beforeDestroy() {
+    this.refreshStatus()
+    this.refreshWhatsNew()
   },
   data () {
-      return  {
-          status: {},
-          whatsnew: {},
-          errors: [],
-      }
+    return {
+      status: {},
+      whatsnew: {},
+      errors: []
+    }
   },
-  components: {Loader},
+  components: { Loader },
   methods: {
-    refreshStatus: function() {
-      this.loading();
+    refreshStatus: function () {
+      this.loading()
       axios.get(axios.defaults.baseURL + '/status')
-      .then(response => {
-        this.status = response.data.result;
-        this.loaded();
-      })
-      .catch(err => {
-        console.log("Error getting sources information: " + err);
-        this.loaderror(err)
-      })
+        .then(response => {
+          this.status = response.data.result
+          this.loaded()
+        })
+        .catch(err => {
+          console.log('Error getting sources information: ' + err)
+          this.loaderror(err)
+        })
     },
-    refreshWhatsNew: function() {
+    refreshWhatsNew: function () {
       axios.get(axios.defaults.baseURL + '/whatsnew')
-      .then(response => {
-        this.whatsnew = response.data.result;
-      })
-      .catch(err => {
-        console.log("Error getting sources information: " + err);
-      })
-    },
+        .then(response => {
+          this.whatsnew = response.data.result
+        })
+        .catch(err => {
+          console.log('Error getting sources information: ' + err)
+        })
+    }
   }
 }
 </script>
 
 <style>
-.mymeta { 
+.mymeta {
     color: rgba(0,0,0,.5);
     font-size: .85em;
 }
