@@ -1,14 +1,11 @@
 <template>
     <div class="main-background" style="min-height:100vh">
-        <div class="ui grid" :class="actionable">
-            <div style="padding:20px 5px;">
-                <div class="ui secondary small compact menu">
-                    <a class="item" @click="wizard()" style="margin:10px 0px 0px 50px;">
-                        <i class="magic icon"></i>
-                        Setup
-                    </a>
-                </div>
-            </div>
+
+        <div class="ui big message" :class="actionable">
+            <button class="ui button" @click="wizard()" style="margin:10px 0px 0px 50px;">
+                <i class="magic icon"></i>
+                Setup
+            </button>
         </div>
         <div class="ui grid" v-if="version_urls.length">
             <div class="three wide column">

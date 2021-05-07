@@ -32,7 +32,7 @@
                   <th v-if="!readonly">Action</th>
                 </tr>
               </thead>
-              <tbody v-if="version && version.length">
+              <tbody v-if="versions && versions.length">
                 <tr v-for="version in versions" :class="[getVersionClass(version)]" :key="version.release_date">
                   <td>{{version.build_version}}</td>
                   <td>{{ moment(version.release_date).format('MMMM Do YYYY, h:mm:ss a')}}</td>

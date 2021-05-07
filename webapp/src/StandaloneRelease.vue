@@ -41,7 +41,7 @@
                             <i class="thumbtack icon"></i>
                             <div class="content">
                                 <div class="header">Version</div>
-                                {{backend.version || "no version found"}}</a>
+                                <a v-if="backend && backend.version">{{backend.version || "no version found"}}</a>
                             </div>
                         </div>
                         <div class="item">

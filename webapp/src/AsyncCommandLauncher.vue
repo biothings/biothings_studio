@@ -11,7 +11,7 @@ export default {
   // Note: we don't declare "source", it must be defined in subclass/mixed
   // (sometimes it's a prop, sometimes it's a data field
   mounted () {
-    $.tablesort.DEBUG = true
+    // $.tablesort.DEBUG = true
     this.watchdog()
   },
   components: { },
