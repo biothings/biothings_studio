@@ -65,14 +65,15 @@
                     </div>
 
                     <div class="ui centered grid">
-                        <template v-for="(build,i) in builds">
+                        <!-- <template v-for="(build,i) in builds">
                             <div class="ui five wide column" v-bind:key="i+'build'" v-if="i < shown">
                                 <build v-bind:pbuild="build" v-bind:color="build_colors[build.build_config.name]"></build>
                             </div>
-                        </template>
+                        </template> -->
+                        <PaginatedList :content="builds" type="Builds" :build_colors="build_colors"></PaginatedList>
                     </div>
 
-                    <div class="ui menu" style="margin-bottom:100px;">
+                    <!-- <div class="ui menu" style="margin-bottom:100px;">
                       <div class="ui form item">
                         <div class="fields">
                           <div class="field">
@@ -118,7 +119,7 @@
                             </a>
                         </div>
                       </div>
-                    </div>
+                    </div> -->
 
 
                 </div>
@@ -282,6 +283,7 @@ import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 import bus from './bus.js'
 import moment from 'moment'
+import PaginatedList from './components/PaginatedList.vue'
 
 export default {
   name: 'build-grid',
@@ -359,11 +361,11 @@ export default {
         this.getBuilds()
       }
     },
-    showSelection: function (s, os) {
-      if (s != os) {
-        this.getBuilds()
-      }
-    }
+    // showSelection: function (s, os) {
+    //   if (s != os) {
+    //     this.getBuilds()
+    //   }
+    // }
   },
   data () {
     return {
@@ -383,12 +385,12 @@ export default {
       conf_filter: '',
       only_archived: false,
       include_archived_configs: false,
-      shown: 9,
-      showSelection: 'today',
+      // shown: 9,
+      // showSelection: 'today',
       loadingBuilds: false
     }
   },
-  components: { Build },
+  components: { Build, PaginatedList },
   methods: {
     setBuilderDoc: function (classpath) {
       var bclass = this.builder_classes[classpath]
@@ -429,44 +431,44 @@ export default {
       axios.get(axios.defaults.baseURL + '/builds' + filter)
         .then(response => {
           self.builds = response.data.result
-          //console.log('TOTAL BUILDS', self.builds.length)
-          if (!self.showSelection) {
-            self.showSelection = 'today'
-          }
+          console.log('TOTAL BUILDS', self.builds.length)
+          // if (!self.showSelection) {
+          //   self.showSelection = 'today'
+          // }
 
-          const filtered = []
-          for (let i = 0; i < self.builds.length; i++) {
-            switch (self.showSelection) {
-              case 'today':
-                const isFromToday = moment().isSame(moment(self.builds[i].started_at), 'day')
-                if (isFromToday) {
-                  filtered.push(self.builds[i])
-                }
-                break
-              case '1 day ago':
-                const onedayago = moment(moment().subtract(1, 'days')).isSame(moment(self.builds[i].started_at), 'day')
-                if (onedayago) {
-                  filtered.push(self.builds[i])
-                }
-                break
-              case '2 days ago':
-                const twodayago = moment(moment().subtract(2, 'days')).isSame(moment(self.builds[i].started_at), 'day')
-                if (twodayago) {
-                  filtered.push(self.builds[i])
-                }
-                break
-              case '3 days ago':
-                const threedayago = moment(moment().subtract(3, 'days')).isSame(moment(self.builds[i].started_at), 'day')
-                if (threedayago) {
-                  filtered.push(self.builds[i])
-                }
-                break
-              default:
-                filtered.push(self.builds[i])
-                break
-            }
-          }
-          self.builds = filtered
+          // const filtered = []
+          // for (let i = 0; i < self.builds.length; i++) {
+          //   switch (self.showSelection) {
+          //     case 'today':
+          //       const isFromToday = moment().isSame(moment(self.builds[i].started_at), 'day')
+          //       if (isFromToday) {
+          //         filtered.push(self.builds[i])
+          //       }
+          //       break
+          //     case '1 day ago':
+          //       const onedayago = moment(moment().subtract(1, 'days')).isSame(moment(self.builds[i].started_at), 'day')
+          //       if (onedayago) {
+          //         filtered.push(self.builds[i])
+          //       }
+          //       break
+          //     case '2 days ago':
+          //       const twodayago = moment(moment().subtract(2, 'days')).isSame(moment(self.builds[i].started_at), 'day')
+          //       if (twodayago) {
+          //         filtered.push(self.builds[i])
+          //       }
+          //       break
+          //     case '3 days ago':
+          //       const threedayago = moment(moment().subtract(3, 'days')).isSame(moment(self.builds[i].started_at), 'day')
+          //       if (threedayago) {
+          //         filtered.push(self.builds[i])
+          //       }
+          //       break
+          //     default:
+          //       filtered.push(self.builds[i])
+          //       break
+          //   }
+          // }
+          // self.builds = filtered
           self.loadingBuilds = false;
           self.loaded()
         })

@@ -13,7 +13,7 @@
                       <div class="header item">
                         <h1 class="ui pink header">(<small>{{orderedSources ? orderedSources.length : 0}}</small>) Sources</h1>
                       </div>
-                      <a class="item">
+                      <a class="item" id="sources_menu">
                           <i class="sidebar icon"></i>
                           Menu
                       </a>
@@ -79,7 +79,7 @@ export default {
     $('#sources .ui.sidebar')
       .sidebar({ context: $('#sources') })
       .sidebar('setting', 'transition', 'overlay')
-      .sidebar('attach events', '#sources .menu .item')
+      .sidebar('attach events', '#sources_menu')
   },
   created () {
     bus.$on('change_data_plugin', this.onDataPluginChanged)
