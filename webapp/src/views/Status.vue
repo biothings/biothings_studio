@@ -140,7 +140,6 @@ export default {
       errors: []
     }
   },
-  components: { Loader },
   methods: {
     refreshStatus: function () {
       this.loading()

@@ -143,7 +143,7 @@ export default {
       var api_id = $(event.target).attr('data-api_id')
       // filter Api component to open correct modal
       console.log(`${api_id} ${this.api._id}`)
-      if (!api_id || api_id != this.api._id) {
+      if (!api_id || api_id !== this.api._id) {
         console.log('nope')
         return
       }
