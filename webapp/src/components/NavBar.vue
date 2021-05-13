@@ -1,43 +1,112 @@
 <template>
-    <!-- <div class="ui inverted pointing menu br-0 m-0"> -->
-        <div class="ui container">
-            <div class="item">
-                <img src='../assets/biothings-studio-color.svg' alt="Studio">
-            </div>
-            <router-link :to="mitem['path']" class="item" style="padding: .5rem 1rem;" v-for="mitem in menu" v-bind:key="mitem.name" exact>
-                {{ mitem['name'] }}
-            </router-link>
-            <div class="item p-1">
-                <event-messages></event-messages>
-            </div>
-            <div class="ui item mini grey inverted jobs right p-1" v-if="has_feature('job')">
-                <job-summary></job-summary>
-            </div>
+    <div class="ui container">
+        <div class="item">
+            <ChooseHub></ChooseHub>
+            <span v-if="readonly_switch !== null">
+                <div class="ui middle aligned mini" data-tooltip="Toggle read-only mode" data-position="bottom left">
+                    <i class="clickicon icon" :class="readonly_mode ? 'red lock': 'unlock'" @click="switchReadOnly"></i>
+                </div>
+            </span>
+            <span v-else>
+                <div class="ui middle aligned mini"  data-tooltip="Hub is read-only" data-position="bottom left">
+                    <i class="lock icon" :class="readonly_mode ? 'red': ''"></i>
+                </div>
+            </span>
         </div>
-    <!-- </div> -->
+        <div class="item">
+            <Loader></Loader>
+            <img class="m-0" :src="icon" id="conn" :data-html="
+            '<div style=\'width:30em;\'><table>'+
+            '<tr><td colspan=\'2\'><h2 style=\'color:#0E6EB8;\'>' + conn.name + '</h2></td></tr>' +
+            '<tr><td><b>Connection</b></td><td><a>' + conn.url + '</a></td></tr>' +
+            '<tr><td><b>App Version</b></td><td>' + str_app_version +'</td></tr>' +
+            '<tr><td><b>BioThings Version</b></td><td>' + str_biothings_version +'</td></tr>' +
+            '<tr><td><b>Features</b></td><td><small>' + studio_features +'</small></td></tr>' +
+            '</table></div>'
+            " data-position="bottom center">
+        </div>
+        <router-link :to="mitem['path']" class="item" style="padding: .5rem 1rem;" v-for="mitem in menu" v-bind:key="mitem.name" exact>
+            {{ mitem['name'] }}
+        </router-link>
+        <div class="item p-1">
+            <event-messages></event-messages>
+        </div>
+        <div class="ui item mini grey inverted jobs right p-1" v-if="has_feature('job')">
+            <job-summary></job-summary>
+        </div>
+    </div>
 </template>
 
 <script>
 import JobSummary from '../JobSummary.vue'
 import EventMessages from '../EventMessages.vue'
 import {has_feature} from '../mixins/has_feature'
+import Loader from '../Loader.vue'
+import ChooseHub from '../ChooseHub.vue'
 
 export default {
     name: 'NavBar',
+    data: function(){
+        return{
+            default_icon: '../assets/biothings-studio-color.svg',
+        }
+    },
     components:{
         JobSummary,
-        EventMessages
+        EventMessages,
+        Loader,
+        ChooseHub
     },
     mixins: [has_feature],
     props:[
         'menu',
+        'conn',
+        'current_studio_version',
+        'readonly_switch',
+        'readonly_mode',
+        'switchReadOnly',
     ],
+    methods:{
+        getVersionAsString (obj) {
+            try {
+                if (typeof obj === 'object') {
+                return `${obj.branch} [${obj.commit}] [${obj.date}]`
+                } else {
+                return obj
+                }
+            } catch (e) {
+                // not ready yet ?
+                return null
+            }
+        },
+    },
+    computed: {
+        str_app_version: function () {
+            return this.getVersionAsString(this.conn.app_version)
+        },
+        str_biothings_version: function () {
+            return this.getVersionAsString(this.conn.biothings_version)
+        },
+        studio_features: function () {
+            if (this.conn.features) {
+                return this.conn.features.join(', ')
+            } else {
+                return 'not listed'
+            }
+        },
+        icon:function(){
+            return this.conn && this.conn.icon ? this.conn.icon : this.default_icon
+        }
+    },
+    mounted:function(){
+        $('#conn').popup({on: 'hover'});
+    }
 }
 </script>
 
 <style>
 .light-grey{
-    background-color:#eeeeee !important;
+    background-color:#aaa9a9 !important;
 }
 .button:hover{
     background-color: #209bcc !important;
@@ -63,5 +132,19 @@ export default {
     display: flex;
     justify-content: start;
     align-items: center;
+}
+.flex-wrap{
+    flex-wrap: wrap;
+}
+.flex-end{
+    justify-content: flex-end;
+}
+.clearMenu{
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+.ui.card:hover{
+    box-shadow: 0px 0px 12px rgb(165, 165, 165);
 }
 </style>

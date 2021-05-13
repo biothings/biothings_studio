@@ -1,21 +1,16 @@
 <template>
     <div class="ui fluid card">
-        <div class="content">
+        <div class="content left aligned">
             <div :class="['ui',color ? color : 'grey', 'tiny', '', 'label','conftag']">{{build.build_config.name}}</div>
 
             <i class="archived right floated archive icon"
                 v-if="build.archived"></i>
             <span v-else>
-            <!-- in progress -->
-            <i class="right floated cube icon pulsing"
-                v-if="build.status == 'building'"></i>
-            <i class="right floated unhide icon pulsing"
-                v-if="build.status == 'inspecting'"></i>
-            <i class="right floated exchange icon pulsing"
-                v-if="build.status == 'diffing'"></i>
-            <i class="right floated bookmark icon pulsing"
-                v-if="build.status == 'indexing'"></i>
+                <template v-if="build.status !== 'success'">
+                    <b class="right floated"><i class="hourglass icon pulsing"></i> {{build.status}}...</b>
+                </template>
             </span>
+            
 
             <!-- error -->
             <div class="ui"

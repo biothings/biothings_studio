@@ -1,86 +1,47 @@
 <template>
   <div id="app" class="m-0">
     <!--🌈🌈 NAV 🌈🌈-->
-    <div class="ui pointing inverted menu br-0 m-0" style="display:block">
-      <div class="ui container">
-        <div class="header item">
-          <img class="logo" src="./assets/biothings-studio-color.svg">
-          <div id="conn" :data-html="
-              '<div style=\'width:30em;\'>' +
-              '<a>' + conn.url + '</a><br>' +
-                  'App. version: <b>' + str_app_version + '</b><br>' +
-                  'Biothings version: <b>' + str_biothings_version + '</b><br></div>' +
-                  'Studio version: <b>' + current_studio_version + '</b><br></div>' +
-                  'Features: <b> ' + studio_features + '</b><br></div>'
-                  " data-position="bottom center">{{conn.name || "John Doe"}}</div>
+    <div class="ui pointing inverted menu br-0 m-0 flex-wrap flex-end">
+      <NavBar 
+      :menu="menu" 
+      :conn="conn" 
+      :current_studio_version="current_studio_version"
+      :readonly_mode="readonly_mode"
+      :readonly_switch="readonly_switch"
+      :switchReadOnly="switchReadOnly"
+      ></NavBar>
+      <div class="item">
+        <div id="settings" v-if="has_feature('config')">
+            <button class="mini circular ui icon button" @click="openConfig" data-tooltip="Edit Studio Configuration" data-position="bottom center">
+                <i class="cog icon"></i>
+            </button>
         </div>
-        <div class="item">
-            <!-- check value, null means toggle deactivated (hub is read-only, can't switch back to read/write) -->
-            <span v-if="readonly_switch !== null">
-                <div class="ui middle aligned mini" data-tooltip="Toggle read-only mode" data-position="bottom left">
-                    <i class="clickicon icon" :class="readonly_mode ? 'red lock': 'unlock'" @click="switchReadOnly"></i>
-                </div>
-            </span>
-            <span v-else>
-                <div class="ui middle aligned mini"  data-tooltip="Hub is read-only" data-position="bottom left">
-                    <i class="lock icon" :class="readonly_mode ? 'red': ''"></i>
-                </div>
-            </span>
-        </div>
-        <div class="item">
-          <div class="ui middle aligned mini">
-            <choose-hub></choose-hub>
-          </div>
-        </div>
-
-
-        <!-- <router-link :to="mitem['path']" class="clickable item" v-for="mitem in menu" v-bind:key="mitem.name" exact>
-            {{ mitem['name'] }}
-        </router-link>
-
-        <div class="ui item mini grey inverted jobs" v-if="has_feature('job')">
-            <job-summary></job-summary>
-        </div> -->
-
-        <!-- <div class="ui item">
-          <event-messages v-if="has_feature('ws')"></event-messages>
-        </div> -->
-
-        <div class="item right">
-          <loader></loader>
-          <div id="settings" v-if="has_feature('config')">
-              <button class="mini circular ui icon button" @click="openConfig" data-tooltip="Edit Studio Configuration" data-position="bottom center">
-                  <i class="cog icon"></i>
+        <span v-if="has_feature('ws')">
+          <div v-if="socket && socket.readyState == 1" :data-tooltip="'Connection: ' + socket.transport" data-position="bottom center">
+              <button class="mini circular ui icon button" @click="closeConnection">
+                  <i class="green power off icon"></i>
               </button>
           </div>
-          <span v-if="has_feature('ws')">
-            <div v-if="socket && socket.readyState == 1" :data-tooltip="'Connection: ' + socket.transport" data-position="bottom center">
-                <button class="mini circular ui icon button" @click="closeConnection">
-                    <i class="green power off icon"></i>
-                </button>
-            </div>
-            <div v-else-if="ws_connection == 'connecting'" data-tooltip="Connecting" data-position="bottom center">
-                <button class="mini circular ui icon button" @click="closeConnection">
-                    <i class="spinning grey spinner icon"></i>
-                </button>
-            </div>
-            <div v-else>
-                <button class="mini circular ui icon button" @click="openConnection"
-                    data-tooltip="Click to reconnect"
-                    data-position="bottom center">
-                    <i class="red plug icon"></i>
-                </button>
-            </div>
-          </span>
-          <div v-if="needs_upgrade">
-              <button class="mini circular ui icon button" @click="showUpgrades()" data-tooltip="Upgrade Available" data-position="bottom center">
-                  <i class="upgrade sync icon"></i>
+          <div v-else-if="ws_connection == 'connecting'" data-tooltip="Connecting" data-position="bottom center">
+              <button class="mini circular ui icon button" @click="closeConnection">
+                  <i class="spinning grey spinner icon"></i>
               </button>
           </div>
+          <div v-else>
+              <button class="mini circular ui icon button" @click="openConnection"
+                  data-tooltip="Click to reconnect"
+                  data-position="bottom center">
+                  <i class="red plug icon"></i>
+              </button>
+          </div>
+        </span>
+        <div v-if="needs_upgrade">
+            <button class="mini circular ui icon button" @click="showUpgrades()" data-tooltip="Studio Upgrade Available" data-position="bottom center">
+                <b class="upgrade">Upgrade</b>
+            </button>
         </div>
-
       </div>
-      <NavBar :menu="menu"></NavBar>
+
     </div>
     
     <!--🌈🌈 NAV END🌈🌈-->
@@ -232,7 +193,6 @@ import BuildDetailed from './BuildDetailed.vue'
 import ApiGrid from './ApiGrid.vue'
 import EventMessages from './EventMessages.vue'
 import EventAlert from './EventAlert.vue'
-import ChooseHub from './ChooseHub.vue'
 import HubConfig from './HubConfig.vue'
 import LogViewer from './LogViewer.vue'
 import Terminal from './Terminal.vue'
@@ -346,7 +306,6 @@ export default {
     JobSummary,
     EventMessages,
     EventAlert,
-    ChooseHub,
     HubConfig,
     Loader,
     LogViewer,
@@ -355,10 +314,6 @@ export default {
     NavBar
   },
   mounted () {
-    $('#conn')
-      .popup({
-        on: 'hover'
-      })
     $('.menu .item').tab()
     $('.ui.sticky')
       .sticky({

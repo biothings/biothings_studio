@@ -8,7 +8,7 @@
       </div>
       <div class="pusher main-background">
           <div class="ui main container">
-              <div class="ui big message flex-center">
+              <div class="ui big message flex-center clearMenu">
                 <h1 class="ui pink header">
                   (<small>{{orderedSources ? orderedSources.length : 0}}</small>) Sources
                 </h1>
@@ -18,7 +18,7 @@
                   <!-- <div class="four wide column" v-for="(source, i) in orderedSources" :key="source+i">
                       <data-source v-bind:psource="source"></data-source>
                   </div> -->
-                  <PaginatedList :content="orderedSources" type="Sources"></PaginatedList>
+                  <PaginatedList :content="orderedSources" type="Sources" :perPageProp="50"></PaginatedList>
               </div>
           </div>
       </div>

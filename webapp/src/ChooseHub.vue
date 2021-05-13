@@ -1,7 +1,7 @@
 <template>
     <span>
-        <div class="choosehub ui floating dropdown mini icon button">
-            <i class="caret square down icon"></i>
+        <div class="choosehub ui floating dropdown black circular button p-1" data-tooltip="Create Connection" data-position="bottom left">
+            <i class="icon plus m-0"></i>
             <div class="menu largechoose">
                 <div class="item" data-value="new">
                     <i class="plus circle icon"></i>

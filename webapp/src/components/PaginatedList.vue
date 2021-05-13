@@ -55,9 +55,10 @@
             <div class="item">
                 <select class="ui select dropdown m-0" v-model="perPage" @change="calculatePages" id="perPage">
                     <option value="" disabled>Shown Per Page</option>
-                    <option value="10" selected>10 per page</option>
-                    <option value="20">20 per page</option>
-                    <option value="100">100 per page</option>
+                    <option value="10" :selected="perPage == 10">10 per page</option>
+                    <option value="20" :selected="perPage == 20">20 per page</option>
+                    <option value="50" :selected="perPage == 50">50 per page</option>
+                    <option value="100" :selected="perPage == 100">100 per page</option>
                 </select>
             </div>
         </div>
@@ -84,11 +85,11 @@ export default {
     data: function(){
         return{
             expandArray:false,
-            perPage: 10,
             page: 1,
             pages: 1,
             startCap:0,
             endCap:10,
+            perPage: 10,
             groupPages: false,
             pageLimit: 10,
             startCapLimitReached: true,
@@ -109,6 +110,10 @@ export default {
             default: ()=>{
                 return {}
             }
+        },
+        perPageProp: {
+            type: Number,
+            default: 10
         },
     },
     methods:{
@@ -172,11 +177,13 @@ export default {
             var start = (this.page - 1) * this.perPage,
                 end = start + this.perPage;
             return this.content && this.content.slice(start, end);
-        }
+        },
     },
     mounted: function(){
         this.calculatePages();
          $('.ui.select.dropdown').dropdown()
+         this.perPage = this.perPageProp ? this.perPageProp : 10;
+        //  console.log('SEL', this.perPage)
     },
     watch:{
         content:{

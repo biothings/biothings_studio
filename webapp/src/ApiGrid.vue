@@ -24,7 +24,7 @@
                         </a>
                     </div>
                 </div> -->
-                <div class="ui big message flex-center">
+                <div class="ui big message flex-center clearMenu">
                   <h1 class="ui green header">(<small>{{apis ? apis.length : 0}}</small>) APIs</h1>
                   <button id="side_menu" style="margin-left:20px;" class="circular ui icon green button"><i class="icon ellipsis horizontal"></i></button>
                 </div>

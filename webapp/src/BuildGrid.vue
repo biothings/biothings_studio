@@ -59,28 +59,15 @@
                       </div>
                     </div> -->
 
-                    <div class="ui big message flex-center">
+                    <div class="ui big message flex-center clearMenu m-0">
                       <h1 class="ui orange header">(<small>{{builds ? builds.length : 0}}</small>) Builds</h1>
                       <button id="side_menu" style="margin-left:20px;" class="circular ui icon orange button"><i class="icon ellipsis horizontal"></i></button>
                     </div>
 
-                    <div v-if="loadingBuilds" class="ui active inverted dimmer">
-                      <div class="ui text loader"></div>
-                    </div>
-
-                    <div class="ui centered grid">
-                        <!-- <template v-for="(build,i) in builds">
-                            <div class="ui five wide column" v-bind:key="i+'build'" v-if="i < shown">
-                                <build v-bind:pbuild="build" v-bind:color="build_colors[build.build_config.name]"></build>
-                            </div>
-                        </template> -->
-                        <PaginatedList :content="builds" type="Builds" :build_colors="build_colors"></PaginatedList>
-                    </div>
-
-                    <!-- <div class="ui menu" style="margin-bottom:100px;">
-                      <div class="ui form item">
-                        <div class="fields">
-                          <div class="field">
+                    <div class="ui menu clearMenu">
+                      <div class="ui form item p-0 right floated">
+                        <div class="fields m-0">
+                          <!-- <div class="field">
                               <small class="m-1">Showing <b v-text="shown < builds.length ? shown : builds.length"></b> out of <b v-text="builds.length"></b> from <b class="green text" v-text="showSelection"></b></small>
                               <button v-if="shown < builds.length && shown !== 10" class="ui button mini m-1" @click="shown = shown-10">
                                 -10
@@ -100,11 +87,8 @@
                                         <option value="all time">view all (most recent)</option>
                                     </optgroup>
                                 </select>
-                            </a>
-                            <a class="field">
-                                <button class="ui clearconffilter button" v-if="conf_filter" @click="clearFilter">
-                                    Clear
-                                </button>
+                            </a> -->
+                            <a class="field flex-center">
                                 <select class="ui filterbuilds dropdown" v-model="conf_filter">
                                     <option value="">Source Filter</option>
                                     <template v-for="(conf,name) in build_configs">
@@ -114,17 +98,32 @@
                                         </option>
                                     </template>
                                 </select>
+                                <button class="ui clearconffilter red button white text" v-if="conf_filter" @click="clearFilter">
+                                    Clear
+                                </button>
                             </a>
-                            <a class="field">
+                            <a class="field flex-center">
                                 <div class="ui includearchived checkbox toggle">
                                     <input type="checkbox" name="includearchived" v-model="only_archived">
-                                    <label>Show archived builds only</label>
+                                    <label><small>Show archived builds only</small></label>
                                 </div>
                             </a>
                         </div>
                       </div>
-                    </div> -->
+                    </div>
 
+                    <div v-if="loadingBuilds" class="ui active inverted dimmer">
+                      <div class="ui text loader"></div>
+                    </div>
+
+                    <div class="ui centered grid">
+                        <!-- <template v-for="(build,i) in builds">
+                            <div class="ui five wide column" v-bind:key="i+'build'" v-if="i < shown">
+                                <build v-bind:pbuild="build" v-bind:color="build_colors[build.build_config.name]"></build>
+                            </div>
+                        </template> -->
+                        <PaginatedList :content="builds" type="Builds" :build_colors="build_colors"></PaginatedList>
+                    </div>
 
                 </div>
             </div>
