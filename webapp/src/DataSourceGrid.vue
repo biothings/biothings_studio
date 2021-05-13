@@ -14,7 +14,7 @@
                 </h1>
                 <button id="sources_menu" style="margin-left:20px;" class="circular ui icon pink button"><i class="icon ellipsis horizontal"></i></button>
               </div>
-              <div id="data-source-grid" class="ui grid" style="padding-bottom:100px;">
+              <div id="data-source-grid" class="justify-center" style="padding-bottom:100px;">
                   <!-- <div class="four wide column" v-for="(source, i) in orderedSources" :key="source+i">
                       <data-source v-bind:psource="source"></data-source>
                   </div> -->

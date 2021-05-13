@@ -133,6 +133,18 @@ export default {
     justify-content: start;
     align-items: center;
 }
+.justify-center{
+    justify-content: center !important;
+}
+.flex{
+    display: flex;
+}
+.justify-around{
+    justify-content: space-around;
+}
+.justify-start{
+    justify-content: start;
+}
 .flex-wrap{
     flex-wrap: wrap;
 }

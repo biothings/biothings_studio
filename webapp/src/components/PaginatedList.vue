@@ -1,23 +1,17 @@
 <template>
     <div class="ui main container">
-        <div id="data-source-grid" class="ui grid" style="padding: 10px 5px 20px 5px;">
+        <div id="data-source-grid" class="ui flex justify-start flex-wrap" style="padding: 10px 5px 20px 5px;">
             <!-- SOURCES -->
             <template v-if="type == 'Sources'">
-                <div v-for="(source, index) in arrayResults" class="four wide column" :key="index">
-                    <DataSource :psource="source"></DataSource>
-                </div>
+                <DataSource v-for="(source, index) in arrayResults" :key="index" :psource="source"></DataSource>
             </template>
             <!-- APIS -->
             <template v-if="type == 'APIs'">
-                <div v-for="(api, index) in arrayResults" class="five wide column" :key="index">
-                    <API :api="api"></API>
-                </div>
+                <API v-for="(api, index) in arrayResults" :key="index" :api="api"></API>
             </template>
             <!-- Builds -->
             <template v-if="type == 'Builds'">
-                <div v-for="(build, index) in arrayResults" class="five wide column" :key="index">
-                    <Build :pbuild="build" :color="build_colors[build.build_config.name]"></Build>
-                </div>
+                <Build v-for="(build, index) in arrayResults" :key="index" :pbuild="build" :color="build_colors[build.build_config.name]"></Build>
             </template>
         </div>
         <!-- PAGINATION CONTROLS -->
@@ -71,16 +65,13 @@
 </template>
 
 <script>
-import DataSource from '../DataSource.vue';
-import API from '../API.vue';
-import Build from '../Build.vue';
 
 export default {
     name: 'PaginatedList',
     components:{
-       DataSource,
-       API,
-       Build
+       'DataSource': () => import('../DataSource.vue'),
+       'API': () => import('../API.vue'),
+       'Build': () => import('../Build.vue')
     },
     data: function(){
         return{
@@ -203,5 +194,10 @@ export default {
     }
     .pagination{
         margin-bottom: 100px !important;
+    }
+    .card{
+        flex-basis: 300px;
+        max-width: 300px;
+        margin: 10px;
     }
 </style>
