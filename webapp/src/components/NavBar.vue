@@ -1,5 +1,5 @@
 <template>
-    <div class="ui container">
+    <div class="ui container flex-wrap">
         <div class="item">
             <ChooseHub></ChooseHub>
             <span v-if="readonly_switch !== null">

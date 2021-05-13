@@ -197,7 +197,7 @@ export default {
     }
     .card{
         flex-basis: 300px;
-        max-width: 300px;
+        max-width: 300px !important;
         margin: 10px;
     }
 </style>
