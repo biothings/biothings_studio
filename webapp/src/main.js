@@ -1,6 +1,9 @@
 import Vue from 'vue'
 import App from './App.vue'
 import axios from 'axios'
+import Vuex from 'vuex'
+// setup store
+Vue.use(Vuex)
 
 import moment from 'moment'
 Vue.prototype.moment = moment
@@ -15,9 +18,12 @@ if (last) {
 }
 
 console.log(`%c axios default URl: ${axios.defaults.baseURL}`, 'color:limegreen')
+// create store and use it
+import store from './store/store.js'
 
 new Vue({
   el: '#app',
+  store,
   render: h => h(App),
   router: App.router
 })

@@ -325,8 +325,10 @@ export default {
       })
     var last = Vue.localStorage.get('last_conn')
     this.conn = this.default_conn
+    this.$store.dispatch('resetDefaultConnection')
     if (last) {
       this.conn = JSON.parse(last)
+      this.$store.commit('saveConnection', {new_conn: JSON.parse(last)})
     }
     this.setupConnection()
     this.skip_studio_compat = Vue.localStorage.get('skip_studio_compat')
@@ -378,19 +380,6 @@ export default {
     }
   },
   computed: {
-    str_app_version: function () {
-      return this.getVersionAsString(this.conn.app_version)
-    },
-    str_biothings_version: function () {
-      return this.getVersionAsString(this.conn.biothings_version)
-    },
-    studio_features: function () {
-      if (this.conn.features) {
-        return this.conn.features.join(', ')
-      } else {
-        return 'not listed'
-      }
-    },
     biothings_needs_upgrade: function () {
       if (Object(this.conn.biothings_version).hasOwnProperty('upgrade')) {
         return true
@@ -408,7 +397,6 @@ export default {
     needs_upgrade: function () {
       return this.biothings_needs_upgrade || this.app_needs_upgrade
     }
-
   },
   watch: {
     latency_value: function (newv, oldv) {
@@ -416,11 +404,11 @@ export default {
         this.evalLatency(oldv, newv)
       }
     },
-    conn: function (newv, oldv) {
-      if (newv != oldv) {
-        if (this.conn.icon) { $('.logo').attr('src', this.conn.icon) } else { $('.logo').attr('src', this.default_conn.icon) }
-      }
-    },
+    // conn: function (newv, oldv) {
+    //   if (newv != oldv) {
+    //     if (this.conn.icon) { $('.logo').attr('src', this.conn.icon) } else { $('.logo').attr('src', this.default_conn.icon) }
+    //   }
+    // },
     readonly_mode: function (newv, oldv) {
       this.actionable = newv
       bus.$emit('readonly_mode', newv)
@@ -507,18 +495,6 @@ export default {
       }
       this.routes.forEach(route=>router.addRoute(route))
     },
-    getVersionAsString (obj) {
-      try {
-        if (typeof obj === 'object') {
-          return `${obj.branch} [${obj.commit}] [${obj.date}]`
-        } else {
-          return obj
-        }
-      } catch (e) {
-        // not ready yet ?
-        return null
-      }
-    },
     dispatchEvent (evt) {
       if (evt.op == 'log') {
         bus.$emit('log', evt)
@@ -600,6 +576,7 @@ export default {
     setupConnection (conn = null, redirect = false) {
       if (conn != null) {
         this.conn = conn
+        this.$store.commit('saveConnection', {new_conn: conn})
       }
       // get connection setion anchor hash first
       if (/\/connect=/.test(window.location.hash)) {
@@ -875,6 +852,7 @@ export default {
           //console.log(response.data.result)
           this.checkCompat(response.data.result)
           this.conn = response.data.result
+          this.$store.commit('saveConnection', {new_conn: response.data.result})
           this.conn.url = url
           Vue.config.hub_features = response.data.result.features
           self.setupUIByFeatures()
@@ -929,6 +907,7 @@ export default {
           // invalidate connection and use default
           self.ws_connection = 'disconnected'
           this.conn = this.default_conn
+          this.$store.dispatch('resetDefaultConnection')
         })
     },
     closeConnection () {
@@ -1014,7 +993,6 @@ export default {
       font-family: 'Avenir', Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      //text-align: center;
       color: #2c3e50;
       margin-top: 60px;
     }

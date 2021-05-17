@@ -15,7 +15,7 @@
         </div>
         <div class="item">
             <Loader></Loader>
-            <img class="m-0" :src="icon" id="conn" :data-html="
+            <img class="m-0" :src="icon || default_icon" id="conn" :data-html="
             '<div style=\'width:30em;\'><table>'+
             '<tr><td colspan=\'2\'><h2 style=\'color:#0E6EB8;\'>' + conn.name + '</h2></td></tr>' +
             '<tr><td><b>Connection</b></td><td><a>' + conn.url + '</a></td></tr>' +
@@ -40,9 +40,12 @@
 <script>
 import JobSummary from '../JobSummary.vue'
 import EventMessages from '../EventMessages.vue'
-import {has_feature} from '../mixins/has_feature'
 import Loader from '../Loader.vue'
 import ChooseHub from '../ChooseHub.vue'
+//store
+import {mapGetters} from 'vuex';
+//mixins
+import {has_feature} from '../mixins/has_feature'
 
 export default {
     name: 'NavBar',
@@ -60,43 +63,19 @@ export default {
     mixins: [has_feature],
     props:[
         'menu',
-        'conn',
         'current_studio_version',
         'readonly_switch',
         'readonly_mode',
         'switchReadOnly',
     ],
-    methods:{
-        getVersionAsString (obj) {
-            try {
-                if (typeof obj === 'object') {
-                return `${obj.branch} [${obj.commit}] [${obj.date}]`
-                } else {
-                return obj
-                }
-            } catch (e) {
-                // not ready yet ?
-                return null
-            }
-        },
-    },
     computed: {
-        str_app_version: function () {
-            return this.getVersionAsString(this.conn.app_version)
-        },
-        str_biothings_version: function () {
-            return this.getVersionAsString(this.conn.biothings_version)
-        },
-        studio_features: function () {
-            if (this.conn.features) {
-                return this.conn.features.join(', ')
-            } else {
-                return 'not listed'
-            }
-        },
-        icon:function(){
-            return this.conn && this.conn.icon ? this.conn.icon : this.default_icon
-        }
+        ...mapGetters({
+            str_app_version: 'str_app_version',
+            str_biothings_version: 'str_biothings_version',
+            studio_features: 'studio_features',
+            icon: 'icon',
+            conn: 'conn'
+        }),
     },
     mounted:function(){
         $('#conn').popup({on: 'hover'});
