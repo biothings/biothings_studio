@@ -107,7 +107,7 @@
 
 <script>
 import axios from 'axios'
-import API from './API.vue'
+import API from './Api.vue'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 import bus from './bus.js'

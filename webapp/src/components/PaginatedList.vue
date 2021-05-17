@@ -70,7 +70,7 @@ export default {
     name: 'PaginatedList',
     components:{
        'DataSource': () => import('../DataSource.vue'),
-       'API': () => import('../API.vue'),
+       'API': () => import('../Api.vue'),
        'Build': () => import('../Build.vue')
     },
     data: function(){
