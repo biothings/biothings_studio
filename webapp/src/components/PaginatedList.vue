@@ -1,6 +1,6 @@
 <template>
     <div class="ui main container">
-        <div id="data-source-grid" class="ui flex justify-start flex-wrap" style="padding: 10px 5px 20px 5px;">
+        <div id="data-source-grid" class="ui flex justify-evenly flex-wrap" style="padding: 10px 5px 20px 5px;">
             <!-- SOURCES -->
             <template v-if="type == 'Sources'">
                 <DataSource v-for="(source, index) in arrayResults" :key="index" :psource="source"></DataSource>

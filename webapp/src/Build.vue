@@ -7,7 +7,7 @@
                 v-if="build.archived"></i>
             <span v-else>
                 <template v-if="build.status !== 'success'">
-                    <b class="right floated"><i class="hourglass icon pulsing"></i> {{build.status}}...</b>
+                    <b class="right floated"><i class="pulsing" :class="build.status == 'failed' ? 'frown red icon' : 'hourglass blue icon pulsing' "></i> {{build.status}}...</b>
                 </template>
             </span>
             

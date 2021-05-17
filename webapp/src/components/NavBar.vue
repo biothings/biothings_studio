@@ -145,6 +145,9 @@ export default {
 .justify-start{
     justify-content: start;
 }
+.justify-evenly{
+    justify-content: space-evenly;
+}
 .flex-wrap{
     flex-wrap: wrap;
 }
