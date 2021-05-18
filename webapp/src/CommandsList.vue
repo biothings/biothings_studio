@@ -32,7 +32,6 @@ export default {
   name: 'commands-list',
   props: [],
   mounted () {
-    // console.log('CommandsList mounted')
     $('.commands.button').popup({ popup: $('.commands.popup'), on: 'click' })
     $('.ui.toggle.checkbox').checkbox()
     // sync

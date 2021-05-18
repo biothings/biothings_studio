@@ -18,7 +18,7 @@
             <div class="left aligned header word-wrap" v-if="source.name">
                 <router-link :to="'/source/' + source._id" class="ui blue header">
                     <h3>
-                        {{ source.name }} <i v-if="source.data_plugin && source.data_plugin.plugin.loader == 'advanced' " title="Advanced Plugin" class="plugin small cube icon advanced"></i>
+                        {{ source.name }} <i v-if="source.data_plugin && source.data_plugin.plugin.loader == 'advanced' " title="Advanced Plugin" class="plugin small gem outline icon advanced"></i>
                     </h3>
                 </router-link>
                 <!-- error -->

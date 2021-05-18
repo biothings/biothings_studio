@@ -1,15 +1,16 @@
 <template>
     <div class="ui fluid card">
         <div class="content left aligned">
-            <div :class="['ui',color ? color : 'grey', 'tiny', '', 'label','conftag']">{{build.build_config.name}}</div>
+            <div class="flex justify-between">
+              <div :class="['ui',color ? color : 'grey', 'tiny', '', 'label','conftag', 'm-0']">{{build.build_config.name}}</div>
 
-            <i class="archived right floated archive icon"
-                v-if="build.archived"></i>
-            <span v-else>
-                <template v-if="build.status !== 'success'">
-                    <b class="right floated"><i class="pulsing" :class="build.status == 'failed' ? 'frown red icon' : 'hourglass blue icon pulsing' "></i> {{build.status}}...</b>
-                </template>
-            </span>
+              <i v-if="build.archived" class="archived right floated archive icon"></i>
+              <span v-else>
+                  <template v-if="build.status !== 'success'">
+                      <small><i class="pulsing" :class="build.status == 'failed' ? 'frown red icon' : 'hourglass blue icon pulsing' "></i> {{build.status}}...</small>
+                  </template>
+              </span>
+            </div>
             
 
             <!-- error -->

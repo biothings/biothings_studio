@@ -1,8 +1,10 @@
 <template>
-    <div class="ui fluid container">
+    <div class="ui container">
+        <div class="ui container big message clearMenu">
+                <h1 class="ui orange header">Builds</h1>
+        </div>
         <div id="build" class="ui centered fluid card" v-if="build">
             <div class="content">
-
                 <div class="left aligned header" v-if="build.target_name">{{ build.target_name }}</div>
                 <div class="meta">
                     <span class="right floated time" v-if="build.started_at">Built {{ build.started_at | moment("from", "now") }}
@@ -92,7 +94,6 @@ export default {
     Loader
   },
   mounted () {
-    //console.log('BuildDetailed mounted')
     this.loadData()
   },
   updated () {

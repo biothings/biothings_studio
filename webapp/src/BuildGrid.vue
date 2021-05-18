@@ -792,7 +792,7 @@ export default {
   padding: 0px !important;
 }
 .build-cont{
-  max-height: 370px;
+  max-height: 55vh;
   background-color: rgb(54, 54, 54) !important;
   overflow-y: scroll;
 }

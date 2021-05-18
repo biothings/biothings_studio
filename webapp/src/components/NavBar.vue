@@ -121,6 +121,9 @@ export default {
 .justify-around{
     justify-content: space-around;
 }
+.justify-between{
+    justify-content: space-between;
+}
 .justify-start{
     justify-content: start;
 }
@@ -140,5 +143,8 @@ export default {
 }
 .ui.card:hover{
     box-shadow: 0px 0px 12px rgb(165, 165, 165);
+}
+.m-auto{
+    margin: auto;
 }
 </style>

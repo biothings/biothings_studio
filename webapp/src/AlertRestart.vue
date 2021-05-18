@@ -25,7 +25,6 @@ export default {
   name: 'alert-restart',
   props: ['event'],
   mounted () {
-    console.log('AlertRestart mounted')
     $('.mini.alert.modal')
       .modal({
         closable: false,

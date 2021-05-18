@@ -17,13 +17,13 @@ export default new Vuex.Store({
     },
     mutations: {
         saveConnection(state, payload){
-            console.log('🟢 New connection >> ', payload.new_conn?.name)
+            console.log('%c 🟢 New connection >> '+ payload.new_conn?.name, 'color:limegreen')
             state.conn = payload.new_conn
         }
     },
     actions:{
         resetDefaultConnection ({ commit, state }) {
-            console.log('🟡 Resetting connection .. ')
+            console.log('%c 🟡 Resetting connection .. ', 'color:orange')
             commit('saveConnection', {new_conn: state.default_conn})
         }
     },

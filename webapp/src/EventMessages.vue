@@ -1,8 +1,8 @@
 <template>
 	<div>
-		<button class="mini ui icon events button p-1" id="events">
+		<button class="ui compact labeled icon threads circular button tiny" :class="notifnumcolor" id="events">
 			<i class="bullhorn icon"></i>
-			<a id="num_events" :class="['ui mini',notifnumcolor,'circular label']">{{events.length}}</a>
+			<a id="num_events">{{events.length}}</a>
 		</button>
         <div class="ui messages popup top left transition hidden">
             <div class="ui messages list" id="messages" v-if="events.length > 0">

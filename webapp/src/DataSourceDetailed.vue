@@ -1,7 +1,7 @@
 <template>
-    <div class="ui fluid container">
-    	<div class="ui container">
-    	        <h1 class="ui header">Sources</h1>
+    <div class="ui container">
+    	<div class="ui container big message clearMenu">
+    	        <h1 class="ui pink header">Sources</h1>
     	</div>
         <div id="data-source" class="ui centered fluid card" v-if="source">
             <div class="content">
@@ -154,7 +154,6 @@ export default {
   },
   mixins: [BaseDataSource, Loader, Actionable],
   mounted () {
-    console.log('DataSourceDetailed mounted')
     this.loadData()
     $('select.dropdown').dropdown()
     $('.menu .item').tab()

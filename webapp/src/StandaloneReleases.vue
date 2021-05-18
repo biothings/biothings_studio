@@ -1,33 +1,39 @@
 <template>
-    <div class="main-background" style="min-height:100vh">
-
+    <div class="pusher main-background" style="min-height:100vh">
         <div class="ui container" style="margin:10px;">
-          <div class="ui big message flex-center" :class="actionable">
-              <h1 class="ui teal header">Releases</h1>
-              <button class="ui button" style="margin-left:20px;" @click="wizard()">
+          <div class="ui big message flex-center clearMenu m-0" :class="actionable">
+              <h1 class="ui olive header">Releases</h1>
+              <button class="ui circular button" style="margin-left:20px;" @click="wizard()">
                   <i class="magic icon"></i>
                   Setup
               </button>
-          </div>
+            </div>
         </div>
-        <div class="ui grid" v-if="version_urls.length">
+        <div class="ui grid container" v-if="version_urls.length">
             <div class="three wide column">
-                <div class="ui grey inverted vertical fluid tabular standalone menu releases-cont color-scroll word-wrap">
+                <div class="releases-subcont">
+                  <h4 class="m-0">Sources</h4>
+                  <div class="ui grey inverted vertical fluid tabular standalone menu releases-cont color-scroll word-wrap">
                     <a 
-                      :class="['item', i === 0 ? 'active' : '']" 
                       :data-tab="src.name" 
                       v-for="(src,i) in version_urls" 
+                      :class="['item', selected && selected.name === src.name ? 'active' : '']" 
                       :key="i+'e'" 
-                      @click="changeTab(src.name)"
+                      @click="changeTab(src.name); selected = src"
                       :data-tooltip="src.name.length > 20 ? src.name : false" data-position="top right">
-                        {{src.name.length > 20 ? src.name.slice(0,20)+'...' : src.name}}
+                        <i v-if="selected && selected.name === src.name" class="olive circle icon"></i>&nbsp;{{src.name.length > 20 ? src.name.slice(0,20)+'...' : src.name}}
                     </a>
                 </div>
-            </div>
-            <div class="eleven wide stretched column">
-                <div :class="['ui bottom attached tab srctab segment', i === 0 ? 'active' : '']" :data-tab="src.name" v-for="(src,i) in version_urls" :key="i+'p'">
-                    <standalone-release v-bind:name="src.name" v-bind:url="src.url"></standalone-release>
                 </div>
+            </div>
+            <div class="thirteen wide stretched column">
+                <!-- <div :class="['ui bottom attached tab srctab segment', i === 0 ? 'active' : '']" :data-tab="src.name" v-for="(src,i) in version_urls" :key="i+'p'">
+                    <standalone-release v-bind:name="src.name" v-bind:url="src.url"></standalone-release>
+                </div> -->
+                <div class='ui bottom attached segment' v-if="selected && selected.name">
+                    <standalone-release v-bind:name="selected.name" v-bind:url="selected.url" :key="selected.name"></standalone-release>
+                </div>
+                <h5 class="center align" v-else>Click on a source to load releases.</h5>
             </div>
         </div>
 
@@ -67,7 +73,8 @@ export default {
   },
   data () {
     return {
-      version_urls: []
+      version_urls: [],
+      selected: {}
     }
   },
   components: { StandaloneRelease, StandaloneWizard },
@@ -79,6 +86,7 @@ export default {
       axios.get(axios.defaults.baseURL + '/standalone/list')
         .then(response => {
           self.version_urls = response.data.result
+          // console.log('ALL', self.version_urls)
           self.loaded()
           if (!self.version_urls.length) {
             self.wizard()
@@ -120,9 +128,16 @@ export default {
 	border-radius: 0px !important;
 }
 .releases-cont{
-  max-height: 500px;
+  min-height: 60vh;
+  max-height: 60vh;
   border-radius: 5px;
   overflow-y: scroll;
   overflow-x: hidden;
+}
+.releases-subcont{
+    background: #4e4b4b;
+    padding: 15px;
+    border-radius: 10px;
+    color: #969696;
 }
 </style>

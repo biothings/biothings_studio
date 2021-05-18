@@ -104,9 +104,6 @@ export default {
     BuildLogs,
     BuildConfig
   },
-  mounted () {
-    // console.log('BuildDetailed mounted')
-  },
   updated () {
     $('select.dropdown').dropdown()
     $('.menu .item').tab()

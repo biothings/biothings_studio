@@ -1,5 +1,5 @@
 <template>
-  <div class="ui center aligned tiny">
+  <div class="ui center aligned tiny m-auto">
     <!-- commands -->
     <button
         class="ui compact labeled icon commands button tiny" :class="[!num_commands?'':'yellow']">
