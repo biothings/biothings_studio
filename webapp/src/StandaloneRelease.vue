@@ -1,6 +1,6 @@
 <template>
 	<span>
-		<h1 class="ui header">{{name}}</h1>
+		<h1 class="ui olive header">{{name}}</h1>
 		<div class="ui secondary small compact menu">
 			<a class="item" @click="refresh()">
 				<i class="sync icon"></i>

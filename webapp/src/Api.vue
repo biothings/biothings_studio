@@ -10,7 +10,7 @@
                     v-if="api.status == 'failed'"></i>
             </div>
 
-            <div class="ui blue header" v-if="api">
+            <div class="ui green header m-0" v-if="api">
                 <h3>{{ api._id }}</h3>
             </div>
             <div class="left aligned description">

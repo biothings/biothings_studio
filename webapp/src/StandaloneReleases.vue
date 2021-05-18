@@ -12,7 +12,7 @@
         <div class="ui grid container" v-if="version_urls.length">
             <div class="three wide column">
                 <div class="releases-subcont">
-                  <h4 class="m-0">Sources</h4>
+                  <h4 class="m-0">Available Sources</h4>
                   <div class="ui grey inverted vertical fluid tabular standalone menu releases-cont color-scroll word-wrap">
                     <a 
                       :data-tab="src.name" 
@@ -30,10 +30,10 @@
                 <!-- <div :class="['ui bottom attached tab srctab segment', i === 0 ? 'active' : '']" :data-tab="src.name" v-for="(src,i) in version_urls" :key="i+'p'">
                     <standalone-release v-bind:name="src.name" v-bind:url="src.url"></standalone-release>
                 </div> -->
-                <div class='ui bottom attached segment' v-if="selected && selected.name">
+                <div class='ui bottom attached green segment' v-if="selected && selected.name">
                     <standalone-release v-bind:name="selected.name" v-bind:url="selected.url" :key="selected.name"></standalone-release>
                 </div>
-                <h5 class="center align" v-else>Click on a source to load releases.</h5>
+                <h2 style="text-align:center; margin-top:10vh;color:#c2c2c2;" v-else>Click on a source to load releases</h2>
             </div>
         </div>
 

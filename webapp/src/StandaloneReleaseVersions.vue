@@ -303,7 +303,7 @@ export default {
     display: none;
 }
 .current {
-    background-color: #b5cc18 !important;
+    background-color: #e1f790 !important;
 }
 .old {
     background-color: #ebeaea !important;
