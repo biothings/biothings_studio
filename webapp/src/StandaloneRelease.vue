@@ -13,49 +13,47 @@
         <br>
         <br>
 		<div class="ui grid">
-			<div class="twelve wide column">
-				<standalone-release-versions v-bind:name="name" v-bind:backend="backend"></standalone-release-versions>
-			</div>
-			<div class="four wide column">
+      <div class="sixteen wide">
                 <div class="ui tiny negative message" v-if="backend_error">
                     <div class="header">Unable to load backend information</div>
                     <p>{{backend_error}}</p>
                 </div>
                 <div class="item" v-else>
-                    <div class="ui list">
+                    <div class="ui menu clearMenu">
                         <div class="item">
-                            <i class="database icon"></i>
-                            <div class="content">
-                                <div class="header">ElasticSearch host</div>
-                                    <a :href="backend.host"> {{backend.host}}</a>
+                            <div>
+                              <h6 class="header m-0"><i class="database icon"></i> ElasticSearch host</h6>
+                              <a :href="backend.host"><small>{{backend.host}}</small></a>
                             </div>
                         </div>
                         <div class="item">
-                            <i class="bookmark icon"></i>
-                            <div class="content">
-                                <div class="header">Index</div>
-                                {{backend.index}}
+                            <div>
+                              <h6 class="header m-0"><i class="bookmark icon"></i> Index</h6>
+                              <small>{{backend.index}}</small>
                             </div>
                         </div>
                         <div class="item">
-                            <i class="thumbtack icon"></i>
-                            <div class="content">
-                                <div class="header">Version</div>
-                                <a v-if="backend && backend.version">{{backend.version || "no version found"}}</a>
+                            <div>
+                              <h6 class="header m-0"><i class="thumbtack icon"></i> Version</h6>
+                              <a v-if="backend && backend.version"><small>{{backend.version || "no version found"}}</small></a>
                             </div>
                         </div>
                         <div class="item">
-                            <i class="file alternate icon"></i>
-                            <div class="content">
-                                <div class="header">Documents</div>
-                                {{ backend.count | formatNumeric(fmt="0,0") }}
+                            <div>
+                              <h6 class="header m-0"><i class="file alternate icon"></i> Documents</h6>
+                              <small>{{ backend.count | formatNumeric(fmt="0,0") }}</small>
                             </div>
+                        </div>
+                        <div class="item">
+                          <button class="ui mini circular inverted red button" @click="reset()" :class="actionable">Reset</button>
                         </div>
                     </div>
-                    <button class="ui small negative basic button" @click="reset()" :class="actionable">Reset</button>
 
                 </div>
             </div>
+			<div class="sixteen wide column">
+				<standalone-release-versions v-bind:name="name" v-bind:backend="backend"></standalone-release-versions>
+			</div>
 		</div>
 
         <div :class="['ui basic reset modal',encoded_name]">

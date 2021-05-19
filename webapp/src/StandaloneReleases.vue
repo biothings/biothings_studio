@@ -87,6 +87,7 @@ export default {
         .then(response => {
           self.version_urls = response.data.result
           // console.log('ALL', self.version_urls)
+          self.selected = self.version_urls[0]
           self.loaded()
           if (!self.version_urls.length) {
             self.wizard()
