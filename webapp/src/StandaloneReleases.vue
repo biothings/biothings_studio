@@ -9,11 +9,11 @@
               </button>
             </div>
         </div>
-        <div class="ui grid container" v-if="version_urls.length">
+        <div class="ui grid container" style="width:85vw !important;" v-if="version_urls.length">
             <div class="three wide column">
                 <div class="releases-subcont">
                   <h4 class="m-0">Available Sources</h4>
-                  <div class="ui grey inverted vertical fluid tabular standalone menu releases-cont color-scroll word-wrap">
+                  <div class="ui grey inverted vertical fluid tabular standalone menu releases-cont color-scroll word-wrap border-none">
                     <a 
                       :data-tab="src.name" 
                       v-for="(src,i) in version_urls" 

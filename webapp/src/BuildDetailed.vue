@@ -45,6 +45,9 @@
                                     <build-logs v-bind:build="build"></build-logs>
                                 </div>
                             </div>
+                            <div class="ui segment">
+                              <LogViewer type="build" :item="build" :date="build.target_name" key="buildlogs"></LogViewer>
+                            </div>
                         </div>
                         <div class="ui bottom attached tab segment" data-tab="mapping">
                             <build-mapping v-bind:build="build"></build-mapping>
@@ -77,6 +80,7 @@ import BuildConfig from './BuildConfig.vue'
 import BuildMapping from './BuildMapping.vue'
 import DiffModal from './DiffModal.vue'
 import Loader from './Loader.vue'
+import LogViewer from './components/LogViewer.vue'
 
 export default {
   name: 'build-detailed',
@@ -91,7 +95,8 @@ export default {
     BuildStats,
     BuildLogs,
     BuildConfig,
-    Loader
+    Loader,
+    LogViewer
   },
   mounted () {
     this.loadData()

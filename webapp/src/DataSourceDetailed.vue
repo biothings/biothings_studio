@@ -13,7 +13,7 @@
                     <span class="left floated category">{{ release }}</span>
                 </div>
                 <div class="left aligned description">
-                    <p>
+                    <div>
                         <div class="ui clearing divider"></div>
                         <div class="left floated">
                             <i class="file outline icon"></i>
@@ -62,9 +62,9 @@
                             </span>
                         </div>
                         <br>
-                    </p>
+                    </div>
 
-                    <p>
+                    <div>
                         <div class="ui top attached pointing menu">
                             <a class="red item active" data-tab="dump" v-if="source.download">Dumper</a>
                             <!-- in case no dumper, uploader should be active tab -->
@@ -75,9 +75,13 @@
                         </div>
                         <div class="ui bottom attached tab segment active" data-tab="dump" v-if="source.download">
                             <data-source-dump v-bind:source="source"></data-source-dump>
+                            <br>
+                            <LogViewer type="dump" :item="source" :date="release" key="dumplogs"></LogViewer>
                         </div>
                         <div :class="['ui bottom attached tab segment', source.download == undefined ? 'active' : '']" data-tab="upload" v-if="source.upload">
                             <data-source-upload v-bind:source="source"></data-source-upload>
+                            <br>
+                            <LogViewer type="upload" :item="source" :date="release" key="uploadlogs"></LogViewer>
                         </div>
                         <div class="ui bottom attached tab segment" data-tab="plugin" v-if="source.data_plugin">
                             <data-source-plugin v-bind:source="source"></data-source-plugin>
@@ -88,7 +92,7 @@
                         <!--div class="ui bottom attached tab segment" data-tab="inspect">
                         <data-source-inspect v-bind:maps="maps" v-bind:_id="_id"></data-source-inspect>
                         </div-->
-                    </p>
+                    </div>
 
                 </div>
             </div>
@@ -138,6 +142,7 @@ import DataSourceMapping from './DataSourceMapping.vue'
 import DiffModal from './DiffModal.vue'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
+import LogViewer from './components/LogViewer.vue'
 
 export default {
   name: 'data-source-detailed',
@@ -150,7 +155,8 @@ export default {
     DataSourcePlugin,
     DataSourceMapping,
     DiffModal,
-    Loader
+    Loader,
+    LogViewer
   },
   mixins: [BaseDataSource, Loader, Actionable],
   mounted () {
@@ -170,7 +176,7 @@ export default {
   },
   data () {
     return {
-      source: null
+      source: null,
     }
   },
   computed: {
@@ -258,7 +264,7 @@ export default {
         }
       }
       return meta
-    }
+    },
   }
 }
 </script>
