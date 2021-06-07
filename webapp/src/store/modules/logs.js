@@ -41,19 +41,23 @@ export const logs = {
                 try {
                     axios.get(axios.defaults.baseURL + '/log/' + fileName).then(res=>{
                         // console.log('LOGS RES', res.data.length)
-                        commit('saveLogs', {logs: res.data.split("\n")})
+                        let lines = res.data.split("\n")
+                        if (lines.length) {
+                            commit('saveLogs', {logs: lines})
+                        } else {
+                            commit('saveLogs', {logs: ['👌 [OK] Nothing to report, everything looks good!']})
+                        }
                     }).catch(err=>{
-                        throw err;
+                        commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] ${payload.type}- logs are not available for for <${payload.item.name}> ${payload.date}`]});
+                        console.log(`%c 🔖 Failed to get -${payload.type}- logs for <${payload.item.name}> ${payload.date} due to ${err}`, 'color:coral')
                     });
                 } catch (error) {
-                    alert(`🔖 Failed to get -${payload.type}- logs for <${payload.item.name}> ${payload.date} due to ${error}`)
                     console.log(`%c 🔖 Failed to get -${payload.type}- logs for <${payload.item.name}> ${payload.date} due to ${error}`, 'color:coral')
-                    commit('saveLogs', {logs: [`No -${payload.type}- logs for <${payload.item.name}> @ ${payload.date}`]})
+                    commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] No -${payload.type}- logs for <${payload.item.name}> @ ${payload.date}`]})
                 }
             } else {
-                alert(`🔖 Failed to get -${payload.type}- logs for <${payload.item.name}> ${payload.date} due to date value: ${logDate}`)
                 console.log(`%c 🔖 Cannot get -${payload.type}- logs for <${payload.item.name}> ${payload.date} due to date value: ${logDate}`, 'color:coral')
-                commit('saveLogs', {logs: [`Cannot get -${payload.type}- logs for <${payload.item.name}> ${payload.date} due to invalid date`]})
+                commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] Cannot get -${payload.type}- logs for <${payload.item.name}> ${payload.date} because DATE missing/incorrect format`]})
             }
         },
     },
