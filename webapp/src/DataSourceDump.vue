@@ -31,6 +31,7 @@
                             <td>
                                 <div class="red">{{source.download.error}}</div>
                             </td>
+                            <TracebackViewer :source="source"></TracebackViewer>
                         </tr>
                         <tr>
                             <td >Last download</td>
@@ -74,6 +75,7 @@
 
 <script>
 import Actionable from './Actionable.vue'
+import TracebackViewer from './components/TracebackViewer.vue'
 
 export default {
   name: 'data-source-dump',
@@ -83,7 +85,7 @@ export default {
       .checkbox()
   },
   mixins: [Actionable],
-  components: { },
+  components: { TracebackViewer },
   methods: {
     do_dump () {
       var field = $(`.ui.dump.form.${this.source._id}`).form('get field', 'force')

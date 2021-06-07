@@ -2,7 +2,7 @@
     <div>
         <div class="flex justify-center">
             <button class="ui button mini circular" :class="[show?'black':'blue']" @click="show = !show">
-                <i class="tasks icon"></i> {{show ? 'Close' : 'View Logs'}}
+                {{show ? 'Close' : 'View Logs'}}
             </button>
             <button v-if="show" class="ui icon button mini circular" @click="getLogs">
                 <i class="redo icon"></i>
@@ -12,7 +12,7 @@
             <h3>{{logName}}</h3>
             <div class="ui log message">
                 <p v-for="(log,i) in logs" :key="i+'_log'" class="m-0" :style="{color: getColor(log)}">
-                    <small>{{log}}</small>
+                    <small><b>{{log}}</b></small>
                 </p>
             </div>
         </div>
@@ -60,7 +60,7 @@ export default {
     methods:{
         getLogs(){
             //build names are different and need to be cleaned up
-            if (this.type == 'build' && !'name' in this.item) {
+            if (this.type == 'build' && !Object.prototype.hasOwnProperty.call(this.item, "name")) {
                 //covid_who_clinical_trials_202105270830_udmfle16
                 let name = this.item.target_name.split('_')
                 name.splice(-2, 2)
@@ -78,9 +78,11 @@ export default {
         },
         getColor(line){
             return line.includes('INFO') ? 'royalblue' :
+            line.includes('OK') ? 'green' : 
             line.includes('DEBUG') ? 'purple' : 
             line.includes('ERROR') ? 'red' : 
-            'white'
+            line.includes('NOT AVAILABLE') ? 'hotpink' : 
+            'black'
         },
     }
 }
@@ -89,8 +91,9 @@ export default {
 <style>
 .log.message{
     font-family: sans-serif;
+    word-break: break-all;
     max-height: 300px;
-    overflow: scroll;
+    overflow-y: scroll;
     border: 4px #c9c9c9 solid;
 }
 </style>
