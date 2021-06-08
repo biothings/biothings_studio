@@ -68,7 +68,9 @@ export default {
     word-break: break-all;
     max-height: 300px;
     overflow-y: scroll;
-    border: 4px #c45555 solid;
+    border: 2px #e48b8b solid;
+    border-radius: 4px;
+    margin-top: 10px;
     color: rgb(139, 3, 3);
     padding: 5px;
 }
