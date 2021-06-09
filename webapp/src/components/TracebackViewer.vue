@@ -1,15 +1,18 @@
 <template>
-    <div>
+    <div style="display:inline-block; margin-left:5px;">
         <div class="flex justify-center">
-            <button class="ui button mini circular" :class="[show?'black':'orange']" @click="show = !show">
-                {{show ? 'Close' : 'View Traceback'}}
+            <button class="ui orange button mini circular" @click="getLogs">
+                View Traceback
             </button>
         </div>
-        <div v-if="show">
-            <div class="ui log error-message">
-                <p v-for="(log,i) in logs" :key="i+'_log'" class="m-0">
-                    <small><b>{{log}}</b></small>
-                </p>
+        <div class="ui large modal traceback">
+            <i class="close icon"></i>
+            <div class="content">
+                <div class="ui log error-message">
+                    <p v-for="(log,i) in logs" :key="i+'_traceback'" class="m-0">
+                        <small><b>{{log}}</b></small>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -21,7 +24,6 @@ export default {
     name: 'TracebackViewer',
     data: function(){
         return {
-            show: false,
             logs:[]
         }
     },
@@ -31,17 +33,11 @@ export default {
             default: ()=>{ return {}}
         },
     },
-    watch:{
-        show: function(v){
-            if(v){
-                this.getLogs();
-            }
-        },
-    },
     methods:{
         getLogs(){
             let lines = this.findVal(this.source, 'traceback')
             this.logs = lines ? lines.split("\n") : ['Could not find traceback of error']
+            $('.ui.large.modal.traceback').modal('show');
         },
         findVal(object, key) {
             var value;
@@ -73,5 +69,8 @@ export default {
     margin-top: 10px;
     color: rgb(139, 3, 3);
     padding: 5px;
+}
+.log.error-message p:nth-child(odd){
+    background-color: rgb(243, 243, 243);
 }
 </style>

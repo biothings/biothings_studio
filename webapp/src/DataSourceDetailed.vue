@@ -66,11 +66,11 @@
 
                     <div>
                         <div class="ui top attached pointing menu">
-                            <a class="red item active" data-tab="dump" v-if="source.download">Dumper</a>
+                            <a class="blue item active" data-tab="dump" v-if="source.download">Dumper</a>
                             <!-- in case no dumper, uploader should be active tab -->
-                            <a :class="['red item', source.download == undefined ? 'active' : '']" data-tab="upload" v-if="source.upload">Uploader</a>
-                            <a class="red item" data-tab="plugin" v-if="source.data_plugin">Plugin</a>
-                            <a class="red item" data-tab="mapping">Mapping</a>
+                            <a :class="['blue item', source.download == undefined ? 'active' : '']" data-tab="upload" v-if="source.upload">Uploader</a>
+                            <a class="blue item" data-tab="plugin" v-if="source.data_plugin">Plugin</a>
+                            <a class="blue item" data-tab="mapping">Mapping</a>
                             <!--a class="red item" data-tab="inspect">Statistics</a-->
                         </div>
                         <div class="ui bottom attached tab segment active" data-tab="dump" v-if="source.download">
