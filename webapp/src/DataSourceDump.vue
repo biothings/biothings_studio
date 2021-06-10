@@ -29,9 +29,8 @@
                         <tr v-if="source.download.error">
                             <td >Error</td>
                             <td>
-                                <div class="red">{{source.download.error}}</div>
+                                <div class="red">{{source.download.error}} <TracebackViewer :source="source"></TracebackViewer></div>
                             </td>
-                            <TracebackViewer :source="source"></TracebackViewer>
                         </tr>
                         <tr>
                             <td >Last download</td>

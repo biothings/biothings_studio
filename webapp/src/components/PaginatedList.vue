@@ -55,6 +55,13 @@
                     <option value="100" :selected="perPage == 100">100 per page</option>
                 </select>
             </div>
+            <div class="item">
+                <select class="ui select dropdown m-0" v-model="sortBy" @change="handleSorting" id="SortBy">
+                    <option value="" disabled>Sort</option>
+                    <option value="A-Z">A-Z</option>
+                    <option value="Z-A">Z-A</option>
+                </select>
+            </div>
         </div>
         <div v-else class="ui placeholder segment">
             <div class="ui grey header">
@@ -69,9 +76,9 @@
 export default {
     name: 'PaginatedList',
     components:{
-       'DataSource': () => import('../DataSource.vue'),
-       'API': () => import('../Api.vue'),
-       'Build': () => import('../Build.vue')
+        'DataSource': () => import('../DataSource.vue'),
+        'API': () => import('../Api.vue'),
+        'Build': () => import('../Build.vue')
     },
     data: function(){
         return{
@@ -85,6 +92,7 @@ export default {
             pageLimit: 10,
             startCapLimitReached: true,
             endCapLimitReached: false,
+            sortBy:''
         }
     },
     props:{
@@ -108,6 +116,54 @@ export default {
         },
     },
     methods:{
+        handleSorting(){
+            switch (this.sortBy) {
+                case 'A-Z':
+                    if (this.type == "Sources") {
+                        this.arrayResults.sort(function(a, b) {
+                            var textA = a.name.toUpperCase();
+                            var textB = b.name.toUpperCase();
+                            return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+                        });
+                    } else if (this.type == "Builds"){
+                        this.arrayResults.sort(function(a, b) {
+                            var textA = a.target_name.toUpperCase();
+                            var textB = b.target_name.toUpperCase();
+                            return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+                        });
+                    } else if (this.type == "APIs"){
+                        this.arrayResults.sort(function(a, b) {
+                            var textA = a._id.toUpperCase();
+                            var textB = b._id.toUpperCase();
+                            return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+                        });
+                    }
+                    break;
+                case 'Z-A':
+                    if (this.type == "Sources") {
+                        this.arrayResults.sort(function(a, b) {
+                            var textA = a.name.toUpperCase();
+                            var textB = b.name.toUpperCase();
+                            return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+                        }).reverse();
+                    } else if (this.type == "Builds"){
+                        this.arrayResults.sort(function(a, b) {
+                            var textA = a.target_name.toUpperCase();
+                            var textB = b.target_name.toUpperCase();
+                            return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+                        }).reverse();
+                    } else if (this.type == "APIs"){
+                        this.arrayResults.sort(function(a, b) {
+                            var textA = a._id.toUpperCase();
+                            var textB = b._id.toUpperCase();
+                            return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+                        }).reverse();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        },
         calculatePages: function () {
           var self= this;
           self.pages = Math.ceil(self.content.length / self.perPage);

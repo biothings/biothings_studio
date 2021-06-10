@@ -11,9 +11,25 @@
         <div v-if="show">
             <h3>{{logName}}</h3>
             <div class="ui log message">
+                <div style="display: flex;justify-content: flex-end;">
+                    <button class="ui mini button circular m-0" @click="expand"><i class="expand icon m-0"></i></button>
+                </div>
                 <p v-for="(log,i) in logs" :key="i+'_log'" class="m-0" :style="{color: getColor(log)}">
                     <small><b>{{log}}</b></small>
                 </p>
+            </div>
+        </div>
+        <div class="ui large modal logs">
+            <i class="close icon"></i>
+            <div class="header">
+                {{logName}}
+            </div>
+            <div class="content">
+                <div class="ui log log-message">
+                    <p v-for="(log,i) in logs" :key="i+'_log'" class="m-0">
+                        <small><b>{{log}}</b></small>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -58,6 +74,9 @@ export default {
         },
     },
     methods:{
+        expand(){
+            $('.ui.large.modal.logs').modal('show');
+        },
         getLogs(){
             //build names are different and need to be cleaned up
             if (this.type == 'build' && !Object.prototype.hasOwnProperty.call(this.item, "name")) {

@@ -39,8 +39,7 @@
                                     <tr v-if="info.error">
                                         <td >Error</td>
                                         <td>
-                                            <div class="red">{{info.error}}</div>
-                                            <TracebackViewer :source="source"></TracebackViewer>
+                                            <div class="red">{{info.error}} <TracebackViewer :source="source"></TracebackViewer></div>
                                         </td>
                                     </tr>
                                     <tr>
