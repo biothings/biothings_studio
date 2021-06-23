@@ -5,13 +5,15 @@
                 View Traceback
             </button>
         </div>
-        <div class="ui large modal traceback">
+        <div class="ui large modal traceback" id="traceback">
             <i class="close icon"></i>
             <div class="content">
-                <div class="ui log error-message">
-                    <p v-for="(log,i) in logs" :key="i+'_traceback'" class="m-0">
-                        <small><b>{{log}}</b></small>
-                    </p>
+                <div class="ui log error-message m-0">
+                    <code>
+                        <p v-for="(log,i) in logs" :key="i+'_traceback'" class="m-0">
+                            <pre><small>{{log}}</small></pre>
+                        </p>
+                    </code>
                 </div>
             </div>
         </div>
@@ -37,7 +39,7 @@ export default {
         getLogs(){
             let lines = this.findVal(this.source, 'traceback')
             this.logs = lines ? lines.split("\n") : ['Could not find traceback of error']
-            $('.ui.large.modal.traceback').modal('show');
+            $('#traceback').modal('show');
         },
         findVal(object, key) {
             var value;
@@ -61,6 +63,7 @@ export default {
 <style>
 .log.error-message{
     font-family: sans-serif;
+    font-weight: bold;
     word-break: break-all;
     max-height: 300px;
     overflow-y: scroll;
