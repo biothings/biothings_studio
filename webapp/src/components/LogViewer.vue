@@ -19,7 +19,7 @@
                 </p>
             </div>
         </div>
-        <div class="ui large modal logs">
+        <div class="ui large modal logs" id="logs-modal">
             <i class="close icon"></i>
             <div class="header">
                 {{logName}}
@@ -75,7 +75,7 @@ export default {
     },
     methods:{
         expand(){
-            $('.ui.large.modal.logs').modal('show');
+            $('#logs-modal').modal('show');
         },
         getLogs(){
             //build names are different and need to be cleaned up
