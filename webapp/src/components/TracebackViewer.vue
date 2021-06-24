@@ -11,7 +11,7 @@
                 <div class="ui log error-message m-0">
                     <code>
                         <p v-for="(log,i) in logs" :key="i+'_traceback'" class="m-0">
-                            <pre><small>{{log}}</small></pre>
+                            <pre class="m-0"><small>{{log}}</small></pre>
                         </p>
                     </code>
                 </div>
