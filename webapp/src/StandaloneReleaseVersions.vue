@@ -142,7 +142,7 @@ export default {
   },
   beforeDestroy () {
     bus.$off('refresh_standalone', this.onRefresh)
-    $('.ui.basic.modal').remove()
+    // $('.ui.basic.modal').remove()
   },
   data () {
     return {

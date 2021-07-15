@@ -39,11 +39,11 @@
                                     <tr v-if="info.error">
                                         <td >Error</td>
                                         <td>
-                                            <div class="red">{{info.error}}</div>
+                                            <div class="red">{{info.error}} <TracebackViewer :source="source"></TracebackViewer></div>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td >Last upload</td>
+                                        <td >Last Upload</td>
                                         <td>{{info.started_at}} <i v-if="info.started_at">({{info.started_at | moment("from", "now")}})</i></td>
                                     </tr>
                                     <tr>
@@ -99,6 +99,7 @@
 import axios from 'axios'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
+import TracebackViewer from './components/TracebackViewer.vue'
 
 export default {
   name: 'data-source-upload',
@@ -106,6 +107,9 @@ export default {
   mixins: [Loader, Actionable],
   mounted () {
     this.setup()
+  },
+  components:{
+      TracebackViewer
   },
   methods: {
     setup: function () {

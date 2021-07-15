@@ -9,8 +9,8 @@
         <tbody v-if="build._meta">
             <tr v-for="(info,src) in build._meta.src" :key="src + Math.floor(Math.random() * 90 + 10)">
                 <td v-if="info.url"><a :href="info.url">{{src}}</a></td>
-                <td v-else>{{src}}</td>
-                <td>{{info.version}}</td>
+                <td style="word-break: break-all;" v-else>{{src}}</td>
+                <td style="word-break: break-all;">{{info.version}}</td>
             </tr>
         </tbody>
         <tfoot v-else>

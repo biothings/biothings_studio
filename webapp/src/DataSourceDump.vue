@@ -29,7 +29,7 @@
                         <tr v-if="source.download.error">
                             <td >Error</td>
                             <td>
-                                <div class="red">{{source.download.error}}</div>
+                                <div class="red">{{source.download.error}} <TracebackViewer :source="source"></TracebackViewer></div>
                             </td>
                         </tr>
                         <tr>
@@ -74,6 +74,7 @@
 
 <script>
 import Actionable from './Actionable.vue'
+import TracebackViewer from './components/TracebackViewer.vue'
 
 export default {
   name: 'data-source-dump',
@@ -83,7 +84,7 @@ export default {
       .checkbox()
   },
   mixins: [Actionable],
-  components: { },
+  components: { TracebackViewer },
   methods: {
     do_dump () {
       var field = $(`.ui.dump.form.${this.source._id}`).form('get field', 'force')

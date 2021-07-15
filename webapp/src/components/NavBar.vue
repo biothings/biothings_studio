@@ -145,6 +145,9 @@ export default {
     box-shadow: 0px 0px 12px rgb(165, 165, 165);
 }
 .m-auto{
-    margin: auto;
+    margin: auto !important;
+}
+.border-none{
+    border: none !important;
 }
 </style>

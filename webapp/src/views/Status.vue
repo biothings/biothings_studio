@@ -15,7 +15,7 @@
                 <span v-if="Object.keys(whatsnew).length">
                     <div class="column centered">
 
-                        <div class="ui feed">
+                        <div class="ui feed feed-cont">
                             <div class="event" v-for="(newd,conf) in whatsnew" :key="newd.old_build.name">
                                 <div class="label">
                                     <i class="cubes icon"></i>
@@ -117,5 +117,9 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+.feed-cont{
+  max-height: 500px;
+  overflow-y: scroll;
 }
 </style>
