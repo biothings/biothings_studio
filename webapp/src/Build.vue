@@ -153,7 +153,7 @@ import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 
 function build_time (jobs) {
-  return jobs.map((q) => q.time_in_s).reduce(
+  return jobs.filter(q => q.status === 'success').map((q) => q.time_in_s).reduce(
     function (total, q) {
       return total + q
     }, 0)
