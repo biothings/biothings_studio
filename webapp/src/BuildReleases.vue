@@ -170,7 +170,11 @@ export default {
       var index_name = $('.ui.form input[name=index_name]').val()
       if (index_name == '') { index_name = null }
       var index_env = $('.ui.form select[name=index_env] :selected').attr('data-env')
-      axios.put(axios.defaults.baseURL + '/index', { indexer_env: index_env, target_name: this.build._id, index_name: index_name })
+      axios.put(axios.defaults.baseURL + '/index', { 
+          indexer_env: index_env, 
+          build_name: this.build._id, // after biothings 8/20/2021
+          target_name: this.build._id, // before then
+          index_name: index_name })
         .then(response => {
           //console.log(response.data.result)
           return response.data.result
