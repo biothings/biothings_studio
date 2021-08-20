@@ -23,9 +23,9 @@
                       </button>
                   </div>
                 </div>
-                <div class="meta" v-if="build.snapshot">
+                <div class="meta" v-if="relevant_snapshots">
                   <div>
-                    <i class="server alternate icon"></i> {{ Object.keys(build.snapshot).length }} snapshot(s) created:
+                    <i class="server alternate icon"></i> {{ Object.keys(relevant_snapshots).length }} snapshot(s) created:
                     <table class="ui compact collapsing small green table">
                         <thead>
                           <tr>
@@ -34,9 +34,9 @@
                           </tr>
                         </thead>
                         <tbody>
-                          <tr v-for="info,name in build.snapshot" class="item" :key="name">
+                          <tr v-for="info,name in relevant_snapshots" class="item" :key="name">
                             <td>
-                                <a>{{name}}</a>
+                                <a>{{name}}</a> on <b>{{info.environment || "N/A"}}</b>
                                 <publish-summary v-if="build.publish && build.publish.full && build.publish.full.hasOwnProperty(name)":publish="build.publish.full[name]" :type="type"></publish-summary>
                             </td>
                             <td :class="actionable">
@@ -214,6 +214,17 @@ export default {
     },
     release_id: function () {
       return this.release.index_name
+    },
+    relevant_snapshots: function() {
+      if (Object.entries(this.build.snapshot).map(([k, v]) => v.index_name).every(Boolean)) {
+        // biothings.hub > 8/20/2021 saves index_name for each snapshot
+        return Object.fromEntries(
+          Object.entries(this.build.snapshot).filter(
+            ([k, v]) => (v.index_name === this.release.index_name) && 
+              (v.indexer_env === this.release.environment)))
+      } else { // there is no way to correlate a snapshot with an index
+        return this.build.snapshot
+      }
     }
   },
   methods: {
