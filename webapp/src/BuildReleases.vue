@@ -173,7 +173,6 @@ export default {
       axios.put(axios.defaults.baseURL + '/index', { 
           indexer_env: index_env, 
           build_name: this.build._id, // after biothings 8/20/2021
-          target_name: this.build._id, // before then
           index_name: index_name })
         .then(response => {
           //console.log(response.data.result)
@@ -182,6 +181,10 @@ export default {
         .catch(err => {
           //console.log('Error creating index: ')
           console.log(err)
+          axios.put(axios.defaults.baseURL + '/index', { 
+            indexer_env: index_env, 
+            target_name: this.build._id, // before then
+            index_name: index_name })
         })
     },
     newIncrementalRelease: function () {
