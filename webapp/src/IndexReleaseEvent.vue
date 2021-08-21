@@ -216,7 +216,8 @@ export default {
       return this.release.index_name
     },
     relevant_snapshots: function() {
-      if (Object.entries(this.build.snapshot).map(([k, v]) => v.index_name).every(Boolean)) {
+      if (this.build.snapshot && Object.entries(
+          this.build.snapshot).map(([k, v]) => v.index_name).every(Boolean)) {
         // biothings.hub > 8/20/2021 saves index_name for each snapshot
         return Object.fromEntries(
           Object.entries(this.build.snapshot).filter(
