@@ -23,7 +23,7 @@
                       </button>
                   </div>
                 </div>
-                <div class="meta" v-if="relevant_snapshots">
+                <div class="meta" v-if="relevant_snapshots && Object.keys(relevant_snapshots).length">
                   <div>
                     <i class="server alternate icon"></i> {{ Object.keys(relevant_snapshots).length }} snapshot(s) created:
                     <table class="ui compact collapsing small green table">
