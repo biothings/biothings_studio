@@ -278,7 +278,7 @@ export default {
         }
         for (var k in value.index) {
           // make sure doc_type is the same
-          if (value.index[k].doc_type != self.build.build_config.doc_type) {
+          if (value.index[k].doc_type && value.index[k].doc_type != self.build.build_config.doc_type) {
             continue
           }
           _compat.push({ env: env, host: value.host, index: value.index[k].index })
