@@ -4,12 +4,23 @@
             <button class="ui button mini circular" :class="[show?'black':'blue']" @click="show = !show">
                 {{show ? 'Close' : 'View Logs'}}
             </button>
-            <button v-if="show" class="ui icon button mini circular" @click="getLogs">
+            <button v-if="show" class="ui icon button mini circular" @click="getLogs(true)">
                 <i class="redo icon"></i>
             </button>
         </div>
         <div v-if="show">
-            <h3>{{logName}}</h3>
+            <h3>
+                View log:
+                <select class="dropdown select-log-name" v-model="selectedLogName">
+                    <option
+                        v-for="availabelLogName in availabelLogNames"
+                        v-bind:key="availabelLogName"
+                        :value="availabelLogName"
+                    >
+                        {{availabelLogName}}
+                    </option>
+                </select>
+            </h3>
             <div class="ui log message">
                 <div style="display: flex;justify-content: flex-end;">
                     <button class="ui mini button circular m-0" @click="expand"><i class="expand icon m-0"></i></button>
@@ -37,12 +48,15 @@
 
 <script>
 import {mapGetters} from 'vuex';
+import axios from 'axios';
 
 export default {
     name: 'LogViewer',
     data: function(){
         return {
-            show: false
+            show: false,
+            availabelLogNames: [],
+            selectedLogName: '',
         }
     },
     props:{
@@ -69,29 +83,48 @@ export default {
     watch:{
         show: function(v){
             if(v){
-                this.getLogs();
+                this.getLogs()
             }
         },
+        selectedLogName: function(v) {
+            this.getLogs()
+        }
     },
     methods:{
         expand(){
             $('#logs-modal').modal('show');
         },
-        getLogs(){
-            //build names are different and need to be cleaned up
-            if (this.type == 'build' && !Object.prototype.hasOwnProperty.call(this.item, "name")) {
-                //covid_who_clinical_trials_202105270830_udmfle16
-                let name = this.item.target_name.split('_')
-                name.splice(-2, 2)
-                name = name.length > 1 ? name.join('_') : name[0]
-                this.item.name = name
+        getAvailabelLogNames(){
+            this.availabelLogNames = [];
+            let targetName = this.item.name || this.item.build_config.name
+            axios
+            .get(axios.defaults.baseURL + `/logs/?json&filter=${this.type}_${targetName}`)
+            .then(res => {
+                if (res.data.length == 0) {
+                    console.log(`%c 🔖 No available -${this.type}- logs for <${targetName}>`, 'color:coral')
+                    this.$store.commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] No -${this.type}- logs for <${targetName}>`]})
+                    return
+                }
+                this.availabelLogNames = [res.data[0]]
+                this.availabelLogNames = this.availabelLogNames.concat(res.data.slice(1).sort().reverse())
+                this.selectedLogName = this.availabelLogNames.length ? this.availabelLogNames[0] : ''
+                $(".dropdown.select-log-name").dropdown()
+            })
+            .catch(err => {
+                console.log(`%c 🔖 Cannot fetch available log names, due to ${err}`, 'color:coral')
+            });
+        },
+        getLogs(reload=false){
+            if (reload || !this.availabelLogNames || this.availabelLogNames.length == 0) {
+                this.getAvailabelLogNames()
             }
-            if (Object.prototype.hasOwnProperty.call(this.item, "name") && this.type !== undefined) {
+
+            let fileName = this.selectedLogName
+            if (fileName && this.type !== undefined) {
                 this.$store.dispatch('getLogsFor',
                     {
-                        item: this.item,
-                        date: this.date,
-                        type: this.type
+                        fileName: fileName,
+                        type: this.type,
                     });
             }
         },
