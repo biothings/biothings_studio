@@ -11,38 +11,7 @@
                 <div class="header" v-if="Object.keys(existings).length">
                     Existing connections
                 </div>
-                <div class="scrolling menu" v-if="Object.keys(existings).length">
-                    <div class="item hubconnect" :data-value="v.name" v-for="v in existings" :key="v.name">
-                        <table class="ui small compact table hubconnect">
-                            <tbody>
-                                <tr>
-                                    <td class="collapsing tdhubicon">
-                                        <img class="hubicon" :src="v.icon"></img>
-                                    </td>
-                                    <td class="collapsing twelve wide">
-                                        <b>{{v.name}}</b>
-                                    </td>
-                                    <td class="collapsing hubconnect">
-                                        <a :href="v.url">
-                                            <i class="external alternate icon">
-                                            </i>
-                                        </a>
-                                    </td>
-                                    <td class="collapsing hubconnect">
-                                        <button class="ui small icon button" @click="editConnection($event,v)">
-                                            <i class="grey edit icon right floated"></i>
-                                        </button>
-                                    </td>
-                                    <td class="collapsing hubconnect">
-                                        <button class="ui small icon button" @click="deleteConnection($event,v)">
-                                            <i class="grey trash alternate outline icon right floated"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <ExistingConnections :existings="existings"></ExistingConnections>
             </div>
         </div>
 
@@ -89,17 +58,27 @@
                     </div>
                     <button class="ui button" type="submit" @click="signIn">Login</button>
                 </form>
+              </div>
             </div>
-        </div>
+
+            <br>
+
+            <div class="ui inverted">
+              <div class="ui title py-half-em" v-if="Object.keys(existings).length">
+                  Existing connections
+              </div>
+              <ExistingConnections :existings="existings"></ExistingConnections>
+            </div>
+
         <div class="actions">
-            <div class="ui red basic cancel inverted button">
-                <i class="remove icon"></i>
-                Cancel
-            </div>
-            <div class="ui green ok inverted button" id="huburl_ok">
-                <i class="checkmark icon"></i>
-                OK
-            </div>
+          <div class="ui red basic cancel inverted button">
+              <i class="remove icon"></i>
+              Cancel
+          </div>
+          <div class="ui green ok inverted button" id="huburl_ok">
+              <i class="checkmark icon"></i>
+              OK
+          </div>
         </div>
     </div>
 </span>
@@ -113,25 +92,23 @@ import auth from './auth.js'
 import hubapi from './hubapi.js'
 import Vue from 'vue'
 
+import ExistingConnections from './ExistingConnections.vue'
 import Loader from './Loader.vue'
 
 export default {
   name: 'choose-hub',
   props: [],
   mixins: [Loader],
+  components:{
+    ExistingConnections,
+  },
   mounted () {
-    var self = this
     this.getExistings()
     var self = this
     $('.choosehub.ui.floating.dropdown').dropdown({
       onChange: function (value, text, $selectedItem) {
         if (value == 'new') {
           self.newConnection()
-        } else {
-          var conn = self.existings[value]
-          var url = conn.url.replace(/\/$/, '')
-          self.refreshConnection(url)
-          if (conn) { bus.$emit('connect', conn, '/') } else { console.log(`Can't find connection details for ${value}`) }
         }
       }
     })
@@ -221,21 +198,11 @@ export default {
         })
         .modal('show')
     },
-    deleteConnection (event, conn) {
-      // avoid onChange to be triggered
-      event.stopPropagation()
-      console.log(event)
-      console.log(`Delete connection named "${conn.name}"`)
-      delete this.existings[conn.name]
-      Vue.localStorage.set('hub_connections', JSON.stringify(this.existings))
-      console.log(this.existings)
-      this.getExistings()
-    },
-    editConnection (event, conn) {
-      // avoid onChange to be triggered
-      event.stopPropagation()
-      console.log(event)
-      this.newConnection(conn.url)
+    changeConnection: function (value) {
+      var conn = this.existings[value]
+      var url = conn.url.replace(/\/$/, '')
+      this.refreshConnection(url)
+      if (conn) { bus.$emit('connect', conn, '/') } else { console.log(`Can't find connection details for ${value}`) }
     },
     signIn () {
       this.signin_error = null
@@ -285,21 +252,18 @@ export default {
   }
 
   .conftag {
-      margin-bottom: 1em !important;
+    margin-bottom: 1em !important;
   }
 
   a {
-        color: #218cbc !important;
-    }
+      color: #218cbc !important;
+  }
 
-  .hubicon { width:2.5em !important;}
   .largechoose {width:30em;}
-  .ui.table.hubconnect {border: 0px !important;}
-  .ui.menu .ui.dropdown .menu>.item.hubconnect {padding: 0 !important;}
-  .ui.compact.table.hubconnect td {padding: .3em .0em .0em 0em;}
-  .tdhubicon {padding: 0.3em 1em 0.3em 0.3em !important;}
   .signout {font-weight: bold; cursor: pointer; padding-left: 1em;}
   .logged-user {color:lightgrey;}
   .signin-error {margin-bottom: 1em;}
+
+  .py-half-em {padding-top: 0.5em; padding-bottom: 0.5em}
 
 </style>
