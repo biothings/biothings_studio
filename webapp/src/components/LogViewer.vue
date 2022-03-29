@@ -9,22 +9,22 @@
             </button>
         </div>
         <div v-if="show">
-            <h3>
-                View log:
-                <select class="dropdown select-log-name" v-model="selectedLogName">
-                    <option
-                        v-for="availabelLogName in availabelLogNames"
-                        v-bind:key="availabelLogName"
-                        :value="availabelLogName"
-                    >
-                        {{availabelLogName}}
-                    </option>
-                </select>
+            <h3 class="flex justify-between">
+                <div>
+                    <span class="pr-1">View log:</span>
+                    <select class="dropdown select-log-name" v-model="selectedLogName">
+                        <option
+                            v-for="availabelLogName in availabelLogNames"
+                            v-bind:key="availabelLogName"
+                            :value="availabelLogName"
+                        >
+                            {{availabelLogName}}
+                        </option>
+                    </select>
+                </div>
+                <button class="ui mini button circular m-0" @click="expand"><i class="expand icon m-0"></i></button>
             </h3>
             <div class="ui log message">
-                <div style="display: flex;justify-content: flex-end;">
-                    <button class="ui mini button circular m-0" @click="expand"><i class="expand icon m-0"></i></button>
-                </div>
                 <p v-for="(log,i) in logs" :key="i+'_log'" class="m-0" :style="{color: getColor(log)}">
                     <small><b>{{log}}</b></small>
                 </p>
@@ -147,5 +147,17 @@ export default {
     max-height: 300px;
     overflow-y: scroll;
     border: 4px #c9c9c9 solid;
+}
+
+.dropdown.select-log-name {
+    padding: 0.5em 1em 0.5em 0.5em !important;
+    min-height: unset !important;
+}
+
+.dropdown.select-log-name .dropdown.icon {
+    padding: unset !important;
+    margin: unset !important;
+    top: 0.8rem !important;
+    right: 0.35rem !important;
 }
 </style>
