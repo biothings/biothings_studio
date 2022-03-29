@@ -12,7 +12,8 @@
             <h3 class="flex justify-between">
                 <div>
                     <span class="pr-1">View log:</span>
-                    <select class="dropdown select-log-name" v-model="selectedLogName">
+                    <span v-if="availabelLogNames.length == 0">NOT AVAILABLE</span>
+                    <select class="dropdown select-log-name" v-model="selectedLogName" v-if="availabelLogNames.length > 0">
                         <option
                             v-for="availabelLogName in availabelLogNames"
                             v-bind:key="availabelLogName"
@@ -113,7 +114,6 @@ export default {
                 this.availabelLogNames = [res.data[0]]
                 this.availabelLogNames = this.availabelLogNames.concat(res.data.slice(1).sort().reverse())
                 this.selectedLogName = this.availabelLogNames.length ? this.availabelLogNames[0] : ''
-                $(".dropdown.select-log-name").dropdown()
             })
             .catch(err => {
                 console.log(`%c 🔖 Cannot fetch available log names, due to ${err}`, 'color:coral')
@@ -152,17 +152,5 @@ export default {
     max-height: 300px;
     overflow-y: scroll;
     border: 4px #c9c9c9 solid;
-}
-
-.dropdown.select-log-name {
-    padding: 0.5em 1em 0.5em 0.5em !important;
-    min-height: unset !important;
-}
-
-.dropdown.select-log-name .dropdown.icon {
-    padding: unset !important;
-    margin: unset !important;
-    top: 0.8rem !important;
-    right: 0.35rem !important;
 }
 </style>
