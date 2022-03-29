@@ -95,8 +95,13 @@ export default {
             $('#logs-modal').modal('show');
         },
         getAvailabelLogNames(){
-            this.availabelLogNames = [];
-            let targetName = this.item.name || this.item.build_config.name
+            this.availabelLogNames = []
+
+            let targetName = this.item.name
+            if (this.type === "build") {
+                targetName = this.item.target_name
+            }
+
             axios
             .get(axios.defaults.baseURL + `/logs/?json&filter=${this.type}_${targetName}`)
             .then(res => {
