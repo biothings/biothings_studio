@@ -108,6 +108,55 @@
                 </div>
             </div>
         </div>
+
+      <div class="ui pointing menu stageLogs">
+        <h5 class="">View logs by stage:</h5>
+
+        <a data-tab="index" class="red item">Index</a>
+        <a data-tab="diff" class="red item">Diff</a>
+        <a data-tab="releaseNote" class="red item">Release Note</a>
+        <a data-tab="sync" class="red item">Apply</a>
+        <a data-tab="snapshot" class="red item">Snapshot</a>
+        <a data-tab="publish" class="red item">Publish</a>
+      </div>
+        <div data-tab="index" class="ui bottom attached tab segment indexLogs">
+          <LogViewer type="index"
+            :item="build"
+            key="indexlogs">
+          </LogViewer>
+        </div>
+        <div data-tab="diff" class="ui bottom attached tab segment diffLogs">
+          <LogViewer type="diff"
+            :item="build"
+            key="difflogs">
+          </LogViewer>
+        </div>
+        <div data-tab="releaseNote" class="ui bottom attached tab segment releaseNoteLogs">
+          <LogViewer type="releasemanager"
+            :item="build"
+            key="releaseNotelogs">
+          </LogViewer>
+        </div>
+        <div data-tab="sync" class="ui bottom attached tab segment syncLogs">
+          <LogViewer type="sync"
+            :item="build"
+            key="synclogs">
+          </LogViewer>
+        </div>
+        <div data-tab="snapshot" class="ui bottom attached tab segment snapshotLogs">
+          <LogViewer type="snapshot"
+            :item="build"
+            key="snapshotlogs">
+          </LogViewer>
+        </div>
+        <div data-tab="publish" class="ui bottom attached tab segment publishLogs">
+          <LogViewer type="releaser"
+            :item="build"
+            key="publishlogs">
+          </LogViewer>
+        </div>
+      </div>
+
     </div>
 </template>
 
@@ -116,6 +165,7 @@ import axios from 'axios'
 import IndexReleaseEvent from './IndexReleaseEvent.vue'
 import DiffReleaseEvent from './DiffReleaseEvent.vue'
 import Actionable from './Actionable.vue'
+import LogViewer from './components/LogViewer.vue'
 
 export default {
   name: 'build-releases',
@@ -130,7 +180,11 @@ export default {
   beforeDestroy () {
     $('.ui.basic.newrelease.modal').remove()
   },
-  components: { IndexReleaseEvent, DiffReleaseEvent },
+  components: {
+    IndexReleaseEvent,
+    DiffReleaseEvent,
+    LogViewer,
+  },
   data () {
     return {
       errors: [],
@@ -266,5 +320,9 @@ export default {
 <style scoped>
 .ui.checkbox label {
     color: white !important;
+}
+.menu.stageLogs h5 {
+  display: flex;
+  align-items: flex-end;
 }
 </style>

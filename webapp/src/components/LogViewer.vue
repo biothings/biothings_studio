@@ -98,21 +98,41 @@ export default {
         getAvailabelLogNames(){
             this.availabelLogNames = []
 
-            let targetName = this.item.name
-            if (this.type === "build") {
+            let targetName, logPath, filter
+            if (["dump", "upload"].includes(this.type)) {
+                targetName = filter = `${this.type}_${this.item.name}`
+                logPath = ''
+            }
+            else if (this.type === "snapshot") {
+                let snapshot_index_names = []
+                logPath = ''
+                Object.keys(this.item.snapshot).forEach(index => snapshot_index_names.push(`${this.type}_${index}`))
+                targetName = filter = snapshot_index_names.join(",")
+            }
+            else {
                 targetName = this.item.target_name
+                logPath = `build/${this.item.target_name}/`
+                if (["index", "diff"].includes(this.type)) {
+                    logPath += `${this.type}/`
+                    filter = ''
+                }
+                else {
+                    filter = this.type
+                }
             }
 
             axios
-            .get(axios.defaults.baseURL + `/logs/?json&filter=${this.type}_${targetName}`)
+            .get(axios.defaults.baseURL + `/logs/${logPath}?json&filter=${filter}`)
             .then(res => {
                 if (res.data.length == 0) {
                     console.log(`%c 🔖 No available -${this.type}- logs for <${targetName}>`, 'color:coral')
                     this.$store.commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] No -${this.type}- logs for <${targetName}>`]})
                     return
                 }
-                this.availabelLogNames = [res.data[0]]
-                this.availabelLogNames = this.availabelLogNames.concat(res.data.slice(1).sort().reverse())
+
+                this.availabelLogNames = []
+                let names = [res.data[0]].concat(res.data.slice(1).sort().reverse())
+                names.forEach(name => this.availabelLogNames.push(`${logPath}${name}`))
                 this.selectedLogName = this.availabelLogNames.length ? this.availabelLogNames[0] : ''
             })
             .catch(err => {
