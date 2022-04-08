@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="flex justify-center">
+        <div class="flex justify-center" v-if="showViewLogButton==true">
             <button class="ui button mini circular" :class="[show?'black':'blue']" @click="show = !show">
                 {{show ? 'Close' : 'View Logs'}}
             </button>
@@ -65,15 +65,16 @@ export default {
             type: Object,
             default: ()=>{ return {}}
         },
-        date:{
-            type: String,
-            default: ''
-        },
         type:{
             type: String,
             default: '',
             required: true
-        }
+        },
+        showViewLogButton: {
+            type: Boolean,
+            default: true,
+            required: false,
+        },
     },
     computed:{
         ...mapGetters({
@@ -104,10 +105,12 @@ export default {
                 logPath = ''
             }
             else if (this.type === "snapshot") {
-                let snapshot_index_names = []
                 logPath = ''
-                Object.keys(this.item.snapshot).forEach(index => snapshot_index_names.push(`${this.type}_${index}`))
-                targetName = filter = snapshot_index_names.join(",")
+                if (this.item.snapshot){
+                    let snapshot_index_names = []
+                    Object.keys(this.item.snapshot).forEach(index => snapshot_index_names.push(`${this.type}_${index}`))
+                    targetName = filter = snapshot_index_names.join(",")
+                }
             }
             else {
                 targetName = this.item.target_name
@@ -136,6 +139,7 @@ export default {
                 this.selectedLogName = this.availabelLogNames.length ? this.availabelLogNames[0] : ''
             })
             .catch(err => {
+                this.$store.dispatch('clearLogs');
                 console.log(`%c 🔖 Cannot fetch available log names, due to ${err}`, 'color:coral')
             });
         },

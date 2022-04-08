@@ -109,54 +109,29 @@
             </div>
         </div>
 
-      <div class="ui pointing menu stageLogs">
-        <h5 class="">View logs by stage:</h5>
+        <div class="stageLogs">
+          <div class="flex justify-center">
+              <button class="ui button mini circular" :class="[showLogs?'black':'blue']" @click="toggleLogViewers(!showLogs)">
+                  {{showLogs ? 'Close' : 'View Logs'}}
+              </button>
+              <button v-if="showLogs" class="ui icon button mini circular" @click="reloadLogs">
+                  <i class="redo icon"></i>
+              </button>
+          </div>
+          <div class="ui tabular menu">
+            <h5 class="">Stages:</h5>
+            <a v-for="stage in logStages" v-bind:key="stage.name" :data-tab="stage.name" @click="toggleLogViewers(true, stage.name)" class="red item">{{ stage.name.toUpperCase() }}</a>
+          </div>
 
-        <a data-tab="index" class="red item">Index</a>
-        <a data-tab="diff" class="red item">Diff</a>
-        <a data-tab="releaseNote" class="red item">Release Note</a>
-        <a data-tab="sync" class="red item">Apply</a>
-        <a data-tab="snapshot" class="red item">Snapshot</a>
-        <a data-tab="publish" class="red item">Publish</a>
-      </div>
-        <div data-tab="index" class="ui bottom attached tab segment indexLogs">
-          <LogViewer type="index"
-            :item="build"
-            key="indexlogs">
-          </LogViewer>
+          <div v-for="stage in logStages" v-bind:key="stage.name" :data-tab="stage.name" :class="'ui bottom attached tab segment ' + stage.name + 'Logs'">
+            <LogViewer :type="stage.type"
+              :item="build"
+              :key="stage.name + 'Logs'"
+              :ref="stage.name + 'Logs'"
+              :showViewLogButton="false">
+            </LogViewer>
+          </div>
         </div>
-        <div data-tab="diff" class="ui bottom attached tab segment diffLogs">
-          <LogViewer type="diff"
-            :item="build"
-            key="difflogs">
-          </LogViewer>
-        </div>
-        <div data-tab="releaseNote" class="ui bottom attached tab segment releaseNoteLogs">
-          <LogViewer type="releasemanager"
-            :item="build"
-            key="releaseNotelogs">
-          </LogViewer>
-        </div>
-        <div data-tab="sync" class="ui bottom attached tab segment syncLogs">
-          <LogViewer type="sync"
-            :item="build"
-            key="synclogs">
-          </LogViewer>
-        </div>
-        <div data-tab="snapshot" class="ui bottom attached tab segment snapshotLogs">
-          <LogViewer type="snapshot"
-            :item="build"
-            key="snapshotlogs">
-          </LogViewer>
-        </div>
-        <div data-tab="publish" class="ui bottom attached tab segment publishLogs">
-          <LogViewer type="releaser"
-            :item="build"
-            key="publishlogs">
-          </LogViewer>
-        </div>
-      </div>
-
     </div>
 </template>
 
@@ -191,7 +166,16 @@ export default {
       release_type: null,
       diff_types: [],
       avail_builds: [],
-      index_envs: []
+      index_envs: [],
+      logStages: [
+        {name: "index", type: "index"},
+        {name: "diff", type: "diff"},
+        {name: "releaseNote", type: "releasemanager"},
+        {name: "sync", type: "sync"},
+        {name: "snapshot", type: "snapshot"},
+        {name: "publish", type: "releaser"},
+      ],
+      showLogs: false,
     }
   },
   computed: {
@@ -312,6 +296,51 @@ export default {
           console.log(err)
           //console.log('Error loading differ information: ' + err.data.error)
         })
+    },
+    reloadLogs: function() {
+      let activeTab = $(".stageLogs a[data-tab].active")
+      if (activeTab) {
+        this.$refs[activeTab.data("tab") + "Logs"][0].getLogs(true)
+      }
+    },
+    toggleLogViewers: function(show, stageName){
+      this.showLogs = show
+      if (show) {
+        this.showLogViewers(stageName)
+      }
+      else {
+        this.hideLogViewers()
+      }
+    },
+    showLogViewers: function(stageName=null) {
+      // if show, we get stages' logs first
+      // then check if there is an active tab, if not, active the first tab
+      // lastly, we set the the LogViewer.show based on its tab visible
+
+      if (!stageName) {
+        stageName = $(".stageLogs a[data-tab]:first").data("tab")
+      }
+
+      $(".stageLogs [data-tab]:not([data-tab" + stageName + "])").removeClass("active")
+      $(".stageLogs [data-tab=" + stageName + "]").addClass("active")
+
+      this.logStages.forEach(stage => {
+        let logViewer = this.$refs[stage.name + 'Logs'][0]
+        if (stage.name === stageName) {
+          logViewer.show = true
+        }
+        else {
+          logViewer.show = false
+        }
+      })
+    },
+    hideLogViewers: function() {
+      // first we hide all tabs
+      // then set all LogViewer.show to false
+      $(".stageLogs [data-tab]").removeClass("active")
+      this.logStages.forEach(stage => {
+        this.$refs[stage.name + 'Logs'][0].show = false
+      })
     }
   }
 }
@@ -321,8 +350,9 @@ export default {
 .ui.checkbox label {
     color: white !important;
 }
-.menu.stageLogs h5 {
+.stageLogs .menu h5 {
   display: flex;
   align-items: flex-end;
+  padding: 1rem 1rem 0 1rem;
 }
 </style>

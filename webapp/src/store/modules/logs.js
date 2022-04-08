@@ -31,6 +31,10 @@ export const logs = {
         }
     },
     actions: {
+        clearLogs ({ commit}) {
+            commit('saveLogs', {logs: []})
+            commit('saveLogName', {logName: ""})
+        },
         getLogsFor ({ commit}, payload) {
             let fileName = payload.fileName
             console.log(`%c 🔖 Getting -${payload.type}- logs for <${fileName}>`, 'color:violet')
