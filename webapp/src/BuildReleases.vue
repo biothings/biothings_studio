@@ -118,7 +118,7 @@
                   <i class="redo icon"></i>
               </button>
           </div>
-          <div class="ui tabular menu">
+          <div class="ui tabular menu" :class="[showLogs? '' : 'hidden']">
             <h5 class="">Stages:</h5>
             <a v-for="stage in logStages" v-bind:key="stage.name" :data-tab="stage.name" @click="toggleLogViewers(true, stage.name)" class="red item">{{ stage.name.toUpperCase() }}</a>
           </div>
@@ -350,6 +350,11 @@ export default {
 .ui.checkbox label {
     color: white !important;
 }
+
+.stageLogs .menu.hidden {
+  display: none;
+}
+
 .stageLogs .menu h5 {
   display: flex;
   align-items: flex-end;

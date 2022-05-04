@@ -141,6 +141,9 @@ export default {
             .catch(err => {
                 this.$store.dispatch('clearLogs');
                 console.log(`%c 🔖 Cannot fetch available log names, due to ${err}`, 'color:coral')
+                if (err.response.status == 404) {
+                    this.$store.commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] No -${this.type}- logs for <${targetName}>`]})
+                }
             });
         },
         getLogs(reload=false){
