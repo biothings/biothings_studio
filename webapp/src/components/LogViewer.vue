@@ -104,14 +104,6 @@ export default {
                 targetName = filter = `${this.type}_${this.item.name}`
                 logPath = ''
             }
-            else if (this.type === "snapshot") {
-                logPath = ''
-                if (this.item.snapshot){
-                    let snapshot_index_names = []
-                    Object.keys(this.item.snapshot).forEach(index => snapshot_index_names.push(`${this.type}_${index}`))
-                    targetName = filter = snapshot_index_names.join(",")
-                }
-            }
             else {
                 targetName = this.item.target_name
                 logPath = `build/${this.item.target_name}/`
