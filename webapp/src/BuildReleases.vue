@@ -118,9 +118,9 @@
                   <i class="redo icon"></i>
               </button>
           </div>
-          <div class="ui tabular menu" :class="[showLogs? '' : 'hidden']">
+          <div class="ui top attached pointing menu" :class="[showLogs? '' : 'hidden']">
             <h5 class="">Stages:</h5>
-            <a v-for="stage in logStages" v-bind:key="stage.name" :data-tab="stage.name" @click="toggleLogViewers(true, stage.name)" class="red item">{{ stage.name.toUpperCase() }}</a>
+            <a v-for="stage in logStages" v-bind:key="stage.name" :data-tab="stage.name" @click="toggleLogViewers(true, stage.name)" class="item">{{ stage.name.toUpperCase() }}</a>
           </div>
 
           <div v-for="stage in logStages" v-bind:key="stage.name" :data-tab="stage.name" :class="'ui bottom attached tab segment ' + stage.name + 'Logs'">
@@ -353,6 +353,10 @@ export default {
 
 .stageLogs .menu.hidden {
   display: none;
+}
+
+.stageLogs .menu {
+  margin-top: 1rem;
 }
 
 .stageLogs .menu h5 {
