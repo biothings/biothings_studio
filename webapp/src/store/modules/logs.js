@@ -42,7 +42,8 @@ export const logs = {
             commit('saveLogName', {logName: fileName})
 
             try {
-                axios.get(axios.defaults.baseURL + '/log/' + fileName).then(res=>{
+                const url = `${axios.defaults.baseURL}/log/${fileName}?lines=1000`
+                axios.get(url).then(res=>{
                     // console.log('LOGS RES', res.data.length)
                     let lines = res.data.split("\n")
                     if (lines.length && lines[0].length) {
