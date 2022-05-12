@@ -24,9 +24,9 @@
             <div class="header">
                 {{logName}}
             </div>
-            <div class="content">
+            <div class="content font-jetbrains-mono">
                 <div class="ui log log-message">
-                    <p v-for="(log,i) in logs" :key="i+'_log'" class="m-0">
+                    <p v-for="(log,i) in logs" :key="i+'_log'" class="m-0 line-height-1">
                         <small><b>{{log}}</b></small>
                     </p>
                 </div>
@@ -109,7 +109,8 @@ export default {
 
 <style>
 .log.message{
-    font-family: sans-serif;
+    font-family: 'JetBrains Mono', sans-serif;
+    line-height: 1;
     word-break: break-all;
     max-height: 300px;
     overflow-y: scroll;

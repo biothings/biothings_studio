@@ -7,7 +7,7 @@
         </div>
         <div class="ui large modal traceback" id="traceback">
             <i class="close icon"></i>
-            <div class="content">
+            <div class="content font-jetbrains-mono line-height-1">
                 <div class="ui log error-message m-0">
                     <code>
                         <p v-for="(log,i) in logs" :key="i+'_traceback'" class="m-0">
@@ -75,5 +75,9 @@ export default {
 }
 .log.error-message p:nth-child(odd){
     background-color: rgb(243, 243, 243);
+}
+
+#traceback code, #traceback pre {
+    font-family: 'JetBrains Mono', sans-serif;
 }
 </style>
