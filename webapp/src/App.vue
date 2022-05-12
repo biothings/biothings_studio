@@ -1124,4 +1124,13 @@ body,
 .segment.jobs {
     margin:0;
 }
+
+@import url('http://fonts.cdnfonts.com/css/jetbrains-mono');
+.font-jetbrains-mono {
+  font-family: 'JetBrains Mono', sans-serif;
+}
+
+.line-height-1 {
+  line-height: 1;
+}
 </style>
