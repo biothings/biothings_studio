@@ -172,4 +172,10 @@ export default {
     overflow-y: scroll;
     border: 4px #c9c9c9 solid;
 }
+
+#logs-modal .log-message {
+    word-break: break-word;
+    overflow: auto;
+    max-height: 70vh;
+}
 </style>
