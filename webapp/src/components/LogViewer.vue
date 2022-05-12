@@ -154,10 +154,10 @@ export default {
         },
         getColor(line){
             return line.includes('INFO') ? 'royalblue' :
-            line.includes('OK') ? 'green' : 
-            line.includes('DEBUG') ? 'purple' : 
-            line.includes('ERROR') ? 'red' : 
-            line.includes('NOT AVAILABLE') ? 'hotpink' : 
+            line.includes('OK') ? 'green' :
+            line.includes('DEBUG') ? 'purple' :
+            line.includes('ERROR') ? 'red' :
+            line.includes('NOT AVAILABLE') ? 'hotpink' :
             'black'
         },
     }
@@ -167,11 +167,16 @@ export default {
 <style>
 .log.message{
     font-family: 'JetBrains Mono', sans-serif;
+    font-size: 13px;
     line-height: 1;
     word-break: break-all;
     max-height: 300px;
     overflow-y: scroll;
     border: 4px #c9c9c9 solid;
+}
+
+.log.message p{
+    line-height: 1;
 }
 
 #logs-modal .log-message {
