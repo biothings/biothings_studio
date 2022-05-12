@@ -46,7 +46,7 @@
                                 </div>
                             </div>
                             <div class="ui segment">
-                              <LogViewer type="build" :item="build" :date="build.target_name" key="buildlogs"></LogViewer>
+                              <LogViewer type="build" :item="build" key="buildlogs"></LogViewer>
                             </div>
                         </div>
                         <div class="ui bottom attached tab segment" data-tab="mapping">
