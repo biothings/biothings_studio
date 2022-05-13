@@ -5,16 +5,18 @@
 			<a id="num_events" :class="notifnumcolor">{{events.length}}</a>
 		</button>
         <div class="ui messages popup top left transition hidden">
-            <div class="ui messages list" id="messages" v-if="events.length > 0">
-                <div class="ui fluid right aligned container">
-            <button class="mini ui button " @click="clearEvents()">
-                Clear
-            </button>
-                </div>
-                <div class="item event" v-for="evt in events" :key="evt._id">
-					<event-message v-bind:event="evt"></event-message>
-				</div>
-			</div>
+          <div class="ui messages list" id="messages" v-if="events.length > 0">
+            <div class="ui fluid right aligned container">
+              <button class="mini ui button " @click="clearEvents()">
+                  Clear
+              </button>
+            </div>
+            <div class="overflowYScroll">
+              <div class="item event" v-for="evt in events" :key="evt._id">
+                <event-message v-bind:event="evt"></event-message>
+              </div>
+            </div>
+			  </div>
 			<div v-else nowrap>No new notifications</div>
 		</div>
 	</div>
@@ -34,7 +36,9 @@ export default {
       popup: $('.events.popup'),
       on: 'click',
       onVisible: () => { this.hasnew = false },
-      lastResort: 'bottom right'
+      // default position and fallback if no space left
+      position: 'bottom left',
+      lastResort: 'left',
     })
   },
   components: { EventMessage },
@@ -89,5 +93,26 @@ export default {
 }
 .item.event {
     min-width: 25em;
+}
+.flex{
+  display: flex;
+}
+.justify-center{
+  justify-content: center;
+}
+.justify-around{
+  justify-content: space-around;
+}
+.justify-between{
+  justify-content: space-between;
+}
+.items-center{
+  align-items: center;
+}
+.flex-wrap{
+  flex-wrap: wrap;
+}
+.w-full{
+  width: 100%;
 }
 </style>

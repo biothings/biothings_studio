@@ -31,7 +31,7 @@
     <!-- jobs (pendings) -->
     <button class="ui compact labeled icon button tiny"
       data-tooltip="Number of queued jobs"
-      data-position="bottom right"
+      data-position="bottom left"
       v-if="job_manager.queue">
       <i class="hourglass start icon"></i>
       {{job_manager.queue.thread.pending.length + job_manager.queue.process.pending.length }}
@@ -39,7 +39,7 @@
     <!-- memory -->
     <button class="ui compact labeled icon button tiny"
       data-tooltip="Amount of memory hub is currently using"
-      data-position="bottom right"
+      data-position="bottom left"
       v-if="job_manager.queue">
       <i class="right microchip icon"></i>
       {{ job_manager.memory | pretty_size}}
@@ -64,14 +64,18 @@ export default {
     $('.processes.button').popup({
       popup: $('.processes.popup'),
       on: 'click',
-      lastResort: 'top right',
+      // default position and fallback if no space left
+      position: 'bottom left',
+      lastResort: 'left',
       onVisible: () => { this.onJobsOpened(true) },
       onHide: () => { this.onJobsOpened(false) }
     })
     $('.threads.button').popup({
       popup: $('.threads.popup'),
       on: 'click',
-      lastResort: 'top right',
+      // default position and fallback if no space left
+      position: 'bottom left',
+      lastResort: 'left',
       onVisible: () => { this.onJobsOpened(true) },
       onHide: () => { this.onJobsOpened(false) }
     })

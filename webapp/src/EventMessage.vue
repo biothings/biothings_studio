@@ -1,10 +1,25 @@
 <template>
-    <div :class="['ui tiny',color,'message']">
-        <i class="close icon" :data-id="event._id"></i>
-        <div><div :class="['ui',color,'horizontal label']">{{event.name}}</div>
+    <div :class="['ui tiny',color,'message']" class=" w-full" style="margin-bottom:0;">
+      <i class="close icon" :data-id="event._id"></i>
+      <div :class="['ui',color,'horizontal label']">
+        {{event.name}}
+      </div>
+      <template v-if="event.msg.length > 100">
+        <details>
+          <summary>see details</summary>
+          <div class="w-full">
+            <div class="flex justify-between flex-wrap items-center w-full">
+              <span>{{event.msg}}</span> <i>{{event.asctime}}</i>
+            </div>
+          </div>
+        </details>
+      </template>
+      <template v-else>
+        <div class="flex justify-between flex-wrap items-center w-full">
+          <span>{{event.msg}}</span> <i>{{event.asctime}}</i>
         </div>
-        <div>{{event.msg}}<div class="ui right floated"><i>{{event.asctime}}</i></div>
-    </div>
+      </template>
+      
     </div>
 </template>
 
@@ -48,7 +63,6 @@ export default {
           return 'blue'
           break
         default:
-          console.log('onela')
           return 'black'
       }
     }
