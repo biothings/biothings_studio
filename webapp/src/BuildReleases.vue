@@ -108,6 +108,30 @@
                 </div>
             </div>
         </div>
+
+        <div class="stageLogs">
+          <div class="flex justify-center">
+              <button class="ui button mini circular" :class="[showLogs?'black':'blue']" @click="toggleLogViewers(!showLogs)">
+                  {{showLogs ? 'Close' : 'View Logs'}}
+              </button>
+              <button v-if="showLogs" class="ui icon button mini circular" @click="reloadLogs">
+                  <i class="redo icon"></i>
+              </button>
+          </div>
+          <div class="ui top attached pointing menu" :class="[showLogs? '' : 'hidden']">
+            <h5 class="">Stages:</h5>
+            <a v-for="stage in logStages" v-bind:key="stage.name" :data-tab="stage.name" @click="toggleLogViewers(true, stage.name)" class="item">{{ stage.name.toUpperCase() }}</a>
+          </div>
+
+          <div v-for="stage in logStages" v-bind:key="stage.name" :data-tab="stage.name" :class="'ui bottom attached tab segment ' + stage.name + 'Logs'">
+            <LogViewer :type="stage.type"
+              :item="build"
+              :key="stage.name + 'Logs'"
+              :ref="stage.name + 'Logs'"
+              :showViewLogButton="false">
+            </LogViewer>
+          </div>
+        </div>
     </div>
 </template>
 
@@ -116,6 +140,7 @@ import axios from 'axios'
 import IndexReleaseEvent from './IndexReleaseEvent.vue'
 import DiffReleaseEvent from './DiffReleaseEvent.vue'
 import Actionable from './Actionable.vue'
+import LogViewer from './components/LogViewer.vue'
 
 export default {
   name: 'build-releases',
@@ -130,14 +155,27 @@ export default {
   beforeDestroy () {
     $('.ui.basic.newrelease.modal').remove()
   },
-  components: { IndexReleaseEvent, DiffReleaseEvent },
+  components: {
+    IndexReleaseEvent,
+    DiffReleaseEvent,
+    LogViewer,
+  },
   data () {
     return {
       errors: [],
       release_type: null,
       diff_types: [],
       avail_builds: [],
-      index_envs: []
+      index_envs: [],
+      logStages: [
+        {name: "index", type: "index"},
+        {name: "diff", type: "diff"},
+        {name: "releaseNote", type: "releasemanager"},
+        {name: "sync", type: "sync"},
+        {name: "snapshot", type: "snapshot"},
+        {name: "publish", type: "releaser"},
+      ],
+      showLogs: false,
     }
   },
   computed: {
@@ -258,6 +296,51 @@ export default {
           console.log(err)
           //console.log('Error loading differ information: ' + err.data.error)
         })
+    },
+    reloadLogs: function() {
+      let activeTab = $(".stageLogs a[data-tab].active")
+      if (activeTab) {
+        this.$refs[activeTab.data("tab") + "Logs"][0].getLogs(true)
+      }
+    },
+    toggleLogViewers: function(show, stageName){
+      this.showLogs = show
+      if (show) {
+        this.showLogViewers(stageName)
+      }
+      else {
+        this.hideLogViewers()
+      }
+    },
+    showLogViewers: function(stageName=null) {
+      // if show, we get stages' logs first
+      // then check if there is an active tab, if not, active the first tab
+      // lastly, we set the the LogViewer.show based on its tab visible
+
+      if (!stageName) {
+        stageName = $(".stageLogs a[data-tab]:first").data("tab")
+      }
+
+      $(".stageLogs [data-tab]:not([data-tab" + stageName + "])").removeClass("active")
+      $(".stageLogs [data-tab=" + stageName + "]").addClass("active")
+
+      this.logStages.forEach(stage => {
+        let logViewer = this.$refs[stage.name + 'Logs'][0]
+        if (stage.name === stageName) {
+          logViewer.show = true
+        }
+        else {
+          logViewer.show = false
+        }
+      })
+    },
+    hideLogViewers: function() {
+      // first we hide all tabs
+      // then set all LogViewer.show to false
+      $(".stageLogs [data-tab]").removeClass("active")
+      this.logStages.forEach(stage => {
+        this.$refs[stage.name + 'Logs'][0].show = false
+      })
     }
   }
 }
@@ -266,5 +349,19 @@ export default {
 <style scoped>
 .ui.checkbox label {
     color: white !important;
+}
+
+.stageLogs .menu.hidden {
+  display: none;
+}
+
+.stageLogs .menu {
+  margin-top: 1rem;
+}
+
+.stageLogs .menu h5 {
+  display: flex;
+  align-items: flex-end;
+  padding: 1rem 1rem 0 1rem;
 }
 </style>

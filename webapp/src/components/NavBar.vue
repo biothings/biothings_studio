@@ -104,6 +104,9 @@ export default {
 .p-1{
     padding: .5rem !important;
 }
+.pr-1{
+    padding-right: .5rem !important;
+}
 .pusher{
     min-height:90vh !important;
 }

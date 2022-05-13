@@ -1,19 +1,31 @@
 <template>
     <div>
-        <div class="flex justify-center">
+        <div class="flex justify-center" v-if="showViewLogButton==true">
             <button class="ui button mini circular" :class="[show?'black':'blue']" @click="show = !show">
                 {{show ? 'Close' : 'View Logs'}}
             </button>
-            <button v-if="show" class="ui icon button mini circular" @click="getLogs">
+            <button v-if="show" class="ui icon button mini circular" @click="getLogs(true)">
                 <i class="redo icon"></i>
             </button>
         </div>
         <div v-if="show">
-            <h3>{{logName}}</h3>
-            <div class="ui log message">
-                <div style="display: flex;justify-content: flex-end;">
-                    <button class="ui mini button circular m-0" @click="expand"><i class="expand icon m-0"></i></button>
+            <h3 class="flex justify-between">
+                <div>
+                    <span class="pr-1">View log:</span>
+                    <span v-if="availabelLogNames.length == 0">NOT AVAILABLE</span>
+                    <select class="dropdown select-log-name" v-model="selectedLogName" v-if="availabelLogNames.length > 0">
+                        <option
+                            v-for="availabelLogName in availabelLogNames"
+                            v-bind:key="availabelLogName"
+                            :value="availabelLogName"
+                        >
+                            {{availabelLogName}}
+                        </option>
+                    </select>
                 </div>
+                <button class="ui mini button circular m-0" @click="expand"><i class="expand icon m-0"></i></button>
+            </h3>
+            <div class="ui log message">
                 <p v-for="(log,i) in logs" :key="i+'_log'" class="m-0" :style="{color: getColor(log)}">
                     <small><b>{{log}}</b></small>
                 </p>
@@ -24,9 +36,9 @@
             <div class="header">
                 {{logName}}
             </div>
-            <div class="content">
+            <div class="content font-jetbrains-mono">
                 <div class="ui log log-message">
-                    <p v-for="(log,i) in logs" :key="i+'_log'" class="m-0">
+                    <p v-for="(log,i) in logs" :key="i+'_log'" class="m-0 line-height-1">
                         <small><b>{{log}}</b></small>
                     </p>
                 </div>
@@ -37,12 +49,15 @@
 
 <script>
 import {mapGetters} from 'vuex';
+import axios from 'axios';
 
 export default {
     name: 'LogViewer',
     data: function(){
         return {
-            show: false
+            show: false,
+            availabelLogNames: [],
+            selectedLogName: '',
         }
     },
     props:{
@@ -50,15 +65,16 @@ export default {
             type: Object,
             default: ()=>{ return {}}
         },
-        date:{
-            type: String,
-            default: ''
-        },
         type:{
             type: String,
             default: '',
             required: true
-        }
+        },
+        showViewLogButton: {
+            type: Boolean,
+            default: true,
+            required: false,
+        },
     },
     computed:{
         ...mapGetters({
@@ -69,38 +85,79 @@ export default {
     watch:{
         show: function(v){
             if(v){
-                this.getLogs();
+                this.getLogs()
             }
         },
+        selectedLogName: function(v) {
+            this.getLogs()
+        }
     },
     methods:{
         expand(){
             $('#logs-modal').modal('show');
         },
-        getLogs(){
-            //build names are different and need to be cleaned up
-            if (this.type == 'build' && !Object.prototype.hasOwnProperty.call(this.item, "name")) {
-                //covid_who_clinical_trials_202105270830_udmfle16
-                let name = this.item.target_name.split('_')
-                name.splice(-2, 2)
-                name = name.length > 1 ? name.join('_') : name[0]
-                this.item.name = name
+        getAvailabelLogNames(){
+            this.availabelLogNames = []
+
+            let targetName, logPath, filter
+            if (["dump", "upload"].includes(this.type)) {
+                targetName = filter = `${this.type}_${this.item.name}`
+                logPath = ''
             }
-            if (Object.prototype.hasOwnProperty.call(this.item, "name") && this.type !== undefined) {
+            else {
+                targetName = this.item.target_name
+                logPath = `build/${this.item.target_name}/`
+                if (["index", "diff"].includes(this.type)) {
+                    logPath += `${this.type}/`
+                    filter = ''
+                }
+                else {
+                    filter = this.type
+                }
+            }
+
+            axios
+            .get(axios.defaults.baseURL + `/logs/${logPath}?json&filter=${filter}`)
+            .then(res => {
+                if (res.data.length == 0) {
+                    console.log(`%c 🔖 No available -${this.type}- logs for <${targetName}>`, 'color:coral')
+                    this.$store.commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] No -${this.type}- logs for <${targetName}>`]})
+                    return
+                }
+
+                this.availabelLogNames = []
+                let names = [res.data[0]].concat(res.data.slice(1).sort().reverse())
+                names.forEach(name => this.availabelLogNames.push(`${logPath}${name}`))
+                this.selectedLogName = this.availabelLogNames.length ? this.availabelLogNames[0] : ''
+            })
+            .catch(err => {
+                this.$store.dispatch('clearLogs');
+                console.log(`%c 🔖 Cannot fetch available log names, due to ${err}`, 'color:coral')
+                if (err.response.status == 404) {
+                    this.$store.commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] No -${this.type}- logs for <${targetName}>`]})
+                }
+            });
+        },
+        getLogs(reload=false){
+            if (reload || !this.availabelLogNames || this.availabelLogNames.length == 0) {
+                this.getAvailabelLogNames()
+            }
+
+            let fileName = this.selectedLogName
+            if (fileName && this.type !== undefined) {
                 this.$store.dispatch('getLogsFor',
                     {
-                        item: this.item,
-                        date: this.date,
-                        type: this.type
+                        fileName: fileName,
+                        type: this.type,
                     });
             }
         },
         getColor(line){
             return line.includes('INFO') ? 'royalblue' :
-            line.includes('OK') ? 'green' : 
-            line.includes('DEBUG') ? 'purple' : 
-            line.includes('ERROR') ? 'red' : 
-            line.includes('NOT AVAILABLE') ? 'hotpink' : 
+            line.includes('OK') ? 'green' :
+            line.includes('DEBUG') ? 'purple' :
+            line.includes('ERROR') ? 'red' :
+            line.includes('NOT AVAILABLE') ? 'hotpink' :
             'black'
         },
     }
@@ -109,10 +166,22 @@ export default {
 
 <style>
 .log.message{
-    font-family: sans-serif;
+    font-family: 'JetBrains Mono', sans-serif;
+    font-size: 13px;
+    line-height: 1;
     word-break: break-all;
     max-height: 300px;
     overflow-y: scroll;
     border: 4px #c9c9c9 solid;
+}
+
+.log.message p{
+    line-height: 1;
+}
+
+#logs-modal .log-message {
+    word-break: break-word;
+    overflow: auto;
+    max-height: 70vh;
 }
 </style>

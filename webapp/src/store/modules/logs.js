@@ -31,33 +31,33 @@ export const logs = {
         }
     },
     actions: {
+        clearLogs ({ commit}) {
+            commit('saveLogs', {logs: []})
+            commit('saveLogName', {logName: ""})
+        },
         getLogsFor ({ commit}, payload) {
-            let logDate = getLogDate(payload.type, payload.date);
-            console.log(`%c 🔖 Getting -${payload.type}- logs for <${payload.item.name}> ${logDate}`, 'color:violet')
-            let fileName = `${payload.type}_${payload.item.name}_${logDate}.log`
+            let fileName = payload.fileName
+            console.log(`%c 🔖 Getting -${payload.type}- logs for <${fileName}>`, 'color:violet')
             console.log('%c 💾 FILE >> ' + fileName, 'color:pink')
             commit('saveLogName', {logName: fileName})
-            if (logDate) {
-                try {
-                    axios.get(axios.defaults.baseURL + '/log/' + fileName).then(res=>{
-                        // console.log('LOGS RES', res.data.length)
-                        let lines = res.data.split("\n")
-                        if (lines.length && lines[0].length) {
-                            commit('saveLogs', {logs: lines})
-                        } else {
-                            commit('saveLogs', {logs: ['👌 [OK] Nothing to report, everything looks good!']})
-                        }
-                    }).catch(err=>{
-                        commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] ${payload.type}- logs are not available for for <${payload.item.name}> ${logDate}`]});
-                        console.log(`%c 🔖 Failed to get -${payload.type}- logs for <${payload.item.name}> ${logDate} due to ${err}`, 'color:coral')
-                    });
-                } catch (error) {
-                    console.log(`%c 🔖 Failed to get -${payload.type}- logs for <${payload.item.name}> ${logDate} due to ${error}`, 'color:coral')
-                    commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] No -${payload.type}- logs for <${payload.item.name}> @ ${logDate}`]})
-                }
-            } else {
-                console.log(`%c 🔖 Cannot get -${payload.type}- logs for <${payload.item.name}> ${logDate} due to date value: ${logDate}`, 'color:coral')
-                commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] Cannot get -${payload.type}- logs for <${payload.item.name}> ${logDate} because DATE missing/incorrect format`]})
+
+            try {
+                const url = `${axios.defaults.baseURL}/log/${fileName}?lines=1000`
+                axios.get(url).then(res=>{
+                    // console.log('LOGS RES', res.data.length)
+                    let lines = res.data.split("\n")
+                    if (lines.length && lines[0].length) {
+                        commit('saveLogs', {logs: lines})
+                    } else {
+                        commit('saveLogs', {logs: ['👌 [OK] Nothing to report, everything looks good!']})
+                    }
+                }).catch(err=>{
+                    commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] -${payload.type}- logs are not available for for <${fileName}>`]});
+                    console.log(`%c 🔖 Failed to get -${payload.type}- logs for <${fileName}> due to ${err}`, 'color:coral')
+                });
+            } catch (error) {
+                console.log(`%c 🔖 Failed to get -${payload.type}- logs for <${fileName}> due to ${error}`, 'color:coral')
+                commit('saveLogs', {logs: [`😿 [NOT AVAILABLE] No -${payload.type}- logs for <${fileName}>`]})
             }
         },
     },

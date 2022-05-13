@@ -76,12 +76,12 @@
                         <div class="ui bottom attached tab segment active" data-tab="dump" v-if="source.download">
                             <data-source-dump v-bind:source="source"></data-source-dump>
                             <br>
-                            <LogViewer type="dump" :item="source" :date="release" key="dumplogs"></LogViewer>
+                            <LogViewer type="dump" :item="source" key="dumplogs"></LogViewer>
                         </div>
                         <div :class="['ui bottom attached tab segment', source.download == undefined ? 'active' : '']" data-tab="upload" v-if="source.upload">
                             <data-source-upload v-bind:source="source"></data-source-upload>
                             <br>
-                            <LogViewer type="upload" :item="source" :date="release" key="uploadlogs"></LogViewer>
+                            <LogViewer type="upload" :item="source" key="uploadlogs"></LogViewer>
                         </div>
                         <div class="ui bottom attached tab segment" data-tab="plugin" v-if="source.data_plugin">
                             <data-source-plugin v-bind:source="source"></data-source-plugin>
