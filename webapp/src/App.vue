@@ -2,9 +2,9 @@
   <div id="app" class="m-0">
     <!--🌈🌈 NAV 🌈🌈-->
     <div class="ui pointing inverted menu br-0 m-0 flex-wrap flex-end">
-      <NavBar 
-      :menu="menu" 
-      :conn="conn" 
+      <NavBar
+      :menu="menu"
+      :conn="conn"
       :current_studio_version="current_studio_version"
       :readonly_mode="readonly_mode"
       :readonly_switch="readonly_switch"
@@ -51,7 +51,7 @@
       </div>
 
     </div>
-    
+
     <!--🌈🌈 NAV END🌈🌈-->
 
         <div class="ui basic redirect modal">
@@ -1125,7 +1125,7 @@ body,
     margin:0;
 }
 
-@import url('http://fonts.cdnfonts.com/css/jetbrains-mono');
+@import url('https://fonts.cdnfonts.com/css/jetbrains-mono');
 .font-jetbrains-mono {
   font-family: 'JetBrains Mono', sans-serif;
 }
