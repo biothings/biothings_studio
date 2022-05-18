@@ -33,8 +33,7 @@
             <div class="item"><i>Other actions</i></div>
             <a class="item"  v-on:click="createConfiguration" :class="actionable">
                 <i class="big icons">
-                    <i class="configure icon"></i>
-                    <i class="huge corner add icon"></i>
+                    <i class="corner add icon"></i>
                 </i>
                 <div>New configuration</div>
             </a>

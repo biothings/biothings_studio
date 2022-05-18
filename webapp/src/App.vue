@@ -994,6 +994,12 @@ export default {
   }
 }
 
+
+// In order to fix a modal's position error when showing modal after scrolling to bottom
+// Override the default Fomantic UI's modal's useFlex setting
+$.fn.modal.settings.useFlex = true;
+
+
 </script>
 
 <style>

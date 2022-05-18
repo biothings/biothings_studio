@@ -2,9 +2,9 @@
     <div id="apis">
         <div class="ui left vertical labeled icon small inverted sidebar menu" :class="actionable">
             <a class="item"  v-on:click="createAPI">
-                <i class="big icons">
+                <i class="big icons addNewAPI">
                     <i class="shield icon"></i>
-                    <i class="huge corner add icon"></i>
+                    <i class="corner top right add icon"></i>
                 </i>
                 <br>
                 <br>
@@ -253,5 +253,10 @@ export default {
 <style>
 .ui.sidebar {
     overflow: visible !important;
+}
+
+.ui.sidebar .icons.addNewAPI {
+  float: none !important;
+  margin: 0 !important;
 }
 </style>
