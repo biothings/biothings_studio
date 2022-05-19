@@ -1139,4 +1139,8 @@ body,
 .line-height-1 {
   line-height: 1;
 }
+
+.ui.checkbox {
+  font-size: 1rem;
+}
 </style>

@@ -32,8 +32,8 @@ const MAX_EVENTS = 10
 export default {
   name: 'event-messages',
   mounted () {
-    $('.events.button').popup({
-      popup: $('.events.popup'),
+    $('#events.button').popup({
+      popup: $('.messages.popup'),
       on: 'click',
       onVisible: () => { this.hasnew = false },
       // default position and fallback if no space left

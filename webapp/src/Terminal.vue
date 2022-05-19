@@ -48,7 +48,7 @@ export default {
 
 <style>
 .ui[class*="super compact"].table td {
-    padding: 0.1em .6em;
+    padding: 0.1em .6em !important;
 }
 
 .term {
