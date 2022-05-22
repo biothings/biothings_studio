@@ -994,6 +994,12 @@ export default {
   }
 }
 
+
+// In order to fix a modal's position error when showing modal after scrolling to bottom
+// Override the default Fomantic UI's modal's useFlex setting
+$.fn.modal.settings.useFlex = true;
+
+
 </script>
 
 <style>
@@ -1132,5 +1138,9 @@ body,
 
 .line-height-1 {
   line-height: 1;
+}
+
+.ui.checkbox {
+  font-size: 1rem;
 }
 </style>

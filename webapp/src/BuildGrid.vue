@@ -34,7 +34,7 @@
             <a class="item"  v-on:click="createConfiguration" :class="actionable">
                 <i class="big icons">
                     <i class="configure icon"></i>
-                    <i class="huge corner add icon"></i>
+                    <i class="corner add icon bottom right"></i>
                 </i>
                 <div>New configuration</div>
             </a>
@@ -762,7 +762,14 @@ export default {
 <style>
 .ui.sidebar {
     overflow: visible !important;
+    width: 13rem !important;
 }
+
+.ui.vertical.menu .item>i.icon, .ui.vertical.menu .item>i.icons {
+  float: unset;
+  margin: 0;
+}
+
 .clearconffilter {
     margin-right:1em !important;
 }
