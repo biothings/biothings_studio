@@ -98,13 +98,15 @@
 
 <script>
 import axios from 'axios'
+import Loader from './Loader.vue'
+import AsyncCommandLauncher from './AsyncCommandLauncher.vue'
 import IndexReleaseEvent from './IndexReleaseEvent.vue'
 import Actionable from './Actionable.vue'
 
 export default {
   name: 'data-source-quick-index',
   props: ['source'],
-  mixins: [Actionable],
+  mixins: [AsyncCommandLauncher, Loader, Actionable],
   components: {
     IndexReleaseEvent,
   },
@@ -127,6 +129,14 @@ export default {
     $('.ui.basic.newrelease.modal').remove()
   },
   methods: {
+    onQuickIndexCommandSuccess: function (response) {
+      this.loadData()
+    },
+    onQuickIndexCommandError: function (response) {
+      let detail = response.data.result.results || []
+      detail = detail.join(", ")
+      this.error = `Failed to quick index. Error: ${detail}`
+    },
     newFullRelease: function () {
       var doc_type = $('.ui.form input[name=doc_type]').val()
       var index_name = $('.ui.form input[name=index_name]').val()
@@ -145,19 +155,12 @@ export default {
         return false
       }
 
-      axios.post(axios.defaults.baseURL + '/quick_index', {
+      return axios.post(axios.defaults.baseURL + '/quick_index', {
           datasource_name: this.source._id,
           doc_type: doc_type,
           indexer_env: indexer_env,
-          index_name: index_name })
-        .then(response => {
-          console.log(response.data.result)
-          this.getReleases()
-        })
-        .catch(err => {
-          console.log(err)
-          this.error = err.response.data.error || err
-        })
+          index_name: index_name
+      })
     },
     newRelease: function () {
       var self = this
@@ -171,7 +174,11 @@ export default {
           },
           onApprove: function () {
             self.form_errors = []
-            return self.newFullRelease()
+            self.launchAsyncCommand(
+              self.newFullRelease,
+              self.onQuickIndexCommandSuccess,
+              self.onQuickIndexCommandError
+            )
           }
         })
         .modal('show')
