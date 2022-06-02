@@ -494,6 +494,7 @@ export default {
               $(`.${self.map_id}.test-on`).text(`${value}`)
             }
           })
+          $(`.ui.${self.map_id}.dropdown`).dropdown('set value', 'localhub')
         })
         .catch(err => {
           console.log('Error getting index environments: ' + err)
