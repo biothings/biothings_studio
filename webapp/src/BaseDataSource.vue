@@ -122,6 +122,17 @@ export default {
           console.log('Error getting job manager information: ' + err)
         })
     },
+    update_source_meta: function (subsrc = null) {
+      var srcname = this.source.name
+      if (subsrc != null) { srcname += '.' + subsrc } // upload a sub-source only
+      axios.put(axios.defaults.baseURL + `/source/${srcname}/update_source_meta`)
+        .then(response => {
+          console.log(response.data.result)
+        })
+        .catch(err => {
+          console.log('Error getting job manager information: ' + err)
+        })
+    },
     unregister: function () {
       $(`.${this.source.name}.ui.basic.unregister.modal`)
         .modal('setting', {

@@ -81,6 +81,10 @@
                                             <i class="database icon"></i>
                                             Upload
                                         </button>
+                                        <button :class="['ui labeled small icon button teal update-source-meta',info.status == 'uploading' ? 'disabled' : '']" @click="do_update_source_meta(subsrc)">
+                                            <i class="sync alternate icon"></i>
+                                            Update source meta
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -118,6 +122,9 @@ export default {
     do_upload: function (subsrc = null) {
       return this.$parent.upload(subsrc = subsrc)
     },
+    do_update_source_meta: function(subsrc = null) {
+      return this.$parent.update_source_meta(subsrc = subsrc)
+    },
     reset: function (subsrc) {
       var self = this
       self.loading()
@@ -145,5 +152,8 @@ export default {
 }
 .reset > i {
     margin: 0em !important;
+}
+.update-source-meta {
+    margin-top: 2rem;
 }
 </style>
