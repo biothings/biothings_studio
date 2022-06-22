@@ -281,12 +281,11 @@
 
 <script>
 import axios from 'axios'
-import Build from './Build.vue'
-import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
+import Build from './Build.vue'
 import bus from './bus.js'
-import moment from 'moment'
 import PaginatedList from './components/PaginatedList.vue'
+import Loader from './Loader.vue'
 
 export default {
   name: 'build-grid',
@@ -822,5 +821,13 @@ export default {
 }
 .pointer{
   cursor: pointer;
+}
+
+.filterbuilds.dropdown {
+  min-width: 14em !important;
+}
+
+.includearchived.checkbox {
+  margin-top: unset !important;
 }
 </style>

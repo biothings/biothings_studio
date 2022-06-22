@@ -1,6 +1,6 @@
 <template>
     <div class="pusher main-background" style="min-height:100vh">
-        <div class="ui container" style="margin:10px;">
+        <div class="ui container" style="margin:10px; margin-left: auto!important; margin-right: auto!important;">
           <div class="ui big message flex-center clearMenu m-0" :class="actionable">
               <h1 class="ui olive header">Releases</h1>
               <button class="ui circular button" style="margin-left:20px;" @click="wizard()">
@@ -140,5 +140,9 @@ export default {
     padding: 15px;
     border-radius: 10px;
     color: #969696;
+}
+
+.standalone.menu .icon {
+  float: right !important;
 }
 </style>
