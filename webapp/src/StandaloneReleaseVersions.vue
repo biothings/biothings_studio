@@ -91,21 +91,50 @@
                 <div class="content" v-if="selected_version">
                     <p>Current installed version is <b>{{ backend.version || "... no version found"}}</b></p>
                     <p>Are you sure you want to install data release <b>{{selected_version.build_version || '???' }}</b> ?
-                        <span v-if="!install_path.length">
-                            <span v-if="selected_version.type == 'incremental'">
-                                <br>It is compatible with current version and can directly be installed on top it.
-                            </span>
-                            <span v-else>
-                                <br>This release will replace existing data.
-                            </span>
-                        </span>
-                    <span v-if="install_path.length">
-                        <br>In order to install this data release, the following releases will first be installed:
-                        <div class="ui ordered inverted list">
-                            <div class="item" v-for="ver in install_path" :key="ver+'v'">Release: <b>{{ ver }}</b></div>
-                        </div>
-                    </span>
+                      <span v-if="!install_path.length">
+                          <span v-if="selected_version.type == 'incremental'">
+                              <br>It is compatible with current version and can directly be installed on top it.
+                          </span>
+                          <span v-else>
+                            <br>This release will replace existing data.
+                          </span>
+                      </span>
+                      <span v-if="install_path.length">
+                          <br>In order to install this data release, the following releases will first be installed:
+                          <div class="ui ordered inverted list">
+                              <div class="item" v-for="ver in install_path" :key="ver+'v'">Release: <b>{{ ver }}</b></div>
+                          </div>
+                      </span>
                     </p>
+                    <div v-if="selected_version.type == 'full' " class="ui checkbox">
+                      <div class="ui toggle checkbox">
+                        <input
+                            type="checkbox"
+                            id="full_install_use_no_downtime_method"
+                            name="full_install_use_no_downtime_method"
+                            :checked="full_install_use_no_downtime_method ? 'checked' : false"
+                            @change="toggleFullInstallUseNoDowntimeMethod($event)">
+                        <label class="white">Use no downtime method?</label>
+                      </div>
+
+                      <div class="ui accordion">
+                        <div class="title white">
+                          <i class="dropdown icon"></i>
+                          Don't know which full install method should use? 
+                        </div>
+                        <div class="content">
+                          <p>In order to do full install, there are 2 available methods:</p>
+                          <div class="ui bulleted list full-install-description">
+                            <div class="item">
+                              Use no downtime method: performing a index restoration to a different index name and then switching the alias when it's done. This has no downtime, and is the default method.
+                            </div>
+                            <div class="item">
+                              Use downtime method: deleting the old index and then install the new index. This causes downtime, should be used as a fallback method.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                 </div>
                 <div class="actions">
                     <div class="ui red basic cancel inverted button">
@@ -150,6 +179,7 @@ export default {
       versions: [],
       // fetching info
       selected_version: null, // selected version from the table
+      full_install_use_no_downtime_method: true,
       info_error: null,
       installing: null,
       install_path: []
@@ -165,6 +195,9 @@ export default {
         this.versions = []
         this.refreshVersions()
       }
+    },
+    toggleFullInstallUseNoDowntimeMethod: function(event) {
+      this.full_install_use_no_downtime_method = !this.full_install_use_no_downtime_method
     },
     getVersionClass: function (version) {
       if (this.backend.version == version.target_version) {
@@ -256,7 +289,11 @@ export default {
         // from files locally stored. Hub will not installed them again other than
         // with using apply() or re-downloading them. We stay on the safe (and easy,
         // I confess) side.
-        var data = { version: version.build_version, force: 1 }
+        var data = {
+          version: version.build_version,
+          force: 1,
+          use_no_downtime_method: self.full_install_use_no_downtime_method
+        }
         return axios.post(axios.defaults.baseURL + `/standalone/${self.name}/install`, data)
       }
       var onSuccess = function (response) {
@@ -280,6 +317,7 @@ export default {
           // (ie. remove current one for display purpose)
           self.install_path = self.adjustInstallPath(response.data.result.results[0])
         }
+        $(`.ui.basic.install.modal.${self.cssName(self.name)} .ui.accordion`).accordion();
         $(`.ui.basic.install.modal.${self.cssName(self.name)}`)
           .modal('setting', {
             onApprove: function () {
@@ -311,5 +349,11 @@ export default {
 .releases-cont{
     max-height: 1000px;
     overflow: scroll;
+}
+#full_install_use_no_downtime_method~label {
+  color: white !important;
+}
+.full-install-description {
+  margin-left: 3rem !important;
 }
 </style>
