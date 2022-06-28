@@ -80,7 +80,7 @@
                                 <br>
                             </div>
                             <div>
-                              <label>Optional parameters can be added to the configuration (usefull to customize builder behavior). Enter a JSON object structure</label>
+                              <label>Add any extra index settings below to customize indexing behavior. Available settings are available <a target="_blank" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html#index-modules-settings">here</a>. Enter a JSON object structure</label>
                               <textarea name="extra_index_settings">{}</textarea>
                             </div>
                         </div>
