@@ -74,8 +74,8 @@
                                 <br>
                             </div>
                             <div>
-                                <label>Enter number of replicas (default is 1)</label>
-                                <input type="number" name="num_replicas" value="1" min="1">
+                                <label>Enter number of replicas (default is 0)</label>
+                                <input type="number" name="num_replicas" value="0" min="0">
                                 <br>
                                 <br>
                             </div>
@@ -169,8 +169,8 @@ export default {
       if (!num_shards || num_shards < 1) {
         num_shards = 1
       }
-      if (!num_replicas || num_replicas < 1) {
-        num_replicas = 1
+      if (!num_replicas || num_replicas < 0) {
+        num_replicas = 0
       }
       if (extra_index_settings) {
         try {
@@ -205,7 +205,7 @@ export default {
             $('.ui.form input[name=doc_type]').val('')
             $('.ui.form input[name=index_name]').val('')
             $('.ui.form input[name=num_shards]').val(1)
-            $('.ui.form input[name=num_replicas]').val(1)
+            $('.ui.form input[name=num_replicas]').val(0)
             $('.ui.form textarea[name=extra_index_settings]').val('{}')
           },
           onApprove: function () {
