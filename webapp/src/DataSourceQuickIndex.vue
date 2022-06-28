@@ -55,6 +55,9 @@
                                 <label>Enter a name for the index (or leave it empty to have the same name as the datasource)</label>
                                 <input type="text" name="index_name" placeholder="Index name">
                                 <br>
+                                <div class="ui teal message">
+                                    In order to show newly created index in this tab, index name should be in this format: {DATASOURCE NAME}_{any string}, or QUICK__{DATASOURCE NAME}_{any string}
+                                </div>
                                 <br>
                             </div>
                             <div>
@@ -64,12 +67,21 @@
                                 </select>
                                 <br>
                             </div>
-                        </div>
-
-                        <div class="eight wide column">
-
-                            <div class="ui teal message">
-                                In order to show newly created index in this tab, index name should be in this format: {DATASOURCE NAME}_{any string}, or QUICK__{DATASOURCE NAME}_{any string}
+                            <div>
+                                <label>Enter number of shards (default is 1)</label>
+                                <input type="number" name="num_shards" value="1" min="1">
+                                <br>
+                                <br>
+                            </div>
+                            <div>
+                                <label>Enter number of replicas (default is 1)</label>
+                                <input type="number" name="num_replicas" value="1" min="1">
+                                <br>
+                                <br>
+                            </div>
+                            <div>
+                              <label>Optional parameters can be added to the configuration (usefull to customize builder behavior). Enter a JSON object structure</label>
+                              <textarea name="extra_index_settings">{}</textarea>
                             </div>
                         </div>
                     </div>
@@ -144,6 +156,9 @@ export default {
         index_name = null
       }
       var indexer_env = $('.ui.form select[name=indexer_env]').val()
+      var num_shards = $('.ui.form input[name=num_shards]').val()
+      var num_replicas = $('.ui.form input[name=num_replicas]').val()
+      var extra_index_settings = $('.ui.form textarea[name=extra_index_settings]').val()
 
       if (!doc_type) {
         this.form_errors.push('Provide a document type')
@@ -151,6 +166,21 @@ export default {
       if (!indexer_env) {
         this.form_errors.push('Select an indexer environment')
       }
+      if (!num_shards || num_shards < 1) {
+        num_shards = 1
+      }
+      if (!num_replicas || num_replicas < 1) {
+        num_replicas = 1
+      }
+      if (extra_index_settings) {
+        try {
+          JSON.parse(extra_index_settings)
+        }
+        catch(error) {
+          this.form_errors.push('Invalid extra index settings: ' + error)
+        }
+      }
+
       if (this.form_errors.length > 0) {
         return false
       }
@@ -159,7 +189,10 @@ export default {
           datasource_name: this.source._id,
           doc_type: doc_type,
           indexer_env: indexer_env,
-          index_name: index_name
+          index_name: index_name,
+          num_shards: num_shards,
+          num_replicas: num_replicas,
+          extra_index_settings: extra_index_settings,
       })
     },
     newRelease: function () {
@@ -171,6 +204,9 @@ export default {
             self.form_errors = []
             $('.ui.form input[name=doc_type]').val('')
             $('.ui.form input[name=index_name]').val('')
+            $('.ui.form input[name=num_shards]').val(1)
+            $('.ui.form input[name=num_replicas]').val(1)
+            $('.ui.form textarea[name=extra_index_settings]').val('{}')
           },
           onApprove: function () {
             self.form_errors = []
