@@ -71,6 +71,7 @@
                             <a :class="['blue item', source.download == undefined ? 'active' : '']" data-tab="upload" v-if="source.upload">Uploader</a>
                             <a class="blue item" data-tab="plugin" v-if="source.data_plugin">Plugin</a>
                             <a class="blue item" data-tab="mapping">Mapping</a>
+                            <a class="blue item" data-tab="quick_index">Quick Index</a>
                             <!--a class="red item" data-tab="inspect">Statistics</a-->
                         </div>
                         <div class="ui bottom attached tab segment active" data-tab="dump" v-if="source.download">
@@ -89,6 +90,10 @@
                         <div class="ui bottom attached tab segment" data-tab="mapping">
                             <data-source-mapping v-bind:maps="maps" v-bind:_id="_id" v-bind:source="source"></data-source-mapping>
                         </div>
+                        <div class="ui bottom attached tab segment" data-tab="quick_index">
+                            <data-source-quick-index v-bind:source="source"></data-source-quick-index>
+                        </div>
+                        
                         <!--div class="ui bottom attached tab segment" data-tab="inspect">
                         <data-source-inspect v-bind:maps="maps" v-bind:_id="_id"></data-source-inspect>
                         </div-->
@@ -139,6 +144,7 @@ import DataSourceUpload from './DataSourceUpload.vue'
 import DataSourceInspect from './DataSourceInspect.vue'
 import DataSourcePlugin from './DataSourcePlugin.vue'
 import DataSourceMapping from './DataSourceMapping.vue'
+import DataSourceQuickIndex from './DataSourceQuickIndex.vue'
 import DiffModal from './DiffModal.vue'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
@@ -154,6 +160,7 @@ export default {
     DataSourceInspect,
     DataSourcePlugin,
     DataSourceMapping,
+    DataSourceQuickIndex,
     DiffModal,
     Loader,
     LogViewer
