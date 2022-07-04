@@ -81,9 +81,12 @@
                                             <i class="database icon"></i>
                                             Upload
                                         </button>
-                                        <button :class="['ui labeled small icon button teal update-source-meta',info.status == 'uploading' ? 'disabled' : '']" @click="do_update_source_meta(subsrc)">
+                                        <button
+                                            :class="['ui labeled small icon button teal update-source-meta',info.status == 'uploading' ? 'disabled' : '']"
+                                            @click="do_update_source_meta(subsrc)"
+                                            @data-subsrc="subsrc">
                                             <i class="sync alternate icon"></i>
-                                            Update source meta
+                                            Update metadata
                                         </button>
                                     </div>
                                 </div>
@@ -96,6 +99,33 @@
         <div v-else>
             No uploader found for this source.
         </div>
+
+        <div class="ui modal" id="metadata-confirming">
+            <div class="ui icon header">
+                Confirm update metadata
+            </div>
+            <div class="content">
+                <div v-for="builder_class in metadataCompareData" v-bind:key="builder_class.kclass" class="ui grid">
+                    <div v-for="version in ['current', 'new']" v-bind:key="version" :class="'eight wide column ' + version">
+                        <h3 class="center aligned">
+                            {{ version }} Metadata
+                        </h3>
+                        <pre class="metadata">
+                            {{ builder_class[version] }}
+                        </pre>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <div class="ui red basic cancel inverted button">
+                    <i class="remove icon"></i> Cancel
+                </div>
+                <div class="ui green ok inverted button">
+                    <i class="checkmark icon"></i> Update
+                </div>
+            </div>
+        </div>
+
     </span>
 </template>
 
@@ -104,26 +134,78 @@ import axios from 'axios'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 import TracebackViewer from './components/TracebackViewer.vue'
+import AsyncCommandLauncher from './AsyncCommandLauncher.vue'
 
 export default {
   name: 'data-source-upload',
   props: ['source'],
-  mixins: [Loader, Actionable],
+  mixins: [AsyncCommandLauncher, Loader, Actionable],
   mounted () {
     this.setup()
   },
   components:{
       TracebackViewer
   },
+  data () {
+    return {
+        metadataCompareData: [],
+    }
+  },
   methods: {
     setup: function () {
+      const self = this
       $('.menu .item').tab()
+      $("#metadata-confirming").modal({
+        onApprove: function() {
+            const subsrc = $("button.update-source-meta").data("subsrc")
+            self.do_update_source_meta(subsrc, false)
+        }
+      })
     },
     do_upload: function (subsrc = null) {
       return this.$parent.upload(subsrc = subsrc)
     },
-    do_update_source_meta: function(subsrc = null) {
-      return this.$parent.update_source_meta(subsrc = subsrc)
+    do_update_source_meta: function(subsrc=null, dry=true) {
+        const self = this
+        self.loading()
+
+        const cmd = function () {
+            const data = {"dry": dry}
+            let srcname = self.source.name
+
+            if (subsrc != null) { // update a sub-source only
+                srcname += '.' + subsrc
+            }
+
+            return axios.put(axios.defaults.baseURL + `/source/${srcname}/update_source_meta`, data)
+        }
+        const onSuccess = function (response) {
+            self.metadataCompareData = []
+            response.data.result.results.forEach(kclass_data => {
+                if (kclass_data) {
+                    self.metadataCompareData.push(kclass_data)
+                }
+            })
+
+            if (dry) {
+                if (self.metadataCompareData.length > 0) {
+                    $("#metadata-confirming").modal("show")
+                }
+                else {
+                    $('body').modal('alert','<span class="ui large text">Nothing change. No need to update.</span>');
+                }
+            }
+            else {
+                $('body').modal('alert','<span class="ui large text">Successfully updated metadata!</span>');
+            }
+        }
+        const onError = function (err) {
+            console.log(err);
+            self.loaderror(err);
+            self.backend_error = self.extractAsyncError(err)
+        }
+
+        this.launchAsyncCommand(cmd, onSuccess, onError)
     },
     reset: function (subsrc) {
       var self = this
@@ -155,5 +237,12 @@ export default {
 }
 .update-source-meta {
     margin-top: 2rem;
+}
+
+#metadata-confirming h3 {
+    text-transform: capitalize;
+}
+#metadata-confirming pre {
+    overflow-x: auto;
 }
 </style>
