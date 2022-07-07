@@ -29,7 +29,8 @@
                         <div class="item">
                             <div>
                               <h6 class="header m-0"><i class="bookmark icon"></i> Index</h6>
-                              <small>{{backend.index}}</small>
+                              <small v-if="backend.index_alias">{{backend.index_alias}} ({{backend.index}})</small>
+                              <small v-if="!backend.index_alias">{{backend.index}}</small>
                             </div>
                         </div>
                         <div class="item">

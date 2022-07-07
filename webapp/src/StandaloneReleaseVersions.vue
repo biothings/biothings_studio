@@ -299,6 +299,7 @@ export default {
       var onSuccess = function (response) {
         self.installing = null
         self.installLoader(version, true)
+        self.$parent.refresh()
       }
       var onError = function (err) {
         self.installing = null
