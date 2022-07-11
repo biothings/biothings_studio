@@ -102,17 +102,21 @@
 
         <div class="ui modal" id="metadata-confirming">
             <div class="ui icon header">
-                Confirm update metadata
+                Confirm updating metadata
             </div>
             <div class="content">
+                <div class="ui text small red" style="text-align: center; margin-bottom: 1rem;">Warning! Typically you want to re-run "upload" step to update both the metadata and actual data at the same time. Please proceed to update the metadata only if it won't cause any inconsistency with the previously uploaded data.</div>
+
                 <div v-for="builder_class in metadataCompareData" v-bind:key="builder_class.kclass" class="ui grid">
-                    <div v-for="version in ['current', 'new']" v-bind:key="version" :class="'eight wide column ' + version">
-                        <h3 class="center aligned">
+                    <div class="row" style="padding-bottom: 0;">
+                        <h3 v-for="version in ['current', 'new']" v-bind:key="version" :class="'eight wide column ' + version">
                             {{ version }} Metadata
                         </h3>
-                        <pre class="metadata">
-                            {{ builder_class[version] }}
-                        </pre>
+                    </div>
+                    <div class="row metadata-wrapper">
+                        <pre v-for="version in ['current', 'new']"
+                            v-bind:key="version"
+                            :class="'eight wide column metadata ' + version">{{ builder_class[version] }}</pre>
                     </div>
                 </div>
             </div>
@@ -192,7 +196,7 @@ export default {
                     $("#metadata-confirming").modal("show")
                 }
                 else {
-                    $('body').modal('alert','<span class="ui large text">Nothing change. No need to update.</span>');
+                    $('body').modal('alert','<span class="ui large text">Nothing changed. No need to update.</span>');
                 }
             }
             else {
@@ -242,7 +246,14 @@ export default {
 #metadata-confirming h3 {
     text-transform: capitalize;
 }
+
+#metadata-confirming .metadata-wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
 #metadata-confirming pre {
     overflow-x: auto;
+    width: 49% !important;
 }
 </style>
