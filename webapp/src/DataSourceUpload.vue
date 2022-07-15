@@ -84,7 +84,7 @@
                                         <button
                                             :class="['ui labeled small icon button teal update-source-meta',info.status == 'uploading' ? 'disabled' : '']"
                                             @click="do_update_source_meta(subsrc)"
-                                            @data-subsrc="subsrc">
+                                            :data-subsrc="subsrc">
                                             <i class="sync alternate icon"></i>
                                             Update metadata
                                         </button>
@@ -159,11 +159,9 @@ export default {
     setup: function () {
       const self = this
       $('.menu .item').tab()
-      $("#metadata-confirming").modal({
-        onApprove: function() {
-            const subsrc = $("button.update-source-meta").data("subsrc")
-            self.do_update_source_meta(subsrc, false)
-        }
+      $("#metadata-confirming .actions .ok").on("click", event => {
+        const subsrc = $("button.update-source-meta").data("subsrc")
+        self.do_update_source_meta(subsrc, false)
       })
     },
     do_upload: function (subsrc = null) {
