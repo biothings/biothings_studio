@@ -11,6 +11,20 @@
       :switchReadOnly="switchReadOnly"
       ></NavBar>
       <div class="item m-auto">
+        <div v-if="needs_upgrade">
+            <!-- <button class="mini circular ui icon button" @click="showUpgrades()" data-tooltip="Studio Upgrade Available" data-position="bottom center">
+                <b class="upgrade">Upgrade</b>
+            </button> -->
+            <div class="ui vertical animated mini circular button pointer" tabindex="0" @click="showUpgrades()" data-tooltip="Studio Upgrade Available" data-position="bottom center">
+              <div class="visible content">
+                <i class="wrench icon upgrade"></i>
+              </div>
+              <div class="hidden content">
+                Upgrade
+              </div>
+            </div>
+        </div>
+
         <div id="settings" v-if="has_feature('config')">
             <button class="mini circular ui icon button" @click="openConfig" data-tooltip="Edit Studio Configuration" data-position="bottom center">
                 <i class="cog icon"></i>
@@ -35,19 +49,6 @@
               </button>
           </div>
         </span>
-        <div v-if="needs_upgrade">
-            <!-- <button class="mini circular ui icon button" @click="showUpgrades()" data-tooltip="Studio Upgrade Available" data-position="bottom center">
-                <b class="upgrade">Upgrade</b>
-            </button> -->
-            <div class="ui vertical animated mini circular button pointer" tabindex="0" @click="showUpgrades()" data-tooltip="Studio Upgrade Available" data-position="bottom center">
-              <div class="visible content">
-                <i class="wrench icon upgrade"></i>
-              </div>
-              <div class="hidden content">
-                Upgrade
-              </div>
-            </div>
-        </div>
       </div>
 
     </div>
