@@ -39,7 +39,8 @@
                                     <tr v-if="info.error">
                                         <td >Error</td>
                                         <td>
-                                            <div class="red">{{info.error}} <TracebackViewer :source="source"></TracebackViewer></div>
+                                            <div class="error-message red">{{info.error}}</div>
+                                            <TracebackViewer :source="source"></TracebackViewer>
                                         </td>
                                     </tr>
                                     <tr>
@@ -253,5 +254,12 @@ export default {
 #metadata-confirming pre {
     overflow-x: auto;
     width: 49% !important;
+}
+
+.error-message {
+    max-width: 30vw;
+    overflow-x: auto;
+    overflow-wrap: normal;
+    margin-bottom: 0.5rem;
 }
 </style>
