@@ -1,5 +1,5 @@
 <template>
-    <div style="display:inline-block; margin-left:5px;">
+    <div style="display:flex; justify-content: center;">
         <div class="flex justify-center">
             <button class="ui orange button mini circular" @click="getLogs">
                 View Traceback
