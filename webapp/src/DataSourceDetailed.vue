@@ -6,7 +6,12 @@
         <div id="data-source" class="ui centered fluid card" v-if="source">
             <div class="content">
 
-                <div class="left aligned header" v-if="source.name">{{ source.name }}</div>
+                <div class="left aligned header" v-if="source.name">
+                  {{ source.name }}
+                  <span v-if="dumper_schedule" :data-tooltip="dumper_schedule">
+                    <i class="calendar alternate outline icon"></i>
+                  </span>
+                </div>
                 <div class="meta">
                     <span class="right floated time" v-if="source.download && source.download.started_at">Updated {{ source.download.started_at | moment("from", "now") }}</span>
                     <span class="right floated time" v-else>Never updated</span>
@@ -17,7 +22,7 @@
                         <div class="ui clearing divider"></div>
                         <div class="left floated">
                             <i class="file outline icon"></i>
-                            {{ source.count | currency('',0) }} document{{ source.count &gt; 1 ? "s" : "" }}
+                            {{ source.count | currency('',0) }} document{{ source.count > 1 ? "s" : "" }}
                         </div>
                         <div class="right floated">
                             <span v-if="license !== null && typeof license === 'object'">
@@ -48,7 +53,7 @@
                                         <tr>
                                             <td>
                                                 <a v-if="license_url" :href="license_url">
-                                                    <span v-if="license">{{license}}</span*>
+                                                    <span v-if="license">{{license}}</span>
                                                     <span v-else>license</span>
                                                 </a>
                                                 <span v-else>{{license}}</span>
@@ -184,6 +189,7 @@ export default {
   data () {
     return {
       source: null,
+      dumper_schedule: null,
     }
   },
   computed: {
@@ -232,6 +238,13 @@ export default {
         .then(response => {
           // console.log(response.data.result)
           self.source = response.data.result
+          try {
+            self.dumper_schedule = self.source.download.dumper.schedule
+          }
+          catch(error){
+            self.dumper_schedule = null;
+          }
+
           this.loaded()
         })
         .catch(err => {
