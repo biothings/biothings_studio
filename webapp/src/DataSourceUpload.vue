@@ -3,11 +3,15 @@
         <span v-if="source.upload && source.upload.sources">
             <span v-if="Object.keys(source.upload.sources).length > 1">
                 <div id="srcs" class="ui top attached tabular menu">
-                    <a :class="['green item', i === 0 ? 'active' : '']" :data-tab="'upload_' + subsrc" v-for="(_,subsrc,i) in source.upload.sources" :key="i+'x'">
+                    <a :class="['green item', i === 0 ? 'active' : '']"
+                        :data-tab="'upload_' + subsrc"
+                        v-for="(subsrc_data, subsrc, i) in source.upload.sources"
+                        :key="i+'x'">
                         {{subsrc}}
                         <button class="reset ui button" v-if="source.upload.sources[subsrc]['uploader'] === null" @click="reset(subsrc)" data-tooltip="Datasource broken, click to remove">
                             <i class="close icon"></i>
                         </button>
+                        <i class="red exclamation circle icon pulsing" v-if="subsrc_data.status === 'failed'" ></i>
                     </a>
                 </div>
             </span>
@@ -231,6 +235,9 @@ export default {
 </script>
 
 <style scoped>
+#srcs i.red {
+    margin-left: 0.3rem;
+}
 .reset.button {
     font-size: 0.5em !important;
     margin-left: 1em !important;
