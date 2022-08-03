@@ -100,9 +100,9 @@ export default {
             this.availabelLogNames = []
 
             let targetName, logPath, filter
-            if (["dump", "upload"].includes(this.type)) {
+            if (["dump", "upload", "loader"].includes(this.type)) {
                 targetName = filter = `${this.type}_${this.item.name}`
-                logPath = ''
+                logPath = 'dataload/'
             }
             else {
                 targetName = this.item.target_name
