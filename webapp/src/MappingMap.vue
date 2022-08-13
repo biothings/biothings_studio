@@ -306,7 +306,7 @@ export default {
     },
     map: function (newv, oldv) {
       if (newv != oldv) {
-        this.htmlmap()
+        setTimeout(this.htmlmap, 500)
       }
     }
   },
