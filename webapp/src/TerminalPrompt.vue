@@ -5,6 +5,7 @@
                type="text"
                placeholder="Type a command..."
                v-on:keydown.enter="send"
+               autocomplete="off"
                autofocus/>
     </div>
     </span>
