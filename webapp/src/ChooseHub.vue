@@ -23,7 +23,7 @@
             <div class="ui newhuburl form">
                 <div class="fields">
                     <div class="required ten wide field">
-                        <input type="text" id="huburl" placeholder="Hub address" autofocus>
+                        <input type="text" id="huburl" placeholder="Hub address" autofocus v-on:keypress="handleKeyPressOnHubURL">
                     </div>
                 </div>
                 <div v-if="connection_error" class="connectionerror ui red basic label">
@@ -235,6 +235,19 @@ export default {
       auth.refreshAccessToken()
       auth.signOut()
       hubapi.clearLoggedUser()
+    },
+    handleKeyPressOnHubURL: function (event) {
+      if (event.key !== "Enter") {
+        return
+      }
+
+      const url = $("#huburl").val()
+
+      if (!url || url.length == 0) {
+        return
+      }
+
+      this.refreshConnection(url)
     }
   }
 }
