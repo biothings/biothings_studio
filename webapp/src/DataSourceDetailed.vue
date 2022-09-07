@@ -8,7 +8,7 @@
 
                 <div class="left aligned header" v-if="source.name">
                   {{ source.name }}
-                  <span v-if="dumper_schedule" :data-tooltip="dumper_schedule">
+                  <span class="dumper-schedule-popup" v-if="dumper_schedule_message" :data-html="dumper_schedule_message">
                     <i class="calendar alternate outline icon"></i>
                   </span>
                 </div>
@@ -181,6 +181,11 @@ export default {
     bus.$on('change_master', this.loadData)
     bus.$on('change_data_plugin', this.loadData)
   },
+  updated () {
+    $('.dumper-schedule-popup').popup({
+      hoverable: true,
+    })
+  },
   beforeDestroy () {
     bus.$on('change_source', this.loadData)
     bus.$off('change_master', this.loadData)
@@ -227,8 +232,21 @@ export default {
     },
     website: function () {
       return this.pick_metadata(['url'])
-    }
+    },
+    dumper_schedule_message: function () {
+      if (!this.dumper_schedule) return
 
+      const cron_info = this.dumper_schedule.cron,
+      strdelta = this.dumper_schedule.strdelta
+
+      if (!cron_info || !strdelta) return
+
+      return `<div style="min-width: 300px;">
+        <div>This dumper runs automatically:</div>
+        <div style="margin-left: 1rem;"><B>Schedule</B>: <a href="https://crontab.guru/#${cron_info.replaceAll(" ", "_")}" target="_blank">${cron_info}</a></div>
+        <div style="margin-left: 1rem;">Next job is scheduled to run in ${strdelta}</div>
+      </div>`
+    }
   },
   methods: {
     loadData () {
