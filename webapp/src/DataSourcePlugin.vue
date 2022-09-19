@@ -28,6 +28,18 @@
               </td>
             </tr>
             <tr>
+              <td >Name</td>
+              <td>
+                {{source.data_plugin.plugin.display_name}}
+              </td>
+            </tr>
+            <tr>
+              <td >Biothings Type</td>
+              <td>
+                {{source.data_plugin.plugin.biothings_type}}
+              </td>
+            </tr>
+            <tr>
               <td >Release</td>
               <td>
                 {{source.data_plugin.download.release}}
