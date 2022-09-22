@@ -298,12 +298,20 @@ export default {
     $('.ui.rootsources.dropdown').dropdown()
     $('.ui.sources.dropdown').dropdown({
       onChange: function (addedValue, addedText, $addedChoice) {
+        var doc_type =  $('.ui.buildconfiguration.form').form('get field', 'doc_type').val()
         var selected_sources = $('.ui.sources.dropdown').dropdown('get value')
         var fmt = []
         for (var i in selected_sources) {
           var x = selected_sources[i]
           var d = { name: x, text: x, value: x }
           fmt.push(d)
+
+          const default_doc_type = self.default_doc_types[x]
+          if (!doc_type || doc_type.length == 0){
+            if (default_doc_type) {
+              $('.ui.buildconfiguration.form').form('get field', 'doc_type').val(default_doc_type)
+            }
+          }
         }
         $('.ui.rootsources.dropdown').dropdown('clear')
         $('.ui.rootsources.dropdown').dropdown('setup menu', { values: fmt }).dropdown('refresh')
@@ -373,6 +381,7 @@ export default {
     return {
       builds: [],
       sources: [],
+      default_doc_types: {},
       all_build_configs: {}, // from API
       build_configs: {}, // displayed
       builder_classes: {},
@@ -533,9 +542,11 @@ export default {
       axios.get(axios.defaults.baseURL + '/sources')
         .then(response => {
           $(response.data.result).each(function (i, e) {
+            const default_doc_type = e.data_plugin?.plugin?.biothings_type
             if (e.upload) {
               for (var k in e.upload.sources) {
                 self.sources.push(k)
+                self.default_doc_types[k] = default_doc_type
               }
             }
           })
