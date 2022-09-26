@@ -223,7 +223,7 @@ export default {
           onShow: function () {
             self.form_errors = []
             $('#subsource').val('')
-            const default_doc_type = self.source.data_plugin?.plugin?.biothings_type || ''
+            const default_doc_type = self.source.data_plugin?.plugin?.biothing_type || ''
             $('.ui.form input[name=doc_type]').val(default_doc_type)
             $('.ui.form input[name=index_name]').val('')
             $('.ui.form input[name=num_shards]').val(1)

@@ -34,9 +34,9 @@
               </td>
             </tr>
             <tr>
-              <td >Biothings Type</td>
+              <td >Biothing Type</td>
               <td>
-                {{source.data_plugin.plugin.biothings_type}}
+                {{source.data_plugin.plugin.biothing_type}}
               </td>
             </tr>
             <tr>
