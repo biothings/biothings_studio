@@ -147,13 +147,11 @@ export default {
     }
   },
   mounted () {
-    $('.ui.indexenvs.dropdown').dropdown()
+    $('.ui.basic.newrelease.modal:not(:first)').remove()
+    $('.ui.dropdown').dropdown()
   },
   created () {
     this.loadData()
-  },
-  beforeDestroy () {
-    $('.ui.basic.newrelease.modal').remove()
   },
   methods: {
     onQuickIndexCommandSuccess: function (response) {
