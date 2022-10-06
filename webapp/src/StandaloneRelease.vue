@@ -21,7 +21,18 @@
                 <div class="item" v-else>
                     <div class="ui menu clearMenu">
                         <div class="item">
-                            <div>
+                            <div v-if="environments" class="ui selection dropdown text-capitalize" id="environments">
+                              <input type="hidden" name="environment">
+                              <i class="dropdown icon"></i>
+                              <div class="default text"></div>
+                              <div class="scrollhint menu">
+                                <div class="item text-capitalize" v-for="environment in environments" :data-value="environment">
+                                  {{ environment.replace("__", " ") }}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div v-else>
                               <h6 class="header m-0"><i class="database icon"></i> ElasticSearch host</h6>
                               <a :href="backend.host"><small>{{backend.host}}</small></a>
                             </div>
@@ -53,7 +64,7 @@
                 </div>
             </div>
 			<div class="sixteen wide column">
-				<standalone-release-versions v-bind:name="name" v-bind:backend="backend"></standalone-release-versions>
+				<standalone-release-versions v-if="selected_environment" v-bind:name="selected_environment" v-bind:backend="backend"></standalone-release-versions>
 			</div>
 		</div>
 
@@ -93,41 +104,61 @@ import bus from './bus.js'
 
 export default {
   name: 'standalone-release',
-  props: ['name', 'url'],
+  props: ['name', 'url', 'environments'],
   mixins: [AsyncCommandLauncher, Loader, Actionable],
   mounted () {
-    this.refresh()
+    const self = this
+    if ($('#environments').length > 0) {
+      self.selected_environment = $('#environments .item:first-child').data("value")
+      $('#environments')
+        .dropdown({
+          action: 'activate',
+          onChange: function(value, text, $selectedItem) {
+            self.selected_environment = value
+            self.refresh()
+          }
+        })
+        .dropdown("set selected", self.selected_environment, null, true)
+    }
+    else {
+      self.selected_environment = self.name
+    }
+
+    self.refresh()
   },
   data () {
     return {
       backend: {},
-      backend_error: null
+      backend_error: null,
+      selected_environment: '',
     }
   },
   computed: {
     encoded_name: function () {
-      return btoa(this.name).replace(/=/g, '_')
-    }
+      return btoa(this.selected_environment).replace(/=/g, '_')
+    },
   },
   components: { StandaloneReleaseVersions },
   methods: {
     refresh: function () {
       this.refreshBackend()
-      bus.$emit('refresh_standalone', this.name)
+      bus.$emit('refresh_standalone', this.selected_environment)
     },
     refreshBackend: function () {
       var self = this
       self.backend_error = null
-      var cmd = function () { self.loading(); return axios.get(axios.defaults.baseURL + `/standalone/${self.name}/backend`) }
+      var cmd = function () { self.loading(); return axios.get(axios.defaults.baseURL + `/standalone/${self.selected_environment}/backend`) }
       // results[0]: async command can produce multiple results (cmd1() && cmd2), but here we know we'll have only one
-      var onSuccess = function (response) { self.backend = response.data.result.results[0] }
+      var onSuccess = function (response) {
+        self.backend = response.data.result.results[0] 
+      }
       var onError = function (err) { console.log(err); self.loaderror(err); self.backend_error = self.extractAsyncError(err) }
       this.launchAsyncCommand(cmd, onSuccess, onError)
     },
     resetBackend: function () {
       var self = this
       self.backend_error = null
-      var cmd = function () { self.loading(); return axios.delete(axios.defaults.baseURL + `/standalone/${self.name}/backend`) }
+      var cmd = function () { self.loading(); return axios.delete(axios.defaults.baseURL + `/standalone/${self.selected_environment}/backend`) }
       // results[0]: async command can produce multiple results (cmd1() && cmd2), but here we know we'll have only one
       var onSuccess = function (response) { self.refreshBackend() }
       var onError = function (err) { console.log(err); self.loaderror(err); self.backend_error = self.extractAsyncError(err) }
@@ -157,5 +188,10 @@ export default {
 	border-style:solid !important;
 	border-width:1px !important;
 	border-radius: 0px !important;
+}
+
+.text-capitalize,
+.ui.menu .ui.dropdown .menu>.item.text-capitalize {
+  text-transform: capitalize !important;
 }
 </style>

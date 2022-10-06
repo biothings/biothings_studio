@@ -31,7 +31,7 @@
                     <standalone-release v-bind:name="src.name" v-bind:url="src.url"></standalone-release>
                 </div> -->
                 <div class='ui bottom attached green segment' v-if="selected && selected.name">
-                    <standalone-release v-bind:name="selected.name" v-bind:url="selected.url" :key="selected.name"></standalone-release>
+                    <standalone-release v-bind:name="selected.name" v-bind:url="selected.url" v-bind:environments="selected.environments" :key="selected.name"></standalone-release>
                 </div>
                 <h2 style="text-align:center; margin-top:10vh;color:#c2c2c2;" v-else>Click on a source to load releases</h2>
             </div>
