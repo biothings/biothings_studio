@@ -21,21 +21,25 @@
                 <div class="item" v-else>
                     <div class="ui menu clearMenu">
                         <div class="item">
-                            <div v-if="environments" class="ui selection dropdown text-capitalize" id="environments">
+                          <div v-if="environments" class="content">
+                            <h6 class="header m-0"><i class="server icon"></i> Target ES</h6>
+                            <div class="ui mini selection dropdown text-capitalize" id="environments">
                               <input type="hidden" name="environment">
                               <i class="dropdown icon"></i>
                               <div class="default text"></div>
                               <div class="scrollhint menu">
                                 <div class="item text-capitalize" v-for="environment in environments" :data-value="environment">
-                                  {{ environment.replace("__", " ") }}
+                                  {{ environment.replace("__", ": ") }}
                                 </div>
                               </div>
                             </div>
-
-                            <div v-else>
+                          </div>
+                          <div v-else>
+                            <div>
                               <h6 class="header m-0"><i class="database icon"></i> ElasticSearch host</h6>
                               <a :href="backend.host"><small>{{backend.host}}</small></a>
                             </div>
+                          </div>
                         </div>
                         <div class="item">
                             <div>
