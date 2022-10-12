@@ -45,6 +45,15 @@
                 <div class="ui form">
                     <div class="ui centered grid">
                         <div class="eight wide column">
+                            <div v-if="subsource_names.length > 1">
+                              <label>Select the sources used to create merged data</label>
+                              <select class="ui fluid subsources dropdown" id="subsource">
+                                  <option value="">Available sources</option>
+                                  <option v-for="_id in subsource_names" :key="_id+'source'">{{_id}}</option>
+                              </select>
+                              <br>
+                            </div>
+
                             <div>
                                 <label>Enter a name for the type of stored documents ("gene", "variant", ...)</label>
                                 <input type="text" name="doc_type" placeholder="Document type" required>
@@ -131,6 +140,12 @@ export default {
       releases: [],
     }
   },
+  computed: {
+    subsource_names: function() {
+      const subsources = this.source.upload.sources || {}
+      return Object.keys(subsources)
+    }
+  },
   mounted () {
     $('.ui.indexenvs.dropdown').dropdown()
   },
@@ -150,6 +165,12 @@ export default {
       this.error = `Failed to quick index. Error: ${detail}`
     },
     newFullRelease: function () {
+      var subsource_element = $('#subsource')
+      var subsource = ""
+      if (subsource_element.length > 0) {
+        subsource = subsource_element.val()
+      }
+
       var doc_type = $('.ui.form input[name=doc_type]').val()
       var index_name = $('.ui.form input[name=index_name]').val()
       if (index_name == '') {
@@ -187,6 +208,7 @@ export default {
 
       return axios.post(axios.defaults.baseURL + '/quick_index', {
           datasource_name: this.source._id,
+          subsource: subsource,
           doc_type: doc_type,
           indexer_env: indexer_env,
           index_name: index_name,
@@ -202,6 +224,7 @@ export default {
           detachable: false,
           onShow: function () {
             self.form_errors = []
+            $('#subsource').val('')
             $('.ui.form input[name=doc_type]').val('')
             $('.ui.form input[name=index_name]').val('')
             $('.ui.form input[name=num_shards]').val(1)
