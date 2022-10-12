@@ -161,17 +161,34 @@ import StandaloneReleaseInfo from './StandaloneReleaseInfo.vue'
 
 export default {
   name: 'standalone-release-versions',
-  props: ['name', 'backend'],
+  props: ['name', 'backend', 'last_data'],
   mixins: [AsyncCommandLauncher, Loader, Actionable],
   mounted () {
     this.refreshVersions()
+
+    this.selected_version = this.last_data.selected_version
+    this.error = this.last_data.error
+    this.installing = this.last_data.installing
+
+    $(`.ui.basic.version.modal.${this.cssName(this.name)}:not(:first)`).remove()
+    $(`.ui.basic.install.modal.${this.cssName(this.name)}:not(:first)`).remove()
   },
   created () {
     bus.$on('refresh_standalone', this.onRefresh)
   },
   beforeDestroy () {
     bus.$off('refresh_standalone', this.onRefresh)
-    // $('.ui.basic.modal').remove()
+    bus.$emit(
+      'store_environment_data',
+      {
+        name: this.name,
+        data: {
+          selected_version: this.selected_version,
+          error: this.error,
+          installing: this.installing,
+        }
+      }
+    )
   },
   data () {
     return {

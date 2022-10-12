@@ -21,21 +21,25 @@
                 <div class="item" v-else>
                     <div class="ui menu clearMenu">
                         <div class="item">
-                            <div v-if="environments" class="ui selection dropdown text-capitalize" id="environments">
+                          <div v-if="environments" class="content">
+                            <h6 class="header m-0"><i class="server icon"></i> Target ES</h6>
+                            <div class="ui mini selection dropdown text-capitalize" id="environments">
                               <input type="hidden" name="environment">
                               <i class="dropdown icon"></i>
                               <div class="default text"></div>
                               <div class="scrollhint menu">
                                 <div class="item text-capitalize" v-for="environment in environments" :data-value="environment">
-                                  {{ environment.replace("__", " ") }}
+                                  {{ environment.replace("__", ": ") }}
                                 </div>
                               </div>
                             </div>
-
-                            <div v-else>
+                          </div>
+                          <div v-else>
+                            <div>
                               <h6 class="header m-0"><i class="database icon"></i> ElasticSearch host</h6>
                               <a :href="backend.host"><small>{{backend.host}}</small></a>
                             </div>
+                          </div>
                         </div>
                         <div class="item">
                             <div>
@@ -64,7 +68,12 @@
                 </div>
             </div>
 			<div class="sixteen wide column">
-				<standalone-release-versions v-if="selected_environment" v-bind:name="selected_environment" v-bind:backend="backend"></standalone-release-versions>
+				<standalone-release-versions v-if="selected_environment"
+          :key="selected_environment"
+          v-bind:name="selected_environment"
+          v-bind:backend="backend"
+          v-bind:last_data="environments_data[selected_environment] || {}"
+        ></standalone-release-versions>
 			</div>
 		</div>
 
@@ -104,9 +113,13 @@ import bus from './bus.js'
 
 export default {
   name: 'standalone-release',
-  props: ['name', 'url', 'environments'],
+  props: ['name', 'url', 'environments', 'last_data'],
   mixins: [AsyncCommandLauncher, Loader, Actionable],
   mounted () {
+    bus.$on('store_environment_data', this.store_environment_data)
+
+    this.environments_data = this.last_data
+
     const self = this
     if ($('#environments').length > 0) {
       self.selected_environment = $('#environments .item:first-child').data("value")
@@ -126,11 +139,21 @@ export default {
 
     self.refresh()
   },
+  beforeDestroy () {
+    bus.$emit(
+      'store_source_environments_data',
+      {
+        source_name: this.name,
+        data: this.environments_data
+      }
+    )
+  },
   data () {
     return {
       backend: {},
       backend_error: null,
       selected_environment: '',
+      environments_data: {}
     }
   },
   computed: {
@@ -140,6 +163,10 @@ export default {
   },
   components: { StandaloneReleaseVersions },
   methods: {
+    store_environment_data: function(environment_data) {
+      const name = environment_data.name
+      this.environments_data[name] = environment_data.data
+    },
     refresh: function () {
       this.refreshBackend()
       bus.$emit('refresh_standalone', this.selected_environment)
