@@ -24,48 +24,69 @@
                 <p>
                     These are the mappings for source <b>{{subsrc}}</b>.
                 </p>
-                <p>
-                    <i>Mapping from inspection</i> has been generated during data inspection, while <i>Registered mapping</i> is the actual active mapping, used during indexation.
-                </p>
-                <p>
-                    Mappings can be manually edited and mapping from inspection can be saved as the new registered, active mapping.
-                </p>
-                <div class="ui warning message">
-                    <ul class="ui list">
-                        <li>If a mapping is hard-coded in source code, it can't be edited, saved or replaced.</li>
-                        <li>When testing a mapping, an temporary index is created on the selection ElasticSearch environment. That index is then deleted.</li>
-                    </ul>
+
+                <!-- Inspection results tabs -->
+                <div class="ui tabular menu">
+                  <div class="item active" :data-tab="subsrc + '-mapping-mode'">Mapping mode</div>
+                  <div class="item" :data-tab="subsrc + '-type-mode'">Type mode</div>
+                  <div class="item" :data-tab="subsrc + '-stats-mode'">Stats mode</div>
                 </div>
-                <div class="ui grid">
-                    <div :class="actionable" class="center aligned sixteen wide column" v-if="maps[subsrc]['inspect_mapping'] && !maps[subsrc]['inspect_mapping']['errors'] && !maps[subsrc]['inspect_mapping']['pre-mapping']">
-                        <button class="ui labeled mini icon button"
-                            v-on:click="diffMapping('tab_mapping_inspected','tab_mapping_registered',subsrc)">
-                            <i class="exchange icon"></i>
-                            Diff
-                        </button>
-                    </div>
-                    <div class="eight wide column">
-                        <mapping-map v-if="maps[subsrc]"
-                            v-bind:entity="'source'"
-                            v-bind:map="maps[subsrc]['inspect_mapping']"
-                            v-bind:name="subsrc"
-                            v-bind:map_origin="'inspect'"
-                            v-bind:map_id="'tab_mapping_inspected'"
-                            v-bind:read_only="maps[subsrc]['inspect_mapping'] && maps[subsrc]['inspect_mapping']['pre-mapping']"
-                            v-bind:can_commit="maps[subsrc]['registered_mapping'] ? maps[subsrc]['registered_mapping']['origin'] != 'uploader' : true">
-                        </mapping-map>
-                    </div>
-                    <div class="eight wide column">
-                        <mapping-map v-bind:map="maps[subsrc]['registered_mapping']['mapping']"
-                            v-bind:entity="'source'"
-                            v-bind:name="subsrc"
-                            v-bind:map_origin="'master'"
-                            v-bind:map_id="'tab_mapping_registered'"
-                            v-bind:read_only="maps[subsrc]['registered_mapping'] && maps[subsrc]['registered_mapping']['origin'] == 'uploader'"
-                            v-bind:can_commit="maps[subsrc]['registered_mapping'] ? maps[subsrc]['registered_mapping']['origin'] != 'uploader' : true"
-                            v-if="maps[subsrc]['registered_mapping']">
-                        </mapping-map>
-                    </div>
+
+                <!-- Inspection for Mapping mode -->
+                <div class="ui tab active" :data-tab="subsrc + '-mapping-mode'">
+                  <p>
+                    <i>Mapping from inspection</i> has been generated during data inspection, while <i>Registered mapping</i> is the actual active mapping, used during indexation.
+                  </p>
+                  <p>
+                      Mappings can be manually edited and mapping from inspection can be saved as the new registered, active mapping.
+                  </p>
+                  <div class="ui warning message">
+                      <ul class="ui list">
+                          <li>If a mapping is hard-coded in source code, it can't be edited, saved or replaced.</li>
+                          <li>When testing a mapping, an temporary index is created on the selection ElasticSearch environment. That index is then deleted.</li>
+                      </ul>
+                  </div>
+                  <div class="ui grid">
+                      <div :class="actionable" class="center aligned sixteen wide column" v-if="maps[subsrc]['inspect_mapping'] && !maps[subsrc]['inspect_mapping']['errors'] && !maps[subsrc]['inspect_mapping']['pre-mapping']">
+                          <button class="ui labeled mini icon button"
+                              v-on:click="diffMapping('tab_mapping_inspected','tab_mapping_registered',subsrc)">
+                              <i class="exchange icon"></i>
+                              Diff
+                          </button>
+                      </div>
+                      <div class="eight wide column">
+                          <mapping-map v-if="maps[subsrc]"
+                              v-bind:entity="'source'"
+                              v-bind:map="maps[subsrc]['inspect_mapping']"
+                              v-bind:name="subsrc"
+                              v-bind:map_origin="'inspect'"
+                              v-bind:map_id="'tab_mapping_inspected'"
+                              v-bind:read_only="maps[subsrc]['inspect_mapping'] && maps[subsrc]['inspect_mapping']['pre-mapping']"
+                              v-bind:can_commit="maps[subsrc]['registered_mapping'] ? maps[subsrc]['registered_mapping']['origin'] != 'uploader' : true">
+                          </mapping-map>
+                      </div>
+                      <div class="eight wide column">
+                          <mapping-map v-bind:map="maps[subsrc]['registered_mapping']['mapping']"
+                              v-bind:entity="'source'"
+                              v-bind:name="subsrc"
+                              v-bind:map_origin="'master'"
+                              v-bind:map_id="'tab_mapping_registered'"
+                              v-bind:read_only="maps[subsrc]['registered_mapping'] && maps[subsrc]['registered_mapping']['origin'] == 'uploader'"
+                              v-bind:can_commit="maps[subsrc]['registered_mapping'] ? maps[subsrc]['registered_mapping']['origin'] != 'uploader' : true"
+                              v-if="maps[subsrc]['registered_mapping']">
+                          </mapping-map>
+                      </div>
+                  </div>
+                </div>
+                <!-- Inspection for Type mode -->
+                <div class="ui tab" :data-tab="subsrc + '-type-mode'">
+                  <p>This is the inspection for type mode</p>
+                  <pre class="inspection-detail">{{ JSON.stringify(maps[subsrc]['inspect_type'] || '', null, 4) }}</pre>
+                </div>
+                <!-- Inspection for Stats mode -->
+                <div class="ui tab" :data-tab="subsrc + '-stats-mode'">
+                  <p>This is the inspection for stats mode</p>
+                  <pre class="inspection-detail">{{ JSON.stringify(maps[subsrc]['inspect_stats'] || '', null, 4) }}</pre>
                 </div>
             </div>
         </span>
