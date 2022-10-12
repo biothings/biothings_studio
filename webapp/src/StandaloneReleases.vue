@@ -31,7 +31,12 @@
                     <standalone-release v-bind:name="src.name" v-bind:url="src.url"></standalone-release>
                 </div> -->
                 <div class='ui bottom attached green segment' v-if="selected && selected.name">
-                    <standalone-release v-bind:name="selected.name" v-bind:url="selected.url" v-bind:environments="selected.environments" :key="selected.name"></standalone-release>
+                    <standalone-release v-bind:name="selected.name"
+                      v-bind:url="selected.url"
+                      v-bind:environments="selected.environments"
+                      v-bind:last_data="source_environments_data"
+                      :key="selected.name"
+                    ></standalone-release>
                 </div>
                 <h2 style="text-align:center; margin-top:10vh;color:#c2c2c2;" v-else>Click on a source to load releases</h2>
             </div>
@@ -58,6 +63,7 @@ import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 import StandaloneRelease from './StandaloneRelease.vue'
 import StandaloneWizard from './StandaloneWizard.vue'
+import bus from './bus.js'
 
 export default {
   name: 'standalone-releases',
@@ -66,6 +72,8 @@ export default {
     $('select.dropdown').dropdown()
     this.refresh()
     $('.menu .standalone .item').tab()
+
+    bus.$on('store_source_environments_data', this.store_source_environments_data)
   },
   beforeDestroy () {
     this.version_urls = []
@@ -74,11 +82,16 @@ export default {
   data () {
     return {
       version_urls: [],
-      selected: {}
+      selected: {},
+      source_environments_data: {},
     }
   },
   components: { StandaloneRelease, StandaloneWizard },
   methods: {
+    store_source_environments_data: function(source_environments_data) {
+      const source_name = source_environments_data.source_name
+      this.source_environments_data[source_name] = source_environments_data.data
+    },
     refresh: function () {
       var self = this
       this.version_urls = [] // reinit to force components to be rebuilt
