@@ -96,7 +96,7 @@
                             <data-source-mapping v-bind:maps="maps" v-bind:_id="_id" v-bind:source="source"></data-source-mapping>
                         </div>
                         <div class="ui bottom attached tab segment" data-tab="quick_index">
-                            <data-source-quick-index v-bind:source="source"></data-source-quick-index>
+                            <data-source-quick-index :key="source._id" v-bind:source="source"></data-source-quick-index>
                         </div>
                         
                         <!--div class="ui bottom attached tab segment" data-tab="inspect">
@@ -154,6 +154,7 @@ import DiffModal from './DiffModal.vue'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 import LogViewer from './components/LogViewer.vue'
+import RouteWatcher from './mixins/RouteWatcher.vue'
 
 export default {
   name: 'data-source-detailed',
@@ -170,7 +171,7 @@ export default {
     Loader,
     LogViewer
   },
-  mixins: [BaseDataSource, Loader, Actionable],
+  mixins: [BaseDataSource, Loader, Actionable, RouteWatcher],
   mounted () {
     this.loadData()
     $('select.dropdown').dropdown()

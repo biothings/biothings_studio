@@ -81,11 +81,12 @@ import BuildMapping from './BuildMapping.vue'
 import DiffModal from './DiffModal.vue'
 import Loader from './Loader.vue'
 import LogViewer from './components/LogViewer.vue'
+import RouteWatcher from './mixins/RouteWatcher.vue'
 
 export default {
   name: 'build-detailed',
   props: ['_id', 'color'],
-  mixins: [BaseBuild, Loader],
+  mixins: [BaseBuild, Loader, RouteWatcher],
   components: {
     InspectForm,
     BuildReleases,
