@@ -11,6 +11,10 @@
       :switchReadOnly="switchReadOnly"
       ></NavBar>
       <div class="item m-auto">
+        <div data-tooltip="Quick Search" data-position="bottom center">
+          <button class="mini circular ui icon button" @click="openQuickSearch"><i class="search icon"></i></button>
+        </div>
+
         <div v-if="needs_upgrade">
             <!-- <button class="mini circular ui icon button" @click="showUpgrades()" data-tooltip="Studio Upgrade Available" data-position="bottom center">
                 <b class="upgrade">Upgrade</b>
@@ -98,6 +102,8 @@
                 </div>
             </div>
         </div>
+
+        <quick-search></quick-search>
 
         <div class="ui basic config modal" v-if="has_feature('config')">
             <h3 class="ui icon">
@@ -210,6 +216,7 @@ import StandaloneReleases from './StandaloneReleases.vue'
 import StandaloneWizard from './StandaloneWizard.vue'
 import SystemUpgrade from './SystemUpgrade.vue'
 import NavBar from './components/NavBar.vue'
+import QuickSearch from './QuickSearch.vue'
 
 const STUDIO_VERSION = '0.2b'
 Vue.use(VueLocalStorage)
@@ -320,7 +327,8 @@ export default {
     LogViewer,
     Terminal,
     SystemUpgrade,
-    NavBar
+    NavBar,
+    QuickSearch,
   },
   mounted () {
     $('.menu .item').tab()
@@ -341,6 +349,13 @@ export default {
     }
     this.setupConnection()
     this.skip_studio_compat = Vue.localStorage.get('skip_studio_compat')
+
+    window.addEventListener("keydown", event => {
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'p') {
+        this.openQuickSearch()
+        event.preventDefault()
+      }
+    })
   },
   created () {
     // //console.log('App created')
@@ -562,6 +577,9 @@ export default {
       }
       var oldinfo = getInfo(oldv)
       var newinfo = getInfo(newv)
+    },
+    openQuickSearch () {
+      $('.ui.basic.quick-search.modal').modal('show')
     },
     openConfig () {
       this.loading()

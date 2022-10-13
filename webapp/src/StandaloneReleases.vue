@@ -71,7 +71,7 @@ export default {
   mounted () {
     $('select.dropdown').dropdown()
     this.refresh()
-    $('.menu .standalone .item').tab()
+    $('.menu.standalone .item').tab()
 
     bus.$on('store_source_environments_data', this.store_source_environments_data)
   },
@@ -95,12 +95,22 @@ export default {
     refresh: function () {
       var self = this
       this.version_urls = [] // reinit to force components to be rebuilt
+      const query_source = this.$route.query.source
+
       this.loading()
       axios.get(axios.defaults.baseURL + '/standalone/list')
         .then(response => {
           self.version_urls = response.data.result
           // console.log('ALL', self.version_urls)
           self.selected = self.version_urls[0]
+          if (query_source) {
+            self.version_urls.forEach(source_info => {
+              if (query_source == source_info.name) {
+                self.selected = source_info
+              }
+            })
+          }
+
           self.loaded()
           if (!self.version_urls.length) {
             self.wizard()

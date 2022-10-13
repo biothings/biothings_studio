@@ -1,0 +1,156 @@
+<template>
+    <div class="ui basic quick-search modal tiny">
+      <div class="center aligned content">
+        <div class="ui search scrolling fluid">
+          <div class="ui icon input">
+            <input class="prompt" type="text" placeholder="Search ...">
+            <i class="search icon"></i>
+          </div>
+          <button class="ui button small tertiary primary " :class="countLoading > 0 ? 'loading disabled': ''" @click="loadData">Refresh cache</button>
+          <div class="results"></div>
+        </div>
+      </div>
+    </div>
+</template>
+
+<script>
+
+import axios from 'axios'
+import FeatureChecker from './FeatureChecker.vue'
+import Loader from './Loader.vue'
+import Actionable from './Actionable.vue'
+import Vue from 'vue'
+
+export default {
+  name: 'quick-search',
+  mixins: [FeatureChecker, Loader, Actionable],
+  mounted () {
+    this.loadData()
+    setInterval(this.loadData, 60 * 1000 * 5)
+  },
+  data () {
+    return {
+      datasources: [],
+      builds: [],
+      releases: [],
+      apis: [],
+      countLoading: 0,
+    }
+  },
+  watch: {
+    datasources (newValue, oldValue) {
+      this.updateSearchSources()
+    },
+    builds (newValue, oldValue) {
+      this.updateSearchSources()
+    },
+    releases (newValue, oldValue) {
+      this.updateSearchSources()
+    },
+    apis (newValue, oldValue) {
+      this.updateSearchSources()
+    },
+  },
+  methods: {
+    loadData () {
+      const self = this
+
+      self.countLoading = 4
+      self.datasources = []
+      self.builds = []
+      self.releases = []
+      self.apis = []
+
+      // Loading datasources
+      axios.get(axios.defaults.baseURL + '/sources')
+      .then(response => {
+        function displayable (src) {
+          // if base is an autoupdate dumper, it means it's a "internal" datasource used to managed data releases
+          if (src.download && src.download.dumper && src.download.dumper.bases) {
+            return !src.download.dumper.bases.includes('biothings.hub.autoupdate.dumper.BiothingsDumper')
+          }
+          return true
+        }
+        self.datasources = response.data.result.filter(displayable)
+        self.countLoading--
+      })
+      .catch(err => {
+        console.log('Error getting sources information: ' + err)
+        self.countLoading--
+      })
+
+      // loading builds
+      axios.get(axios.defaults.baseURL + '/builds')
+        .then(response => {
+          self.builds = response.data.result
+          self.countLoading--
+        })
+        .catch(err => {
+          console.log('Error getting builds information: ' + err)
+          self.countLoading--
+        })
+
+      // loading releases
+      axios.get(axios.defaults.baseURL + '/standalone/list')
+        .then(response => {
+          self.releases = response.data.result
+          self.countLoading--
+        })
+        .catch(err => {
+          console.log('Error getting list of biothings version_urls: ' + err)
+          self.countLoading--
+        })
+
+      // loading apis
+      axios.get(axios.defaults.baseURL + '/api/list')
+        .then(response => {
+          self.apis = response.data.result
+          self.countLoading--
+        })
+        .catch(err => {
+          console.log('Error getting APIs information: ' + err)
+          self.countLoading--
+        })
+    },
+    updateSearchSources () {
+      const self = this
+      const data = []
+
+      self.datasources.map(source => data.push({
+        category: 'Data Source', title: source._id, link: `/source/${source._id}`
+      }))
+      self.builds.map(build => data.push({
+        category: 'Buid', title: build._id, link: `/build/${build._id}`
+      }))
+      self.releases.map(release => data.push({
+        category: 'Release', title: release.name, link: `/standalone?source=${release.name}`
+      }))
+      self.apis.map(api => data.push({
+        category: 'Api', title: api._id , link: '/apis'
+      }))
+
+      $('.quick-search .ui.search')
+        .search("destroy")
+        .search({
+          type: 'category',
+          source: data,
+          maxResults: 0,
+          onSelect: this.onSearchSelect,
+        })
+      ;
+    },
+    onSearchSelect (result, respones) {
+      const link = result.link
+      this.$router.push(link)
+      $('.quick-search.modal').modal('hide')
+      $('.quick-search .ui.search').search("set value")
+    },
+  }
+}
+</script>
+
+<style>
+.quick-search.modal {
+  margin-top: -50vh !important;
+}
+</style>
