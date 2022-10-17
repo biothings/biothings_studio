@@ -22,21 +22,22 @@
                     <div class="ui menu clearMenu">
                         <div class="item">
                           <div v-if="environments" class="content">
-                            <h6 class="header m-0"><i class="server icon"></i> Target ES</h6>
+                            <h6 class="header m-0"><i class="database icon"></i> Elasticsearch Host</h6>
                             <div class="ui mini selection dropdown text-capitalize" id="environments">
                               <input type="hidden" name="environment">
                               <i class="dropdown icon"></i>
                               <div class="default text"></div>
                               <div class="scrollhint menu">
-                                <div class="item text-capitalize" v-for="environment in environments" :data-value="environment">
-                                  {{ environment.replace("__", ": ") }}
+                                <div class="item text-capitalize" v-for="environment in environments" :data-value="environment.name">
+                                  <!-- {{ environment.replace("__", ": ") }} -->
+                                  {{ environment.name.split("__")[1] }} : {{ environment.es_host }}
                                 </div>
                               </div>
                             </div>
                           </div>
                           <div v-else>
                             <div>
-                              <h6 class="header m-0"><i class="database icon"></i> ElasticSearch host</h6>
+                              <h6 class="header m-0"><i class="database icon"></i> ElasticSearch Host</h6>
                               <a :href="backend.host"><small>{{backend.host}}</small></a>
                             </div>
                           </div>
@@ -220,5 +221,15 @@ export default {
 .text-capitalize,
 .ui.menu .ui.dropdown .menu>.item.text-capitalize {
   text-transform: capitalize !important;
+}
+
+#environments {
+  min-height: 2.5em;
+  padding: 0.5em 1.6em 0.5em 0.5em;
+}
+
+#environments.ui.selection.dropdown>.delete.icon, .ui.selection.dropdown>.dropdown.icon, .ui.selection.dropdown>.search.icon {
+  right: 0.5em;
+  top: 0.6em;
 }
 </style>
