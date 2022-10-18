@@ -2,11 +2,16 @@
     <div class="ui basic quick-search modal tiny">
       <div class="center aligned content">
         <div class="ui search scrolling fluid">
-          <div class="ui icon input">
-            <input class="prompt" type="text" placeholder="Search ...">
-            <i class="search icon"></i>
+          <div>
+            <div class="ui icon input">
+              <input class="prompt" type="text" placeholder="Search ...">
+              <i class="search icon"></i>
+            </div>
+            <button class="refresh-cache ui button small tertiary primary" :class="countLoading > 0 ? 'loading disabled': ''" @click="loadData">
+              <i class="sync alternate icon"></i>Refresh cache
+            </button>
           </div>
-          <button class="ui button small tertiary primary " :class="countLoading > 0 ? 'loading disabled': ''" @click="loadData">Refresh cache</button>
+          <small><i class="lightbulb icon"></i>Open "Quick Search" with "Ctrl + Shift + P"</small>
           <div class="results"></div>
         </div>
       </div>
@@ -19,7 +24,6 @@ import axios from 'axios'
 import FeatureChecker from './FeatureChecker.vue'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
-import Vue from 'vue'
 
 export default {
   name: 'quick-search',
@@ -153,4 +157,14 @@ export default {
 .quick-search.modal {
   margin-top: -50vh !important;
 }
+
+.ui.category.search>.results .category .result:hover .title,
+.ui.search>.results .result:hover .title {
+  color:brown !important
+}
+
+.ui.tertiary.button.refresh-cache {
+  margin-left: 0.5rem !important;
+}
+
 </style>
