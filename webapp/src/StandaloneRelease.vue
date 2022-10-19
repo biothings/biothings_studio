@@ -19,53 +19,50 @@
                     <p>{{backend_error}}</p>
                 </div>
                 <div class="item" v-else>
-                    <div class="ui menu clearMenu">
-                        <div class="item">
-                          <div v-if="environments" class="content">
-                            <h6 class="header m-0"><i class="database icon"></i> Elasticsearch Host</h6>
-                            <div class="ui mini selection dropdown text-capitalize" id="environments">
-                              <input type="hidden" name="environment">
-                              <i class="dropdown icon"></i>
-                              <div class="default text"></div>
-                              <div class="scrollhint menu">
-                                <div class="item text-capitalize" v-for="environment in environments" :data-value="environment.name">
-                                  <!-- {{ environment.replace("__", ": ") }} -->
-                                  {{ environment.name.split("__")[1] }} : {{ environment.es_host }}
-                                </div>
+                  <table id="backend-info-table" class="ui table very compact">
+                    <tbody>
+                      <tr>
+                        <td><i class="database icon"></i> Elasticsearch Host</td>
+                        <td><i class="bookmark icon"></i> Index</td>
+                        <td><i class="thumbtack icon"></i> Version</td>
+                        <td><i class="file alternate icon"></i> Documents</td>
+                        <td rowspan="2">
+                          <button class="ui mini circular inverted red button" @click="reset()" :class="actionable">Reset</button>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td>
+                          <div class="ui mini selection dropdown" id="environments" v-if="environments">
+                            <input type="hidden" name="environment">
+                            <i class="dropdown icon"></i>
+                            <div class="default text"></div>
+                            <div class="scrollhint menu">
+                              <div class="item" v-for="environment in environments" :data-value="environment.name">
+                                {{ environment.name.split("__")[1] }} : {{ environment.es_host }}
                               </div>
                             </div>
                           </div>
                           <div v-else>
-                            <div>
-                              <h6 class="header m-0"><i class="database icon"></i> ElasticSearch Host</h6>
-                              <a :href="backend.host"><small>{{backend.host}}</small></a>
-                            </div>
+                            <a :href="backend.host">{{backend.host}}</a>
                           </div>
-                        </div>
-                        <div class="item">
-                            <div>
-                              <h6 class="header m-0"><i class="bookmark icon"></i> Index</h6>
-                              <small v-if="backend.index_alias">{{backend.index_alias}} ({{backend.index}})</small>
-                              <small v-if="!backend.index_alias">{{backend.index}}</small>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div>
-                              <h6 class="header m-0"><i class="thumbtack icon"></i> Version</h6>
-                              <a v-if="backend && backend.version"><small>{{backend.version || "no version found"}}</small></a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div>
-                              <h6 class="header m-0"><i class="file alternate icon"></i> Documents</h6>
-                              <small>{{ backend.count | formatNumeric(fmt="0,0") }}</small>
-                            </div>
-                        </div>
-                        <div class="item">
-                          <button class="ui mini circular inverted red button" @click="reset()" :class="actionable">Reset</button>
-                        </div>
-                    </div>
+                        </td>
 
+                        <td>
+                          <span v-if="backend.index_alias">{{backend.index_alias}} ({{backend.index}})</span>
+                          <span v-if="!backend.index_alias">{{backend.index}}</span>
+                        </td>
+
+                        <td>
+                          <a v-if="backend && backend.version"><span>{{backend.version || "no version found"}}</span></a>
+                        </td>
+
+                        <td>
+                          {{ backend.count | formatNumeric(fmt="0,0") }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
             </div>
 			<div class="sixteen wide column">
@@ -231,5 +228,25 @@ export default {
 #environments.ui.selection.dropdown>.delete.icon, .ui.selection.dropdown>.dropdown.icon, .ui.selection.dropdown>.search.icon {
   right: 0.5em;
   top: 0.6em;
+}
+
+#backend-info-table {
+  border: none;
+}
+
+#backend-info-table tbody tr td {
+  border-top: none;
+  border-right: 1px solid rgba(34,36,38,.1);
+  padding: 0rem 1rem;
+  line-height: 1rem;
+}
+
+#backend-info-table.ui.table>tbody>tr:first-child>td {
+  font-size: 0.67rem;
+  font-weight: bold;
+}
+
+#backend-info-table.ui.table>tbody>tr:nth-child(2)>td {
+  font-size: 0.8rem;
 }
 </style>
