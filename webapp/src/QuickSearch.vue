@@ -7,7 +7,12 @@
               <input class="prompt" type="text" placeholder="Search ...">
               <i class="search icon"></i>
             </div>
-            <button class="refresh-cache ui button small tertiary primary" :class="countLoading > 0 ? 'loading disabled': ''" @click="loadData">
+            <button class="refresh-cache ui button small tertiary primary"
+                    :class="countLoading > 0 ? 'loading disabled': ''" @click="loadData"
+                    data-tooltip="When refresh, the app will fetch data source, build, release, api data
+                    from the backend api, and update cache with the new one. The cache will be updated every 5 minutes."
+                    data-variation="tiny basic"  data-inverted=""
+                    >
               <i class="sync alternate icon"></i>Refresh cache
             </button>
           </div>
