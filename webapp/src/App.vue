@@ -350,10 +350,25 @@ export default {
     this.setupConnection()
     this.skip_studio_compat = Vue.localStorage.get('skip_studio_compat')
 
-    window.addEventListener("keydown", event => {
-      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'p') {
-        this.openQuickSearch()
+    window.addEventListener("keydown", event => {  // shortcuts for windows/linux
+      const open_quick_search = (
+        (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'p')  // shortcut for chromium
+        || (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'p')  // shortcut for firefox
+      )
+      if (open_quick_search) {
         event.preventDefault()
+        this.openQuickSearch()
+      }
+    })
+
+    window.addEventListener("keyup", event => {  // shortcuts for mac
+      const open_quick_search = (
+        (event.metaKey && event.shiftKey && event.key.toLowerCase() === 'p')  // shortcut for chromium
+        || (event.metaKey && event.altKey && event.key.toLowerCase() === 'p')  // shortcut for firefox
+      )
+      if (open_quick_search) {
+        event.preventDefault()
+        this.openQuickSearch()
       }
     })
   },
