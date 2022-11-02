@@ -16,7 +16,12 @@
               <i class="sync alternate icon"></i>Refresh cache
             </button>
           </div>
-          <small><i class="lightbulb icon"></i>Open "Quick Search" with "Ctrl + Shift + P"</small>
+          <small>
+            <i class="lightbulb icon"></i>
+            You can use one of these shortcuts to open "Quick Search":
+            <br>for Window/Linux: "Ctrl + Shift + P" or "Ctrl + Alt + P"
+            <br>for Mac: "Cmd + Shift + P" or "Cmd + Alt + P"
+          </small>
           <div class="results"></div>
         </div>
       </div>
