@@ -16,9 +16,8 @@
 
         <!-- Inspection results tabs -->
         <div class="ui tabular menu">
-            <div class="item active" data-tab="mapping-mode">Mapping mode</div>
-            <div class="item" data-tab="type-mode">Type mode</div>
-            <div class="item" data-tab="stats-mode">Stats mode</div>
+            <a class="item active" data-tab="mapping-mode">Mapping mode</a>
+            <a class="item" data-tab="type-stats">Type and Stats</a>
         </div>
 
         <!-- Inspection for Mapping mode -->
@@ -84,15 +83,34 @@
                 </span>
             </div>
         </div>
-        <!-- Inspection for Type mode -->
-        <div class="ui tab" data-tab="type-mode">
-            <p>This is the inspection for type mode</p>
-            <pre class="inspection-detail">{{ JSON.stringify(maps.inspect_type || '', null, 4) }}</pre>
-        </div>
-        <!-- Inspection for Stats mode -->
-        <div class="ui tab" data-tab="stats-mode">
-            <p>This is the inspection for stats mode</p>
-            <pre class="inspection-detail">{{ JSON.stringify(maps.inspect_stats || '', null, 4) }}</pre>
+        <!-- Inspection for Type Stats mode -->
+        <div class="ui tab" data-tab="type-stats">
+            <table class="ui celled striped table">
+                <thead>
+                    <tr>
+                        <th class="four wide">Field</th>
+                        <th class="one wide">Type</th>
+                        <th class="three wide">Stats</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="row in inspection_data_flatten">
+                        <td>{{ row.field }}</td>
+                        <td>{{ row.type }}</td>
+                        <td>
+                            <table class="ui table very compact" v-if="row.stats">
+                                <tbody>
+                                    <tr v-for="data, field in row.stats">
+                                        <td class="six wide">{{ field }}</td>
+                                        <td class="six wide">{{ data }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
     </span>
@@ -110,6 +128,7 @@ import BuildLogs from './BuildLogs.vue'
 import BuildConfig from './BuildConfig.vue'
 import DiffUtils from './DiffUtils.vue'
 import Actionable from './Actionable.vue'
+import { flattenInspectionData } from './utils/utils.js'
 
 export default {
   name: 'build-mapping',
@@ -146,6 +165,10 @@ export default {
       }
       if (Object.keys(_maps).length) { return _maps }
       return null
+    },
+    inspection_data_flatten: function () {
+      const inspection_data = this.maps['inspect_stats'] || this.maps['inspect_type'] || {}
+      return flattenInspectionData(inspection_data)
     }
   },
   methods: {
