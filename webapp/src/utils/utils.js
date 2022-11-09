@@ -98,8 +98,15 @@ function flattenInspectionData(data, current_deep=0, parent_name, parent_type) {
 }
 
 
+function loadTableSort () {
+    let script = document.createElement('script')
+    script.setAttribute('src', 'https://fomantic-ui.com/javascript/library/tablesort.js')
+    document.head.appendChild(script)
+}
+
 export {
     html2json,
     getVersionAsString,
     flattenInspectionData,
+    loadTableSort,
 }

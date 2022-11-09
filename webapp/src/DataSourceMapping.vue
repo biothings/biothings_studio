@@ -79,7 +79,7 @@
                 </div>
                 <!-- Inspection for Type Stats mode -->
                 <div class="ui tab" :data-tab="subsrc + '-type-stats'">
-                  <table class="ui celled striped table">
+                  <table class="ui celled striped table sortable">
                     <thead>
                       <tr>
                         <th class="four wide">Field</th>
@@ -93,14 +93,12 @@
                         <td>{{ row.field }}</td>
                         <td>{{ row.type }}</td>
                         <td>
-                          <table class="ui table very compact">
-                            <tbody>
-                              <tr v-for="data, field in row.stats">
-                                <td>{{ field }}</td>
-                                <td>{{ data }}</td>
-                              </tr>
-                            </tbody>
-                          </table>
+                          <div class="ui grid">
+                            <div class="row" v-for="data, field in row.stats">
+                              <div class="six wide column">{{ field }}</div>
+                              <div class="six wide column">{{ data }}</div>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     </tbody>
@@ -122,7 +120,9 @@ import Actionable from './Actionable.vue'
 import MappingMap from './MappingMap.vue'
 import DiffUtils from './DiffUtils.vue'
 import InspectForm from './InspectForm.vue'
-import { flattenInspectionData } from './utils/utils.js'
+import { flattenInspectionData, loadTableSort } from './utils/utils.js'
+
+loadTableSort()
 
 export default {
   name: 'data-source-mapping',
@@ -157,6 +157,7 @@ export default {
   methods: {
     setup: function () {
       $('.menu .item').tab()
+      $("table.sortable").tablesort()
     },
     is_broken: function (subsrc) {
       try {
@@ -195,5 +196,20 @@ export default {
 }
 .reset > i {
     margin: 0em !important;
+}
+
+.sortable .grid {
+  margin: 0;
+}
+
+.sortable .row {
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  border: 1px solid rgba(34,36,38,.1);
+}
+
+.sortable .column {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 </style>
