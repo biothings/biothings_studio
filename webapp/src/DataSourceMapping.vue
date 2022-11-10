@@ -120,9 +120,9 @@ import Actionable from './Actionable.vue'
 import MappingMap from './MappingMap.vue'
 import DiffUtils from './DiffUtils.vue'
 import InspectForm from './InspectForm.vue'
-import { flattenInspectionData, loadTableSort } from './utils/utils.js'
+import { flattenInspectionData } from './utils/utils.js'
+import './tablesort.js'
 
-loadTableSort()
 
 export default {
   name: 'data-source-mapping',

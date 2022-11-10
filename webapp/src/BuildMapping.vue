@@ -85,7 +85,7 @@
         </div>
         <!-- Inspection for Type Stats mode -->
         <div class="ui tab" data-tab="type-stats">
-            <table class="ui celled striped table">
+            <table class="ui celled striped table sortable">
                 <thead>
                     <tr>
                         <th class="four wide">Field</th>
@@ -99,14 +99,12 @@
                         <td>{{ row.field }}</td>
                         <td>{{ row.type }}</td>
                         <td>
-                            <table class="ui table very compact" v-if="row.stats">
-                                <tbody>
-                                    <tr v-for="data, field in row.stats">
-                                        <td class="six wide">{{ field }}</td>
-                                        <td class="six wide">{{ data }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div class="ui grid" v-if="row.stats">
+                                <div class="row" v-for="data, field in row.stats">
+                                    <div class="six wide column">{{ field }}</div>
+                                    <div class="six wide column">{{ data }}</div>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -129,6 +127,8 @@ import BuildConfig from './BuildConfig.vue'
 import DiffUtils from './DiffUtils.vue'
 import Actionable from './Actionable.vue'
 import { flattenInspectionData } from './utils/utils.js'
+import './tablesort.js'
+
 
 export default {
   name: 'build-mapping',
@@ -147,6 +147,7 @@ export default {
   updated () {
     $('select.dropdown').dropdown()
     $('.menu .item').tab()
+    $("table.sortable").tablesort()
   },
   computed: {
     // a computed getter
@@ -183,9 +184,24 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .conftag {
     margin-top: 1em !important;
     margin-bottom: 1em !important;
+}
+
+.sortable .grid {
+  margin: 0;
+}
+
+.sortable .row {
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  border: 1px solid rgba(34,36,38,.1);
+}
+
+.sortable .column {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 </style>
