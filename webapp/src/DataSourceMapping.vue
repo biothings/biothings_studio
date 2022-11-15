@@ -27,9 +27,8 @@
 
                 <!-- Inspection results tabs -->
                 <div class="ui tabular menu">
-                  <div class="item active" :data-tab="subsrc + '-mapping-mode'">Mapping mode</div>
-                  <div class="item" :data-tab="subsrc + '-type-mode'">Type mode</div>
-                  <div class="item" :data-tab="subsrc + '-stats-mode'">Stats mode</div>
+                  <a class="item active" :data-tab="subsrc + '-mapping-mode'">Mapping mode</a>
+                  <a class="item" :data-tab="subsrc + '-type-stats'">Type and Stats</a>
                 </div>
 
                 <!-- Inspection for Mapping mode -->
@@ -78,15 +77,32 @@
                       </div>
                   </div>
                 </div>
-                <!-- Inspection for Type mode -->
-                <div class="ui tab" :data-tab="subsrc + '-type-mode'">
-                  <p>This is the inspection for type mode</p>
-                  <pre class="inspection-detail">{{ JSON.stringify(maps[subsrc]['inspect_type'] || '', null, 4) }}</pre>
-                </div>
-                <!-- Inspection for Stats mode -->
-                <div class="ui tab" :data-tab="subsrc + '-stats-mode'">
-                  <p>This is the inspection for stats mode</p>
-                  <pre class="inspection-detail">{{ JSON.stringify(maps[subsrc]['inspect_stats'] || '', null, 4) }}</pre>
+                <!-- Inspection for Type Stats mode -->
+                <div class="ui tab" :data-tab="subsrc + '-type-stats'">
+                  <table class="ui celled striped table sortable">
+                    <thead>
+                      <tr>
+                        <th class="four wide">Field</th>
+                        <th class="one wide">Type</th>
+                        <th class="three wide">Stats</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      <tr v-for="row in inspection_data_flatten[subsrc]">
+                        <td>{{ row.field }}</td>
+                        <td>{{ row.type }}</td>
+                        <td>
+                          <div class="ui grid">
+                            <div class="row" v-for="data, field in row.stats">
+                              <div class="six wide column">{{ field }}</div>
+                              <div class="six wide column">{{ data }}</div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
             </div>
         </span>
@@ -104,6 +120,9 @@ import Actionable from './Actionable.vue'
 import MappingMap from './MappingMap.vue'
 import DiffUtils from './DiffUtils.vue'
 import InspectForm from './InspectForm.vue'
+import { flattenInspectionData } from './utils/utils.js'
+import './tablesort.js'
+
 
 export default {
   name: 'data-source-mapping',
@@ -115,6 +134,16 @@ export default {
     // $('.tab:first').addClass('active');
   },
   components: { MappingMap, InspectForm },
+  computed: {
+    inspection_data_flatten: function () {
+      const data = []
+      Object.entries(this.maps).forEach(([subsrc, subsrc_data]) => {
+        const inspection_data = subsrc_data['inspect_stats'] || subsrc_data['inspect_type'] || {}
+        data[subsrc] = flattenInspectionData(inspection_data)
+      })
+      return data
+    }
+  },
   watch: {
     maps: function (newv, oldv) {
       if (newv != oldv) {
@@ -128,6 +157,7 @@ export default {
   methods: {
     setup: function () {
       $('.menu .item').tab()
+      $("table.sortable").tablesort()
     },
     is_broken: function (subsrc) {
       try {
@@ -166,5 +196,20 @@ export default {
 }
 .reset > i {
     margin: 0em !important;
+}
+
+.sortable .grid {
+  margin: 0;
+}
+
+.sortable .row {
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  border: 1px solid rgba(34,36,38,.1);
+}
+
+.sortable .column {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 </style>
