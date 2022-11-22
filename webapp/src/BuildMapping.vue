@@ -10,18 +10,17 @@
         <inspect-form v-bind:_id="build._id">
         </inspect-form>
 
-        <p>
-            These are the mappings for build <b>{{build._id}}</b>.
-        </p>
-
         <!-- Inspection results tabs -->
         <div class="ui tabular menu">
-            <a class="item active" data-tab="mapping-mode">Mapping mode</a>
-            <a class="item" data-tab="type-stats">Type and Stats</a>
+            <a class="item active" data-tab="mapping-mode">Mapping</a>
+            <a class="item" data-tab="type-stats">Field types & stats</a>
         </div>
 
         <!-- Inspection for Mapping mode -->
         <div class="ui tab active" data-tab="mapping-mode">
+            <p>
+                This is the mappings for build <b>{{build._id}}</b>.
+            </p>
             <p>
                 <i>Mapping from inspection</i> has been generated during data inspection, while <i>Registered mapping</i> is the actual active mapping, used during indexation.
             </p>
@@ -85,7 +84,23 @@
         </div>
         <!-- Inspection for Type Stats mode -->
         <div class="ui tab" data-tab="type-stats">
-            <table class="ui celled striped table sortable">
+            <p>
+                This is the field type and stats for build <b>{{build._id}}</b>.
+            </p>
+            <p>
+                It provides a summary of the build's structure,
+                including: a map of all types involved in the data;
+                basic statistics, showing how volumetry fits over data structure.
+            </p>
+            <p>The basic statistics include these fields:</p>
+                <div class="ui bulleted list">
+                <div class="item">_count: Total records</div>
+                <div class="item">_max: Maximum value</div>
+                <div class="item">_min: Minimum value</div>
+                <div class="item">_none: number of records have no value</div>
+            </div>
+
+            <table v-if="inspection_data_flatten" class="ui celled striped table sortable">
                 <thead>
                     <tr>
                         <th class="four wide">Field</th>
@@ -109,6 +124,10 @@
                     </tr>
                 </tbody>
             </table>
+
+            <p v-else>
+                There is no types & stats results, please run "inpect data" with "type" and/or "stats" options.
+            </p>
         </div>
 
     </span>
@@ -169,7 +188,10 @@ export default {
     },
     inspection_data_flatten: function () {
       const inspection_data = this.maps['inspect_stats'] || this.maps['inspect_type'] || {}
-      return flattenInspectionData(inspection_data)
+      if (inspection_data && Object.keys(inspection_data).length > 0) {
+          return flattenInspectionData(inspection_data)
+      }
+      return null
     }
   },
   methods: {
