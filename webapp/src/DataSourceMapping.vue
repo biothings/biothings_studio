@@ -21,18 +21,17 @@
                 </div>
             </span>
             <div :class="['ui bottom attached tab segment', i === 0 ? 'active' : '']" v-for="(data,subsrc,i) in maps" :key="i" :data-tab="'inspect_' + subsrc">
-                <p>
-                    These are the mappings for source <b>{{subsrc}}</b>.
-                </p>
-
                 <!-- Inspection results tabs -->
                 <div class="ui tabular menu">
-                  <a class="item active" :data-tab="subsrc + '-mapping-mode'">Mapping mode</a>
-                  <a class="item" :data-tab="subsrc + '-type-stats'">Type and Stats</a>
+                  <a class="item active" :data-tab="subsrc + '-mapping-mode'">Mapping</a>
+                  <a class="item" :data-tab="subsrc + '-type-stats'">Field types & stats</a>
                 </div>
 
                 <!-- Inspection for Mapping mode -->
                 <div class="ui tab active" :data-tab="subsrc + '-mapping-mode'">
+                  <p>
+                    This is the mapping for source <b>{{subsrc}}</b>.
+                  </p>
                   <p>
                     <i>Mapping from inspection</i> has been generated during data inspection, while <i>Registered mapping</i> is the actual active mapping, used during indexation.
                   </p>
@@ -77,9 +76,26 @@
                       </div>
                   </div>
                 </div>
+
                 <!-- Inspection for Type Stats mode -->
                 <div class="ui tab" :data-tab="subsrc + '-type-stats'">
-                  <table class="ui celled striped table sortable">
+                  <p>
+                    This is the field type and stats for source <b>{{subsrc}}</b>.
+                  </p>
+                  <p>
+                    It provides a summary of the source's structure,
+                    including: a map of all types involved in the data;
+                    basic statistics, showing how volumetry fits over data structure.
+                  </p>
+                  <p>The basic statistics include these fields:</p>
+                  <div class="ui bulleted list">
+                    <div class="item">_count: Total records</div>
+                    <div class="item">_max: Maximum value</div>
+                    <div class="item">_min: Minimum value</div>
+                    <div class="item">_none: number of records have no value</div>
+                  </div>
+
+                  <table v-if="inspection_data_flatten[subsrc]" class="ui celled striped table sortable">
                     <thead>
                       <tr>
                         <th class="four wide">Field</th>
@@ -103,6 +119,9 @@
                       </tr>
                     </tbody>
                   </table>
+                  <p v-else>
+                    There is no types & stats results, please run "inpect data" with "type" and/or "stats" options.
+                  </p>
                 </div>
             </div>
         </span>
@@ -139,7 +158,12 @@ export default {
       const data = []
       Object.entries(this.maps).forEach(([subsrc, subsrc_data]) => {
         const inspection_data = subsrc_data['inspect_stats'] || subsrc_data['inspect_type'] || {}
-        data[subsrc] = flattenInspectionData(inspection_data)
+        if (inspection_data && Object.keys(inspection_data).length > 0) {
+          data[subsrc] = flattenInspectionData(inspection_data)
+        }
+        else {
+          data[subsrc] = null
+        }
       })
       return data
     }
