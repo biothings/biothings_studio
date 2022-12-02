@@ -95,30 +95,46 @@
                     <div class="item">_none: number of records have no value</div>
                   </div>
 
-                  <table v-if="inspection_data_flatten[subsrc]" class="ui celled striped table sortable">
-                    <thead>
-                      <tr>
-                        <th class="four wide">Field</th>
-                        <th class="one wide">Type</th>
-                        <th class="three wide">Stats</th>
-                      </tr>
-                    </thead>
+                  <div v-if="inspection_data_flatten[subsrc]">
+                    <p v-if="hasInspectionValidationWarnings(inspection_data_validation[subsrc])" class="text red">
+                      There are some problems with field names
+                    </p>
 
-                    <tbody>
-                      <tr v-for="row in inspection_data_flatten[subsrc]">
-                        <td>{{ row.field }}</td>
-                        <td>{{ row.type }}</td>
-                        <td>
-                          <div class="ui grid">
-                            <div class="row" v-for="data, field in row.stats">
-                              <div class="six wide column">{{ field }}</div>
-                              <div class="six wide column">{{ data }}</div>
+                    <table class="ui celled striped table sortable">
+                      <thead>
+                        <tr>
+                          <th class="four wide">Field</th>
+                          <th class="one wide">Type</th>
+                          <th class="three wide">Stats</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        <tr v-for="row in inspection_data_flatten[subsrc]">
+                          <td>
+                            <div v-if="hasInspectionFieldValidationWarnings(inspection_data_validation[subsrc][row.field])"
+                              class="text red tooltip"
+                              data-position="top left"
+                              data-variation="very wide"
+                              :data-html="formatTooltipMessage(inspection_data_validation[subsrc][row.field]['messages'])"
+                            >
+                              {{ row.field }}
                             </div>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                            <div v-else>{{ row.field }}</div>
+                          </td>
+                          <td>{{ row.type }}</td>
+                          <td>
+                            <div class="ui grid">
+                              <div class="row" v-for="data, field in row.stats">
+                                <div class="six wide column">{{ field }}</div>
+                                <div class="six wide column">{{ data }}</div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                   <p v-else>
                     There is no types & stats results, please run "inpect data" with "type" and/or "stats" options.
                   </p>
@@ -139,7 +155,7 @@ import Actionable from './Actionable.vue'
 import MappingMap from './MappingMap.vue'
 import DiffUtils from './DiffUtils.vue'
 import InspectForm from './InspectForm.vue'
-import { flattenInspectionData } from './utils/utils.js'
+import { flattenInspectionData, validateInspectionData } from './utils/utils.js'
 import './tablesort.js'
 
 
@@ -155,7 +171,7 @@ export default {
   components: { MappingMap, InspectForm },
   computed: {
     inspection_data_flatten: function () {
-      const data = []
+      const data = {}
       Object.entries(this.maps).forEach(([subsrc, subsrc_data]) => {
         const inspection_data = subsrc_data['inspect_stats'] || subsrc_data['inspect_type'] || {}
         if (inspection_data && Object.keys(inspection_data).length > 0) {
@@ -164,6 +180,13 @@ export default {
         else {
           data[subsrc] = null
         }
+      })
+      return data
+    },
+    inspection_data_validation: function () {
+      const data = {}
+      Object.entries(this.inspection_data_flatten).forEach(([subsrc, flattened_data]) => {
+        data[subsrc] = validateInspectionData(flattened_data)
       })
       return data
     }
@@ -182,6 +205,7 @@ export default {
     setup: function () {
       $('.menu .item').tab()
       $("table.sortable").tablesort()
+      $(".tooltip").popup()
     },
     is_broken: function (subsrc) {
       try {
@@ -208,6 +232,25 @@ export default {
         .catch(err => {
           self.loaderror(err)
         })
+    },
+    hasInspectionFieldValidationWarnings: function (field_validation) {
+      return field_validation.messages.size > 0
+    },
+    hasInspectionValidationWarnings: function (inspection_data) {
+      // the validation messages is a Set object
+      for (const field in inspection_data) {        
+        if (this.hasInspectionFieldValidationWarnings(inspection_data[field])) {
+          return true
+        }
+      }
+      return false
+    },
+    formatTooltipMessage: function (messages) {
+      const tooltip_message = []
+      for (const message of messages) {
+        tooltip_message.push(`<li>${message}</li>`)
+      }
+      return `<ul class="ui list">${tooltip_message.join('')}</ul>`
     }
   }
 }

@@ -25,6 +25,68 @@ function getVersionAsString (obj) {
 };
 
 
+function validateInspectionData(data) {
+    /* This method will check and flag any field name which:
+    - contains whitespace
+    - contains upper cased letter or special characters (lower-cased is recommended, in some cases the upper-case field names are acceptable, so we should raise it as a warning and let user to confirm it's necessary)
+    - when the type inspection detects more than one types (but a mixed or single value and an array of same type of values are acceptable, or the case of mixed integer and float should be acceptable too)
+    */
+    const SPACE_PATTERN = /\s/
+    const INVALID_CHARACTERS_PATTERN = /[^a-zA-Z0-9_.]/
+    const NUMBERIC_FIELDS = ['int', 'float']
+
+    const field_validations = {}
+
+    for (const field_values of data) {
+        const field_name = field_values.field
+        const type = field_values.type
+
+        if (!(field_name in field_validations)) {
+            field_validations[field_name] = {
+                messages: new Set(),
+                types: new Set(),
+                hasMultipleTypes: false,
+            }
+        }
+
+        if (field_validations[field_name]["hasMultipleTypes"] && field_validations[field_name]["messages"].size > 0) {
+            continue
+        }
+
+        if (field_name.search(SPACE_PATTERN) > -1) {
+            field_validations[field_name]["messages"].add("field name contains whitespace.")
+        }
+        if (field_name !== field_name.toLowerCase()) {
+            field_validations[field_name]["messages"].add("field name contains uppercase.")
+        }
+        if (field_name.search(INVALID_CHARACTERS_PATTERN) > -1) {
+            field_validations[field_name]["messages"]
+            .add("field name contains special character. Only alphanumeric, dot, or underscore are valid.")
+        }
+
+        for (const existing_type of field_validations[field_name]["types"]) {
+            const normalized_type = type.replace('list of ', '')
+            const normalized_existing_type = existing_type.replace('list of ', '')
+
+            if (normalized_type === normalized_existing_type) {
+                continue
+            }
+
+            if (NUMBERIC_FIELDS.indexOf(normalized_type) > -1 && NUMBERIC_FIELDS.indexOf(normalized_existing_type) > -1) {
+                continue
+            }
+
+            field_validations[field_name]["hasMultipleTypes"] = true
+            field_validations[field_name]["messages"].add("field name has more than one type.")
+        }
+
+        field_validations[field_name]["types"].add(type)
+    }
+
+    return field_validations
+}
+
+
 function flattenInspectionData(data, current_deep=0, parent_name, parent_type) {
     const ROOT_FIELD = "__root__"
     const STATS_FIELD = "_stats"
@@ -101,4 +163,5 @@ export {
     html2json,
     getVersionAsString,
     flattenInspectionData,
+    validateInspectionData,
 }
