@@ -13,7 +13,7 @@
         <!-- Inspection results tabs -->
         <div class="ui tabular menu">
             <a class="item active" data-tab="mapping-mode">Mapping</a>
-            <a class="item" data-tab="build-type-stats">Field types & stats</a>
+            <a class="item" :data-tab="build._id + '-type-stats'">Field types & stats</a>
         </div>
 
         <!-- Inspection for Mapping mode -->
@@ -86,7 +86,8 @@
         <!-- Inspection for Type Stats mode -->
         <data-inspection
             v-bind:page_type="'build'"
-            v-bind:source_name="'build'"
+            v-bind:main_source_name="build._id"
+            v-bind:source_name="build._id"
             v-bind:source_data="maps" >
         </data-inspection>
 

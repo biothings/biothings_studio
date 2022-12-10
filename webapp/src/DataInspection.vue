@@ -2,7 +2,7 @@
 
   <div class="ui tab" :data-tab="source_name + '-type-stats'">
     <p>
-      This is the field type and stats for <b>{{source_name}}</b>.
+      This is the field type and stats for <b>{{page_type}}</b>.
     </p>
     <p>
       It provides a summary of the data structure,
@@ -17,8 +17,8 @@
       <div class="item">_none: number of records have no value</div>
     </div>
 
-    <div v-if="inspection_data_flatten">
-      <p v-if="hasInspectionValidationWarnings(inspection_data_validation)">
+    <div v-if="inspection_data">
+      <p v-if="hasInspectionValidationWarnings(inspection_data)">
         <span class="ui text warning">There are some problems with field names</span>
       </p>
 
@@ -32,19 +32,19 @@
         </thead>
 
         <tbody>
-          <tr v-for="row in inspection_data_flatten">
+          <tr v-for="row in inspection_data">
             <td>
-              <div v-if="hasInspectionFieldValidationWarnings(inspection_data_validation[row.field])"
+              <div v-if="hasInspectionFieldValidationWarnings(row)"
                 class="tooltip"
                 data-position="top left"
                 data-variation="very wide"
-                :data-html="formatInspectionValidationTooltipMessage(inspection_data_validation[row.field]['messages'])"
+                :data-html="formatInspectionValidationTooltipMessage(row.messages)"
               >
-                <span class="ui text warning">{{ row.field }} <i class="exclamation circle icon"></i></span>
+                <span class="ui text warning">{{ row.field_name }} <i class="exclamation circle icon"></i></span>
               </div>
-              <div v-else>{{ row.field }}</div>
+              <div v-else>{{ row.field_name }}</div>
             </td>
-            <td>{{ row.type }}</td>
+            <td>{{ row.field_type }}</td>
             <td>
               <div class="ui grid">
                 <div class="row" v-for="data, field in row.stats">
@@ -66,32 +66,67 @@
 
 <script>
 
-import { flattenInspectionData, validateInspectionData } from './utils/utils.js'
-
+import axios from 'axios'
 
 export default {
   name: 'data-inspection',
-  props: ['page_type', 'source_name', 'source_data'],
+  props: [
+    'page_type',
+    'main_source_name',
+    'source_name',
+    'source_data',
+  ],
   mounted () {
-    $('.tooltip').popup()
+    this.fetch_flatten_inspection_data()
   },
-  computed: {
-    inspection_data_flatten: function () {
-      const inspection_data = this.source_data['inspect_stats'] || this.source_data['inspect_type'] || {}
-      return flattenInspectionData(inspection_data)
-    },
-    inspection_data_validation: function () {
-      return validateInspectionData(this.inspection_data_flatten)
+  data () {
+    return {
+      inspection_data: [],
     }
   },
+  watch: {
+    source_data: function (newv, oldv) {
+      if (newv != oldv) {
+        this.fetch_flatten_inspection_data()
+      }
+    },
+  },
   methods: {
-    hasInspectionFieldValidationWarnings: function (field_validation) {
-      // the validation messages is a Set object
-      return field_validation.messages.size > 0
+    fetch_flatten_inspection_data: function () {
+      const self = this
+      let data = {}
+      if (self.page_type == "datasource") {
+        data.data_provider = ["src", self.main_source_name]
+      }
+      else {
+        data.data_provider = self.main_source_name
+      }
+
+      axios.put(axios.defaults.baseURL + '/flatten_inspection_data', data)
+      .then(response => {
+        console.log(response.data.result)
+        if (response.data.result?.[self.source_name]) {
+          const inspection_data_by_modes = response.data.result[self.source_name]
+          self.inspection_data = inspection_data_by_modes.type || []
+          if (Object.keys(inspection_data_by_modes.stats).length > 1) {
+            self.inspection_data = inspection_data_by_modes.stats
+          }
+        }
+        else {
+          self.inspection_data = []
+        }
+        setTimeout(() => {$('.tooltip').popup()}, 0)
+      })
+      .catch(err => {
+        console.log('Error fetching flatten inspection data: ' + err)
+      })
+    },
+    hasInspectionFieldValidationWarnings: function (field_inspection) {
+      return field_inspection.messages.length > 0
     },
     hasInspectionValidationWarnings: function (inspection_data) {
-      for (const field in inspection_data) {        
-        if (this.hasInspectionFieldValidationWarnings(inspection_data[field])) {
+      for (const field_inspection of inspection_data) {        
+        if (this.hasInspectionFieldValidationWarnings(field_inspection)) {
           return true
         }
       }

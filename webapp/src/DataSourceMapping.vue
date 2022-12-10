@@ -80,6 +80,7 @@
                 <!-- Inspection for Type Stats mode -->
                 <data-inspection
                     v-bind:page_type="'datasource'"
+                    v-bind:main_source_name="source._id"
                     v-bind:source_name="subsrc"
                     v-bind:source_data="maps[subsrc]" >
                 </data-inspection>
