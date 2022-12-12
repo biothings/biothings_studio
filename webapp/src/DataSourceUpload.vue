@@ -99,6 +99,10 @@
                         </div>
                     </div>
                 </div>
+
+                <br>
+
+                <LogViewer type="upload" :item="source" :sub_item_name="subsrc" :key="'uploadlogs_' + subsrc"></LogViewer>
             </div>
         </span>
         <div v-else>
@@ -144,6 +148,7 @@ import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 import TracebackViewer from './components/TracebackViewer.vue'
 import AsyncCommandLauncher from './AsyncCommandLauncher.vue'
+import LogViewer from './components/LogViewer.vue'
 
 export default {
   name: 'data-source-upload',
@@ -153,7 +158,8 @@ export default {
     this.setup()
   },
   components:{
-      TracebackViewer
+      TracebackViewer,
+      LogViewer,
   },
   data () {
     return {

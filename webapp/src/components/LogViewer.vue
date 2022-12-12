@@ -65,6 +65,11 @@ export default {
             type: Object,
             default: ()=>{ return {}}
         },
+        sub_item_name: {
+            type: String,
+            default: '',
+            required: false,
+        },
         type:{
             type: String,
             default: '',
@@ -100,14 +105,23 @@ export default {
             this.availabelLogNames = []
 
             let targetName, logPath, filter
-            if (["dump", "upload", "loader"].includes(this.type)) {
-                targetName = filter = `${this.type}_${this.item.name}`
+            if (["dump", "loader"].includes(this.type)) {
+                targetName = `${this.type}_${this.item.name}`
+                filter = `${targetName}.log`
+                logPath = 'dataload/'
+            }
+            else if (this.type === "upload") {
+                targetName = `${this.type}_${this.item.name}`
+                if (Object.keys(this.item.upload?.sources).length > 1 && this.sub_item_name) {
+                    targetName = `${targetName}.${this.sub_item_name}`
+                }
+                filter = targetName
                 logPath = 'dataload/'
             }
             else {
                 targetName = this.item.target_name
                 logPath = `build/${this.item.target_name}/`
-                if (["index", "diff"].includes(this.type)) {
+                if (["index", "diff", "snapshot"].includes(this.type)) {
                     logPath += `${this.type}/`
                     filter = ''
                 }
