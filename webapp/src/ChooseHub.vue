@@ -1,8 +1,16 @@
 <template>
     <span>
-        <div class="choosehub ui floating dropdown black circular button p-1" data-tooltip="Create Connection" data-position="bottom left">
-            <i class="icon plus m-0"></i>
+        <div class="choosehub ui floating dropdown black circular button p-1">
+            <div data-tooltip="Create Connection" data-position="bottom left">
+              <i class="icon plus m-0"></i>
+            </div>
+
             <div class="menu largechoose">
+                <div class="item" data-value="open-hubs-dashboard">
+                  <i class="server circle icon"></i>
+                  <b>Open Hubs Dashboard</b>
+                </div>
+                <div class="divider"></div>
                 <div class="item" data-value="new">
                     <i class="plus circle icon"></i>
                     <b>Create new connection</b>
@@ -16,6 +24,10 @@
         </div>
 
         <div class="ui basic newhuburl modal">
+            <h3 class="ui icon open-hubs-dashboard" @click="openHubsDashboard">
+              <i class="server icon"></i>
+              Open Hubs Dashboard
+            </h3>
             <h3 class="ui icon">
                 <i class="plug icon"></i>
                 Create a new connection
@@ -70,18 +82,20 @@
               <ExistingConnections :existings="existings"></ExistingConnections>
             </div>
 
-        <div class="actions">
-          <div class="ui red basic cancel inverted button">
-              <i class="remove icon"></i>
-              Cancel
-          </div>
-          <div class="ui green ok inverted button" id="huburl_ok">
-              <i class="checkmark icon"></i>
-              OK
+          <div class="actions">
+            <div class="ui red basic cancel inverted button">
+                <i class="remove icon"></i>
+                Cancel
+            </div>
+            <div class="ui green ok inverted button" id="huburl_ok">
+                <i class="checkmark icon"></i>
+                OK
+            </div>
           </div>
         </div>
-    </div>
-</span>
+
+        <HubsDashboard :existings="existings"></HubsDashboard>
+    </span>
 
 </template>
 
@@ -91,16 +105,17 @@ import bus from './bus.js'
 import auth from './auth.js'
 import hubapi from './hubapi.js'
 import Vue from 'vue'
-
+import HubsDashboard from './HubsDashboard.vue'
 import ExistingConnections from './ExistingConnections.vue'
 import Loader from './Loader.vue'
 
-export default {
+export default {
   name: 'choose-hub',
   props: [],
   mixins: [Loader],
   components:{
     ExistingConnections,
+    HubsDashboard,
   },
   mounted () {
     this.getExistings()
@@ -109,6 +124,9 @@ export default {
       onChange: function (value, text, $selectedItem) {
         if (value == 'new') {
           self.newConnection()
+        }
+        if (value == 'open-hubs-dashboard') {
+          self.openHubsDashboard()
         }
       }
     })
@@ -248,6 +266,9 @@ export default {
       }
 
       this.refreshConnection(url)
+    },
+    openHubsDashboard: function() {
+      $('.hubs-dashboard.modal').modal('show')
     }
   }
 }
@@ -279,4 +300,7 @@ export default {
 
   .py-half-em {padding-top: 0.5em; padding-bottom: 0.5em}
 
+  .newhuburl .open-hubs-dashboard {
+    cursor: pointer;
+  }
 </style>
