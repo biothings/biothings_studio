@@ -3,14 +3,18 @@
   <div class="header">Hubs Dashboard</div>
 
   <div class="content scrolling">
-    <div class="ui flex justify-evenly flex-wrap" v-if="hubs_infos">
-      <div class="ui card"
+    <div class="ui flex justify-evenly flex-wrap">
+      <div class="ui card hub-info"
           v-for="(hub_info, hub_name) in hubs_infos"
           :key="hub_name + ticker"
-          @click="changeConnection($event, hub_name)"
+          v-if="hub_info.show"
       >
         <div class="content">
-          <div class="header">
+          <div class="header"
+              @click="changeConnection($event, hub_name)"
+              data-tooltip="Click to connect"
+              data-variation="mini"
+          >
             <img class="hub-icon" :src="hub_info.icon" >
             <span class="hub-name">{{ hub_name }}</span>
           </div>
@@ -55,13 +59,41 @@
   </div>
 
   <div class="actions">
-      <div class="ui black cancel button">
-        Close
-      </div>
-      <div class="ui primary button" @click="switchToSimpleMode($event)">
-        Switch to simple mode
+    <div class="ui top left dropdown button">
+      <i class="wrench icon"></i> Settings
+      <div class="menu">
+        <div class="item" @click="switchToSimpleMode($event)">
+          Switch to simple mode
+        </div>
+
+        <div class="ui divider"></div>
+
+        <div class="item">
+          <i class="dropdown icon"></i>
+          <span class="text">Toggle Hubs</span>
+          <div class="menu">
+            <div class="item" @click="showAllHubs($event)">Show All</div>
+            <div class="item" @click="hideAllHubs($event)">Hide All</div>
+
+            <div class="ui divider"></div>
+
+            <div class="item" 
+              v-for="(hubs_info, hub_name) in hubs_infos"
+              :key="hub_name + ticker"
+              @click="toggleHub($event, hub_name)"
+            >
+              <i :class="'icon ' + (hubs_info.show ? 'check' : 'uncheck')"></i>
+              {{ hub_name }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <div class="ui black cancel button">
+      <i class="remove icon"></i> Close
+    </div>
+  </div>
 </div>
 
 </template>
@@ -90,14 +122,34 @@ export default {
         self.getHubsInfos()
       }
     })
+    $(".ui.dropdown").dropdown()
   },
   methods: {
+    tick: function() {
+      this.ticker += 1
+    },
     changeConnection: function(event, hub_name) {
       console.log(hub_name)
       this.$parent.changeConnection(hub_name)
     },
     switchToSimpleMode: function (event) {
       this.$parent.newConnection()
+    },
+    showAllHubs: function (event) {
+      for (const hub_name in this.hubs_infos) {
+        this.hubs_infos[hub_name].show = true
+      }
+      this.tick()
+    },
+    hideAllHubs: function (event) {
+      for (const hub_name in this.hubs_infos) {
+        this.hubs_infos[hub_name].show = false
+      }
+      this.tick()
+    },
+    toggleHub: function (event, hub_name) {
+      this.hubs_infos[hub_name].show = !this.hubs_infos[hub_name].show
+      this.tick()
     },
     getHubInfo: function (hub_config) {
       const self = this
@@ -112,13 +164,14 @@ export default {
         build: {total: 0},
         running_processes: 0,
         running_threads: 0,
+        show: true,
       }
 
       axios.get(hub_config.url + '/status')
         .then(response => {
           self.hubs_infos[hub_config.name].source = response.data.result.source
           self.hubs_infos[hub_config.name].build = response.data.result.build
-          this.ticker += 1
+          self.tick()
         })
         .catch(err => {
           console.log(`Error getting hub ${hub_config.name}'s status: ${err}`)
@@ -128,7 +181,7 @@ export default {
         .then(response => {
           self.hubs_infos[hub_config.name].active_processes = response.data.result.processes?.running
           self.hubs_infos[hub_config.name].active_threads = response.data.result.threads?.running
-          this.ticker += 1
+          self.tick()
         })
         .catch(err => {
           console.log(`Error getting hub ${hub_config.name}'s job manager: ${err}`)
@@ -150,7 +203,16 @@ export default {
 }
 
 .hubs-dashboard.ui.modal>.scrolling.content {
-  max-height: calc(90vh - 5rem);
+  max-height: calc(90vh - 10rem);
+}
+
+.hubs-dashboard .actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.hub-info .header {
+  cursor: pointer;
 }
 
 </style>
