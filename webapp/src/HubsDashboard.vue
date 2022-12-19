@@ -1,69 +1,30 @@
 <template>
 <div class="ui hubs-dashboard large modal">
-  <div class="header">Hubs Dashboard</div>
+  <div class="header">
+    <i class="server circle icon"></i> Hubs Dashboard
+  </div>
 
   <div class="content scrolling">
     <div class="ui flex justify-evenly flex-wrap">
-      <div class="ui card hub-info"
-          v-for="(hub_info, hub_name) in hubs_infos"
+        <HubInformation :hub_config="hub_config" :ref="hub_name"
+          v-for="(hub_config, hub_name) in existings"
+          :show="is_hub_shown(hub_name)"
           :key="hub_name + ticker"
-          v-if="hub_info.show"
-      >
-        <div class="content">
-          <div class="header"
-              @click="changeConnection($event, hub_name)"
-              data-tooltip="Click to connect"
-              data-variation="mini"
-          >
-            <img class="hub-icon" :src="hub_info.icon" >
-            <span class="hub-name">{{ hub_name }}</span>
-          </div>
-
-          <div class="description">
-            <table class="ui table very compact">
-              <tbody>
-                <tr class="text red" v-if="hub_info.errors">
-                  <td>Errors</td>
-                  <td>{{ hub_info.errors.join('; ') }}</td>
-                </tr>
-                <tr class="text info" v-if="hub_info.whatsnew">
-                  <td>Whats New</td>
-                  <td>{{ hub_info.whatsnew }}</td>
-                </tr>
-                <tr>
-                  <td># of sources</td>
-                  <td>{{ hub_info.source.total }}</td>
-                </tr>
-                <tr>
-                  <td># of documents</td>
-                  <td>{{ hub_info.source.documents }}</td>
-                </tr>
-                <tr>
-                  <td># of builts</td>
-                  <td>{{ hub_info.build.total }}</td>
-                </tr>
-                <tr>
-                  <td># of active proceses</td>
-                  <td>{{ hub_info.running_processes }}</td>
-                </tr>
-                <tr>
-                  <td># of active threads</td>
-                  <td>{{ hub_info.running_threads }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+        ></HubInformation>
     </div>
   </div>
-
   <div class="actions">
-    <div class="ui top left dropdown button">
+    <div class="ui top center dropdown button">
       <i class="wrench icon"></i> Settings
       <div class="menu">
-        <div class="item" @click="switchToSimpleMode($event)">
-          Switch to simple mode
+        <div class="item" @click="getHubsInfos()">
+          <i class="sync alternate icon"></i>
+          Refresh
+        </div>
+
+        <div class="item" @click="switchToCreateNewConnection($event)">
+          <i class="plus circle icon"></i>
+          Create new connection
         </div>
 
         <div class="ui divider"></div>
@@ -78,11 +39,11 @@
             <div class="ui divider"></div>
 
             <div class="item" 
-              v-for="(hubs_info, hub_name) in hubs_infos"
-              :key="hub_name + ticker"
-              @click="toggleHub($event, hub_name)"
+              v-for="(_, hub_name) in existings"
+              :key="hub_name"
+              @click="event => {toggleHub(hub_name)}"
             >
-              <i :class="'icon ' + (hubs_info.show ? 'check' : 'uncheck')"></i>
+              <i :class="'icon ' + (is_hub_shown(hub_name) ? 'check' : 'uncheck')"></i>
               {{ hub_name }}
             </div>
           </div>
@@ -100,96 +61,95 @@
 
 
 <script>
-import axios from 'axios'
 import Vue from 'vue'
-import Loader from './Loader.vue'
+import HubInformation from './HubInformation.vue'
 
 export default {
   name: 'HubsDashboard',
   props: ["existings"],
-  mixins: [],
-  components: {},
+  components: {HubInformation},
   data () {
+    let settings = {
+      allHubs: {},
+      ...JSON.parse(Vue.localStorage.get('HubsDashboardSettings'))
+    }
     return {
-      hubs_infos: {},
-      ticker: 0,
+      settings: settings,
+      ticker: 0
     }
   },
   mounted () {
     const self = this
-    $(".modal").modal('setting', {
+    $(".hubs-dashboard.modal").modal("setting", {
       onShow: function() {
         self.getHubsInfos()
       }
     })
     $(".ui.dropdown").dropdown()
+
+    if (/#\/dashboard/.test(window.location.hash)) {
+      $(".hubs-dashboard.modal").modal("show")
+    }
   },
   methods: {
-    tick: function() {
-      this.ticker += 1
+    tick: function () {
+      this.ticker++
     },
-    changeConnection: function(event, hub_name) {
+    store_settings: function () {
+      Vue.localStorage.set('HubsDashboardSettings', JSON.stringify(this.settings))
+    },
+    getHubComponent: function (hub_name) {
+      if (this.$refs && hub_name in this.$refs && this.$refs[hub_name].length > 0) {
+        return this.$refs[hub_name][0]
+      }
+    },
+    connect: function(hub_name) {
       console.log(hub_name)
       this.$parent.changeConnection(hub_name)
     },
-    switchToSimpleMode: function (event) {
+    switchToCreateNewConnection: function (event) {
       this.$parent.newConnection()
     },
-    showAllHubs: function (event) {
-      for (const hub_name in this.hubs_infos) {
-        this.hubs_infos[hub_name].show = true
+    is_hub_shown: function (hub_name) {
+      return !(hub_name in this.settings.allHubs) || this.settings.allHubs[hub_name].show
+    },
+    toggleHub: function (hub_name, is_shown=null, store=true) {
+      if (is_shown === null || is_shown === undefined) {
+        is_shown = !this.is_hub_shown(hub_name)
       }
+
+      if (!(hub_name in this.settings.allHubs)) {
+        is_shown = false
+        this.settings.allHubs[hub_name] = {}
+      }
+
+      this.settings.allHubs[hub_name].show = is_shown
+
+      if (store) {
+        this.store_settings()
+      }
+
       this.tick()
+    },
+    showAllHubs: function (event) {
+      const self = this
+      Object.keys(this.existings).forEach(hub_name => {
+        self.toggleHub(hub_name, true, false)
+      })
+      self.store_settings()
     },
     hideAllHubs: function (event) {
-      for (const hub_name in this.hubs_infos) {
-        this.hubs_infos[hub_name].show = false
-      }
-      this.tick()
-    },
-    toggleHub: function (event, hub_name) {
-      this.hubs_infos[hub_name].show = !this.hubs_infos[hub_name].show
-      this.tick()
-    },
-    getHubInfo: function (hub_config) {
       const self = this
-
-      self.hubs_infos[hub_config.name] = {
-        name: hub_config.name,
-        icon: hub_config.icon,
-        url: hub_config.url,
-        whatsnew: hub_config.whatsnew,
-        errors: hub_config.errors,
-        source: {total: 0, documents: 0},
-        build: {total: 0},
-        running_processes: 0,
-        running_threads: 0,
-        show: true,
-      }
-
-      axios.get(hub_config.url + '/status')
-        .then(response => {
-          self.hubs_infos[hub_config.name].source = response.data.result.source
-          self.hubs_infos[hub_config.name].build = response.data.result.build
-          self.tick()
-        })
-        .catch(err => {
-          console.log(`Error getting hub ${hub_config.name}'s status: ${err}`)
-        })
-
-      axios.get(hub_config.url + '/job_manager')
-        .then(response => {
-          self.hubs_infos[hub_config.name].active_processes = response.data.result.processes?.running
-          self.hubs_infos[hub_config.name].active_threads = response.data.result.threads?.running
-          self.tick()
-        })
-        .catch(err => {
-          console.log(`Error getting hub ${hub_config.name}'s job manager: ${err}`)
-        })
+      Object.keys(this.existings).forEach(hub_name => {
+        self.toggleHub(hub_name, false, false)
+      })
+      self.store_settings()
     },
     getHubsInfos: function() {
-      this.hubs_infos = {}
-      Object.values(this.existings).forEach(this.getHubInfo)
+      const self = this
+      Object.keys(this.existings).forEach(hub_name => {
+        self.getHubComponent(hub_name)?.refresh()
+      })
     }
   }
 }
@@ -197,11 +157,6 @@ export default {
 
 
 <style scoped>
-.hub-icon {
-  width: 1.5rem;
-  margin-right: 0.5rem;
-}
-
 .hubs-dashboard.ui.modal>.scrolling.content {
   max-height: calc(90vh - 10rem);
 }
@@ -211,8 +166,11 @@ export default {
   justify-content: space-between;
 }
 
-.hub-info .header {
-  cursor: pointer;
+.ui.card:first-child {
+  margin-top: auto;
 }
 
+.ui.card:last-child {
+  margin-bottom: auto;
+}
 </style>
