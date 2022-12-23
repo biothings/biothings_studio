@@ -3,36 +3,66 @@
   <div :class="'ui card hub-info' + (show ? '' : ' hidden')">
     <div class="content">
       <div class="header">
-        <a class="popup ml-1"
-          v-if="!hub_info.online"
-          data-html="This hub is not accessible now."
-          data-position="top center"
-        >
-          <i class="red exclamation triangle icon"></i>
-        </a>
-        <a class="popup ml-1"
-          v-if="hub_info.errors && hub_info.errors.length > 0"
-          :data-html="hub_info.errors.join('<br>')"
-          data-position="top center"
-        >
-          <i class="red exclamation triangle icon"></i>
-        </a>
+        <div class="header-content">
+          <div @click="connect"
+            class="popup hub-name-wrapper"
+            :data-html="'Click to connect to <b>' + hub_info.name + '</b>'"
+            data-position="top center"
+          >
+            <img class="hub-icon" :src="hub_info.icon" >
+            <span class="hub-name">{{ hub_info.name }}</span>
+          </div>
 
-        <a class="popup ml-1"
-          v-if="hub_info.whatsnew && Object.keys(hub_info.whatsnew).length > 0"
-          :data-html="`<pre>${JSON.stringify(hub_info.whatsnew, null, 2)}</pre>`"
-          data-position="top center"
-        >
-          <i class="blue bell icon"></i>
-        </a>
-        <span @click="connect"
-          class="popup hub-name-wrapper"
-          :data-html="'Click to connect to <b>' + hub_info.name + '</b>'"
-          data-position="top center"
-        >
-          <img class="hub-icon" :src="hub_info.icon" >
-          <span class="hub-name">{{ hub_info.name }}</span>
-        </span>
+          <div class="hub-warning-icons">
+            <a class="popup ml-1"
+              v-if="!hub_info.online"
+              data-html="This hub is not accessible now."
+              data-position="top center"
+            >
+              <i class="red exclamation triangle icon"></i>
+            </a>
+            <a class="popup ml-1"
+              v-if="hub_info.errors && hub_info.errors.length > 0"
+              :data-html="hub_info.errors.join('<br>')"
+              data-position="top center"
+            >
+              <i class="red exclamation triangle icon"></i>
+            </a>
+
+            <a class="whatsnew ml-1"
+              v-if="hub_info.whatsnew && Object.keys(hub_info.whatsnew).length > 0"
+              data-position="top center"
+              data-variation="very wide"
+            >
+              <i class="blue bell icon"></i>
+
+              <div class="column centered hidden tooltip-content" v-if="Object.keys(hub_info.whatsnew).length">
+                <div class="ui feed feed-cont">
+                    <div class="event" v-for="(newd,conf) in hub_info.whatsnew" :key="newd.old_build.name">
+                        <div class="label">
+                            <i class="cubes icon"></i>
+                        </div>
+                        <div class="content">
+                            <div class="summary">
+                                <a class="user">
+                                    {{conf}}
+                                </a> can be rebuilt, it contains <a>{{Object.keys(newd.sources).length}} updated datasource(s)</a>.
+                                <br>
+                                <div class="date">
+                                    Previous build was <i>{{ newd.old_build.name }}</i>, built on {{ newd.old_build.built_at | moment('lll') }}
+                                </div>
+                            </div>
+                            <div class="mymeta" v-for="(srcd,src) in newd.sources" :key="srcd.old.version">
+                                <i class="database icon"></i><b>{{src}}</b>: {{srcd.old.version}} <i class="small arrow right icon"></i> {{srcd.new.version}}
+                                <i>({{srcd.new.downloaded_at | moment("from","now")}})</i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
 
         <div class="meta">
           <small>Last updated: {{ moment(hub_info.last_updated).format('MM/DD/YYYY HH:mm:ss a') }}</small>
@@ -110,6 +140,13 @@ export default {
   },
   updated () {
     $(".hub-info .popup").popup()
+    $(".hub-info .whatsnew").each((_, e) => {
+      const whatsnew_html = $(e).find(".tooltip-content").html()
+      $(e).popup({
+        html: whatsnew_html,
+        hoverable: true,
+      })
+    })
   },
   methods: {
     tick: function() {
@@ -127,28 +164,27 @@ export default {
       self.hub_info.last_updated = new Date()
       self.hub_info.fetching_counter = 3 // 3 tasks: whatsnew, status, job manager
 
-      setTimeout(() => {
-        // Fetch hub's whatsnew
-        axios.get(self.hub_config.url + '/whatsnew')
-        .then(response => {
-          self.hub_info.whatsnew = response.data.result
-          self.hub_info.online = true
-          self.hub_info.fetching_counter -= 1
-          self.tick()
-        })
-        .catch(err => {
-          if (err && err.message === "Network Error") {
-            self.hub_info.online = false
-          }
-          else {
-            self.hub_info.errors.push("Failed to get whats new.")
-          }
+      // Fetch hub's whatsnew
+      axios.get(self.hub_config.url + '/whatsnew')
+      .then(response => {
+        self.hub_info.whatsnew = response.data.result
+        self.hub_info.online = true
+        self.hub_info.fetching_counter -= 1
+        self.tick()
+      })
+      .catch(err => {
+        if (err && err.message === "Network Error") {
+          self.hub_info.online = false
+        }
+        else {
+          self.hub_info.errors.push("Failed to get whats new.")
+        }
 
-          self.hub_info.fetching_counter -= 1
-          self.tick()
+        self.hub_info.fetching_counter -= 1
+        self.tick()
 
-          console.log(`Error getting hub ${self.hub_config.name}'s whatsnew: ${err}`)
-        })
+        console.log(`Error getting hub ${self.hub_config.name}'s whatsnew: ${err}`)
+      })
 
       // Fetch hub's status
       axios.get(self.hub_config.url + '/status')
@@ -195,7 +231,6 @@ export default {
 
           console.log(`Error getting hub ${self.hub_config.name}'s job manager: ${err}`)
         })
-      }, 1000)
     },
   }
 }
@@ -207,13 +242,13 @@ export default {
   margin-left: 0.3rem;
 }
 
+.hidden {
+  display: none;
+}
+
 .hub-icon {
   width: 1.5rem;
   margin-right: 0.5rem;
-}
-
-.hub-info.hidden {
-  display: none;
 }
 
 .hub-info .header {
@@ -223,8 +258,21 @@ export default {
   text-overflow: ellipsis;
 }
 
+.header-content {
+  display: inline-flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .hub-info .header .hub-name-wrapper {
   cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hub-info .header .hub-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 </style>
