@@ -82,5 +82,10 @@ export default {
   .ui.compact.table.hubconnect td {padding: .3em .0em .0em 0em;}
   .ui.compact.table.hubconnect {border-radius: unset; cursor: pointer;}
   .tdhubicon {padding: 0.3em 1em 0.3em 0.3em !important;}
-  .scrolling.menu {max-height: 15em; width: 62.5%; overflow: auto;}
+  .scrolling.menu {
+    max-height: 15em;
+    width: 62.5%;
+    overflow: auto;
+    background-color: white;
+  }
 </style>
