@@ -86,8 +86,6 @@
                         </div>
                         <div :class="['ui bottom attached tab segment', source.download == undefined ? 'active' : '']" data-tab="upload" v-if="source.upload">
                             <data-source-upload v-bind:source="source"></data-source-upload>
-                            <br>
-                            <LogViewer type="upload" :item="source" key="uploadlogs"></LogViewer>
                         </div>
                         <div class="ui bottom attached tab segment" data-tab="plugin" v-if="source.data_plugin">
                             <data-source-plugin v-bind:source="source"></data-source-plugin>
