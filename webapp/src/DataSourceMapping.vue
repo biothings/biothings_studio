@@ -78,51 +78,12 @@
                 </div>
 
                 <!-- Inspection for Type Stats mode -->
-                <div class="ui tab" :data-tab="subsrc + '-type-stats'">
-                  <p>
-                    This is the field type and stats for source <b>{{subsrc}}</b>.
-                  </p>
-                  <p>
-                    It provides a summary of the source's structure,
-                    including: a map of all types involved in the data;
-                    basic statistics, showing how volumetry fits over data structure.
-                  </p>
-                  <p>The basic statistics include these fields:</p>
-                  <div class="ui bulleted list">
-                    <div class="item">_count: Total records</div>
-                    <div class="item">_max: Maximum value</div>
-                    <div class="item">_min: Minimum value</div>
-                    <div class="item">_none: number of records have no value</div>
-                  </div>
-
-                  <table v-if="inspection_data_flatten[subsrc]" class="ui celled striped table sortable">
-                    <thead>
-                      <tr>
-                        <th class="four wide">Field</th>
-                        <th class="one wide">Type</th>
-                        <th class="three wide">Stats</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      <tr v-for="row in inspection_data_flatten[subsrc]">
-                        <td>{{ row.field }}</td>
-                        <td>{{ row.type }}</td>
-                        <td>
-                          <div class="ui grid">
-                            <div class="row" v-for="data, field in row.stats">
-                              <div class="six wide column">{{ field }}</div>
-                              <div class="six wide column">{{ data }}</div>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <p v-else>
-                    There is no types & stats results, please run "inpect data" with "type" and/or "stats" options.
-                  </p>
-                </div>
+                <data-inspection
+                    v-bind:page_type="'datasource'"
+                    v-bind:main_source_name="source._id"
+                    v-bind:source_name="subsrc"
+                    v-bind:source_data="maps[subsrc]" >
+                </data-inspection>
             </div>
         </span>
         <div v-else>
@@ -139,7 +100,7 @@ import Actionable from './Actionable.vue'
 import MappingMap from './MappingMap.vue'
 import DiffUtils from './DiffUtils.vue'
 import InspectForm from './InspectForm.vue'
-import { flattenInspectionData } from './utils/utils.js'
+import DataInspection from './DataInspection.vue'
 import './tablesort.js'
 
 
@@ -152,22 +113,7 @@ export default {
     // $('#maps .item:first').addClass('active');
     // $('.tab:first').addClass('active');
   },
-  components: { MappingMap, InspectForm },
-  computed: {
-    inspection_data_flatten: function () {
-      const data = []
-      Object.entries(this.maps).forEach(([subsrc, subsrc_data]) => {
-        const inspection_data = subsrc_data['inspect_stats'] || subsrc_data['inspect_type'] || {}
-        if (inspection_data && Object.keys(inspection_data).length > 0) {
-          data[subsrc] = flattenInspectionData(inspection_data)
-        }
-        else {
-          data[subsrc] = null
-        }
-      })
-      return data
-    }
-  },
+  components: { MappingMap, InspectForm, DataInspection},
   watch: {
     maps: function (newv, oldv) {
       if (newv != oldv) {
@@ -208,7 +154,7 @@ export default {
         .catch(err => {
           self.loaderror(err)
         })
-    }
+    },
   }
 }
 </script>
@@ -222,18 +168,4 @@ export default {
     margin: 0em !important;
 }
 
-.sortable .grid {
-  margin: 0;
-}
-
-.sortable .row {
-  padding-top: 0.2rem;
-  padding-bottom: 0.2rem;
-  border: 1px solid rgba(34,36,38,.1);
-}
-
-.sortable .column {
-  padding-top: 0;
-  padding-bottom: 0;
-}
 </style>
