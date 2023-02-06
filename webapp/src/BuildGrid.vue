@@ -103,6 +103,13 @@
                                 </button>
                             </a>
                             <a class="field flex-center">
+                                <select class="ui filterstatus dropdown" v-model="status_filter">
+                                    <option value="">All Statuses</option>
+                                    <option value="success">Successful</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                            </a>
+                            <a class="field flex-center">
                                 <div class="ui includearchived checkbox toggle">
                                     <input type="checkbox" name="includearchived" v-model="only_archived">
                                     <label><small>Show archived builds only</small></label>
@@ -363,6 +370,11 @@ export default {
         this.getBuilds()
       }
     },
+    status_filter: function (newv, oldv) {
+      if (newv != oldv) {
+        this.getBuilds()
+      }
+    },
     // showSelection: function (s, os) {
     //   if (s != os) {
     //     this.getBuilds()
@@ -385,6 +397,7 @@ export default {
       colors: ['orange', 'green', 'yellow', 'olive', 'teal', 'violet', 'blue', 'pink', 'purple'],
       color_idx: 0,
       conf_filter: '',
+      status_filter: '',
       only_archived: false,
       include_archived_configs: false,
       // shown: 9,
@@ -425,6 +438,14 @@ export default {
       // (and if emptied in "response", I guess there's a race condition because builds aren't
       // rendered properly again...). Anyway, I don't know if it's related but that's the only
       // explanation I have...
+      if (self.status_filter) {
+        if (filter == '') {
+          filter += `?status=${self.status_filter}`
+        }
+        else {
+          filter += `&status=${self.status_filter}`
+        }
+      }
       if (self.only_archived) {
         if (filter == '') { filter += '?only_archived=1' } else { filter += '&only_archived=1' }
       }
