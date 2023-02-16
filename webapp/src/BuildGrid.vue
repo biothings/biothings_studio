@@ -107,7 +107,11 @@
                                     <option value="">All Statuses</option>
                                     <option value="success">Successful</option>
                                     <option value="failed">Failed</option>
+                                    <option value="canceled">Canceled</option>
                                 </select>
+                                <button class="ui clearconffilter red button white text" v-if="status_filter" @click="clearStatusFilter">
+                                    Clear
+                                </button>
                             </a>
                             <a class="field flex-center">
                                 <div class="ui includearchived checkbox toggle">
@@ -769,6 +773,12 @@ export default {
       $('.ui.filterbuilds.dropdown')
         .dropdown('clear')
       this.conf_filter = ''
+      this.getBuilds()
+    },
+    clearStatusFilter: function () {
+      $('.ui.filterstatus.dropdown')
+        .dropdown('clear')
+      this.status_filter = ''
       this.getBuilds()
     },
     toggleShowArchivedConfigs: function () {
