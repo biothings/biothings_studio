@@ -38,7 +38,7 @@
                 class="tooltip"
                 data-position="top left"
                 data-variation="very wide"
-                :data-html="formatInspectionValidationTooltipMessage(row.messages)"
+                :data-html="formatInspectionValidationTooltipMessage(row.warnings)"
               >
                 <span class="ui text warning">{{ row.field_name }} <i class="exclamation circle icon"></i></span>
               </div>
@@ -122,7 +122,7 @@ export default {
       })
     },
     hasInspectionFieldValidationWarnings: function (field_inspection) {
-      return field_inspection.messages.length > 0
+      return field_inspection.warnings.length > 0
     },
     hasInspectionValidationWarnings: function (inspection_data) {
       for (const field_inspection of inspection_data) {        
@@ -132,10 +132,10 @@ export default {
       }
       return false
     },
-    formatInspectionValidationTooltipMessage: function (messages) {
+    formatInspectionValidationTooltipMessage: function (warnings) {
       const tooltip_message = []
-      for (const message of messages) {
-        tooltip_message.push(`<li>${message}</li>`)
+      for (const warning of warnings) {
+        tooltip_message.push(`<li>${warning.code}: ${warning.message}</li>`)
       }
       return `<ul class="ui list">${tooltip_message.join('')}</ul>`
     }
