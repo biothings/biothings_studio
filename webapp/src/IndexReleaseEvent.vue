@@ -78,7 +78,17 @@
                             </div>
 
                             <label>Enter a name for the snapshot (or leave it empty to have the same name as the index)</label>
-                            <input type="text" name="snapshot_name" placeholder="Snapshot name" autofocus v-model="snapshot_name">
+                            <div>
+                              <input type="text" name="snapshot_name" placeholder="Snapshot name" autofocus v-model="snapshot_name">
+                            </div>
+
+                            <div :class="['ui','inverted', 'checkbox', repo_verification_error? '' : 'd-none']">
+                              <br>
+                              <br>
+                              <input type="checkbox" name="recreate-repo" v-model="recreate_repo">
+                              <label>Recreate repository? (old and outdated repo will be deleted, and new one is created to bypass verification step)</label>
+                            </div>
+
                         </div>
 
                         <div class="eight wide column">
@@ -184,13 +194,14 @@
 <script>
 import axios from 'axios'
 import bus from './bus.js'
+import AsyncCommandLauncher from './AsyncCommandLauncher.vue'
 import ReleaseNoteSummary from './ReleaseNoteSummary.vue'
 import BaseReleaseEvent from './BaseReleaseEvent.vue'
 import PublishSummary from './PublishSummary.vue'
 
 export default {
   name: 'index-release-event',
-  mixins: [BaseReleaseEvent],
+  mixins: [AsyncCommandLauncher, BaseReleaseEvent],
   props: ['release', 'build', 'type'],
   mounted () {
   },
@@ -202,10 +213,12 @@ export default {
     return {
       snapshot_envs: {},
       error: null,
+      repo_verification_error: false,
       selected_snapshot_env: null,
       selected_snapshot: null,
       snapshot_name: null,
-      selected_release_note: null
+      recreate_repo: false,
+      selected_release_note: null,
     }
   },
   computed: {
@@ -233,7 +246,6 @@ export default {
     },
     snapshot (release) {
       var self = this
-      self.error = null
       self.loading()
       axios.get(axios.defaults.baseURL + '/snapshot_manager')
         .then(response => {
@@ -253,26 +265,45 @@ export default {
           closable: false,
           onApprove: function () {
             self.loading()
+            
             if (!self.selected_snapshot_env) { return }
-            axios.put(axios.defaults.baseURL + '/snapshot',
-              {
-                snapshot_env: self.selected_snapshot_env,
-                index: self.release.index_name,
-                snapshot: self.snapshot_name
-              })
-              .then(response => {
-                bus.$emit('reload_build_detailed')
-                self.loaded()
-                return response.data.result
-              })
-              .catch(err => {
-                console.log('Error creating snapshot: ')
-                console.log(err)
-                self.loaderror(err)
-              })
+
+            self.launchAsyncCommand(
+              self.newSnapshot,
+              self.onNewSnapshotCommandSuccess,
+              self.onNewSnapshotCommandError,
+            )
           }
         })
         .modal('show')
+    },
+    newSnapshot: function () {
+      const self = this
+      this.repo_verification_error = false
+      return axios.put(axios.defaults.baseURL + '/snapshot',
+        {
+          snapshot_env: self.selected_snapshot_env,
+          index: self.release.index_name,
+          snapshot: self.snapshot_name,
+          recreate_repo: self.recreate_repo,
+        }
+      )
+    },
+    onNewSnapshotCommandSuccess: function (response) {
+      bus.$emit('reload_build_detailed')
+      this.error = null
+      this.loaded()
+      return response.data.result
+    },
+    onNewSnapshotCommandError: function (response) {
+      const error = JSON.parse(response.data.result.results)[0]
+      if (error.error == 'repository_verification_exception') {
+        this.repo_verification_error = true
+      }
+      this.error = "Failed to verify the repository."
+      console.log('Error creating snapshot: ', error)
+
+      $(`.ui.basic.createsnapshot.modal.${this.release.index_name}`).modal('show')
     },
     publish: function (release, snapshot_name, current_build) {
       console.log(`snapshot_name ${snapshot_name} current_build ${current_build}`)
@@ -336,5 +367,9 @@ export default {
 .envdetails {
     font-size: .8em;
     overflow: visible !important;
+}
+
+.d-none {
+  display: none;
 }
 </style>
