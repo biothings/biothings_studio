@@ -65,6 +65,10 @@
                                 <i class="download cloud icon"></i>
                                 Dump
                             </button>
+                            <button :class="['ui labeled small icon button teal mark-dump-success', $parent.download_status == 'downloading' ? 'disabled' : '']" @click="do_mark_success();">
+                                <i class="download cloud icon"></i>
+                                Mark dump success
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -93,6 +97,9 @@ export default {
       if (field) { force = field.is(':checked') }
       console.log(force)
       return this.$parent.dump(null, force)
+    },
+    do_mark_success () {
+        return this.$parent.mark_dump_success()
     }
   }
 }
@@ -104,6 +111,10 @@ export default {
     overflow-x: auto;
     overflow-wrap: normal;
     margin-bottom: 0.5rem;
+}
+
+.mark-dump-success {
+    margin-top: 2rem;
 }
 
 </style>
