@@ -101,9 +101,7 @@
                 </div>
             </div>
 
-            <div class="ui error message" v-if="error">
-                {{error}}
-            </div>
+            <div class="ui error message" v-if="error" v-html="error" />
 
             <div class="actions">
                 <div class="ui red basic cancel inverted button">
@@ -300,10 +298,21 @@ export default {
       if (error.error == 'repository_verification_exception') {
         this.repo_verification_error = true
       }
-      this.error = "Failed to verify the repository."
+      this.error = "<span>Failed to verify the repository.</span>"
+      this.error += `<pre>${JSON.stringify(error.detail, null, 2)}</pre>`
       console.log('Error creating snapshot: ', error)
 
       $(`.ui.basic.createsnapshot.modal.${this.release.index_name}`).modal('show')
+
+      // The modal's observeChanges setting is not worked in this case, 
+      // So this trick is used to force the modal to refresh, whenever the modal's size is changed.
+      setTimeout(
+        () => {
+          $(`.ui.basic.createsnapshot.modal.${this.release.index_name}`).modal('refresh')
+        },
+        0
+      )
+      
     },
     publish: function (release, snapshot_name, current_build) {
       console.log(`snapshot_name ${snapshot_name} current_build ${current_build}`)
