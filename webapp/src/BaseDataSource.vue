@@ -143,9 +143,12 @@ export default {
     inspect: function () {
       bus.$emit('do_inspect', ['src', this.source._id])
     },
-    mark_dump_success () {
-      axios.put(axios.defaults.baseURL + `/source/${this.source.name}/mark_dump_success`)
+    mark_dump_success (dry_run=false, dry_run_callback) {
+      axios.put(axios.defaults.baseURL + `/source/${this.source.name}/mark_dump_success`, {dry_run: dry_run})
         .then(response => {
+          if (dry_run && dry_run_callback) {
+            dry_run_callback(response.data.result)
+          }
           console.log(response.data.result)
         })
         .catch(err => {

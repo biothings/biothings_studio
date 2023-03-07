@@ -65,12 +65,41 @@
                                 <i class="download cloud icon"></i>
                                 Dump
                             </button>
-                            <button :class="['ui labeled small icon button teal mark-dump-success', $parent.download_status == 'downloading' ? 'disabled' : '']" @click="do_mark_success();">
+                            <button :class="['ui labeled small icon button teal mark-dump-success', $parent.download_status == 'downloading' ? 'disabled' : '']" @click="$event => show_mark_dump_success_modal()">
                                 <i class="download cloud icon"></i>
                                 Mark dump success
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui basic mark_dump_success modal">
+            <!-- <div class="ui icon header">
+                Mark datasource as dump successfully.
+            </div> -->
+            <div class="content">
+                <p>Are you sure you want to mark the datasource as dump successful?</p>
+                <p>You can tick on the below checkbox to see what will be updated before actually update to the database</p>
+                <div class="ui checkbox inverted">
+                    <input type="checkbox" name="dry_run" tabindex="0" class="hidden" checked="checked">
+                    <label>Dry run?</label>
+                </div>
+
+                <div class="dry-run-result-wrapper" v-if="dry_run_result">
+                    This is the data will be stored when mark success.
+                    <pre class="dry-run-result">{{ JSON.stringify(dry_run_result, null, space=2) }}</pre>
+                </div>
+            </div>
+            <div class="actions">
+                <div class="ui red basic cancel inverted button">
+                    <i class="remove icon"></i>
+                    Cancel
+                </div>
+                <div class="ui green ok inverted button" @click="do_mark_success();">
+                    <i class="checkmark icon"></i>
+                    Mark Success
                 </div>
             </div>
         </div>
@@ -84,6 +113,11 @@ import TracebackViewer from './components/TracebackViewer.vue'
 export default {
   name: 'data-source-dump',
   props: ['source'],
+  data () {
+    return {
+      dry_run_result: null,
+    }
+  },
   mounted () {
     $('.ui.checkbox')
       .checkbox()
@@ -98,9 +132,21 @@ export default {
       console.log(force)
       return this.$parent.dump(null, force)
     },
+    show_mark_dump_success_modal () {
+        $('.modal.mark_dump_success').modal('show')
+    },
     do_mark_success () {
-        return this.$parent.mark_dump_success()
-    }
+        const dry_run = $(".modal.mark_dump_success [name=dry_run]").is(":checked")
+        this.dry_run_result = null
+        return this.$parent.mark_dump_success(dry_run, this.dry_run_callback)
+    },
+    dry_run_callback (result) {
+        this.dry_run_result = result
+        setTimeout(() => {
+            $('.modal.mark_dump_success').modal('show')    
+        }, 0);
+        
+    },
   }
 }
 </script>
@@ -117,4 +163,14 @@ export default {
     margin-top: 2rem;
 }
 
+.dry-run-result-wrapper {
+    margin-top: 2rem;
+}
+
+.dry-run-result {
+    max-height: 350px;
+    overflow: auto;
+    background-color: white;
+    color: black;
+}
 </style>
