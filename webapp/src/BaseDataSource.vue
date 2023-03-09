@@ -143,6 +143,18 @@ export default {
     inspect: function () {
       bus.$emit('do_inspect', ['src', this.source._id])
     },
+    mark_dump_success (dry_run=false, dry_run_callback) {
+      axios.put(axios.defaults.baseURL + `/source/${this.source.name}/mark_dump_success`, {dry_run: dry_run})
+        .then(response => {
+          if (dry_run && dry_run_callback) {
+            dry_run_callback(response.data.result)
+          }
+          console.log(response.data.result)
+        })
+        .catch(err => {
+          console.log('Error getting job manager information: ' + err)
+        })
+    },
     onSourceChanged (_id = null, op = null) {
       // this method acts as a dispatcher, reacting to change_source events, filtering
       // them for the proper source
