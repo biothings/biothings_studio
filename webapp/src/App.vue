@@ -15,6 +15,10 @@
           <button class="mini circular ui icon button" @click="openQuickSearch"><i class="search icon"></i></button>
         </div>
 
+        <div data-tooltip="Cleanup" data-position="bottom center">
+          <button class="mini circular ui icon button" @click="openCleanup"><i class="trash alternate outline icon"></i></button>
+        </div>
+
         <div v-if="needs_upgrade">
             <!-- <button class="mini circular ui icon button" @click="showUpgrades()" data-tooltip="Studio Upgrade Available" data-position="bottom center">
                 <b class="upgrade">Upgrade</b>
@@ -104,6 +108,8 @@
         </div>
 
         <quick-search></quick-search>
+
+        <cleanup></cleanup>
 
         <div class="ui basic config modal" v-if="has_feature('config')">
             <h3 class="ui icon">
@@ -217,6 +223,7 @@ import StandaloneWizard from './StandaloneWizard.vue'
 import SystemUpgrade from './SystemUpgrade.vue'
 import NavBar from './components/NavBar.vue'
 import QuickSearch from './QuickSearch.vue'
+import Cleanup from './Cleanup.vue'
 
 const STUDIO_VERSION = '0.2b'
 Vue.use(VueLocalStorage)
@@ -329,6 +336,7 @@ export default {
     SystemUpgrade,
     NavBar,
     QuickSearch,
+    Cleanup,
   },
   mounted () {
     $('.menu .item').tab()
@@ -595,6 +603,9 @@ export default {
     },
     openQuickSearch () {
       $('.ui.basic.quick-search.modal').modal('show')
+    },
+    openCleanup () {
+      $('.ui.basic.cleanup.modal').modal('show')
     },
     openConfig () {
       this.loading()
