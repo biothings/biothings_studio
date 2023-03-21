@@ -168,6 +168,7 @@
                                 <br>
 
                                 <label>Select the sources used to create merged data</label>
+                                <span v-if="default_doc_types_display"> ({{ default_doc_types_display }})</span>
                                 <select class="ui fluid sources dropdown" id="selected_sources" multiple="">
                                     <option value="">Available sources</option>
                                     <option v-for="_id in sources" :key="_id+'source'">{{_id}}</option>
@@ -318,6 +319,23 @@ export default {
         }
         $('.ui.rootsources.dropdown').dropdown('clear')
         $('.ui.rootsources.dropdown').dropdown('setup menu', { values: fmt }).dropdown('refresh')
+      },
+      onHide: function() {
+        const doc_type = $('.ui.buildconfiguration.form').form('get field', 'doc_type').val()
+        if (doc_type && doc_type.length > 0) {
+          return
+        }
+
+        const selected_sources = $('.ui.sources.dropdown').dropdown('get value')
+        const selected_doc_types = []
+        selected_sources.forEach(source => {
+          const default_doc_type = self.source_doc_type_mapping[source]
+          selected_doc_types.push(default_doc_type)
+        })
+
+        if (selected_doc_types.length == 1) {
+          $('.ui.buildconfiguration.form').form('get field', 'doc_type').val(selected_doc_types[0])
+        }
       }
     })
 
@@ -389,6 +407,8 @@ export default {
     return {
       builds: [],
       sources: [],
+      source_doc_type_mapping: {},
+      default_doc_types_display: null,
       all_build_configs: {}, // from API
       build_configs: {}, // displayed
       builder_classes: {},
@@ -555,22 +575,54 @@ export default {
       var self = this
       this.loading()
       self.sources = []
+      self.source_doc_type_mapping = {}
       axios.get(axios.defaults.baseURL + '/sources')
         .then(response => {
           $(response.data.result).each(function (i, e) {
+            const default_doc_type = e.data_plugin?.plugin?.biothing_type
             if (e.upload) {
               for (var k in e.upload.sources) {
                 self.sources.push(k)
+                self.source_doc_type_mapping[k] = default_doc_type
               }
             }
           })
           self.sources.sort()
+          self.update_default_doc_types_display()
           this.loaded()
         })
         .catch(err => {
           //console.log('Error listing sources: ' + err)
           this.loaderror(err)
         })
+    },
+    update_default_doc_types_display: function () {
+      const doc_types = {}
+      let has_value = false
+      Object.values(this.source_doc_type_mapping).forEach(doc_type => {
+        if (!doc_type) {
+          doc_type = 'not provided'
+        }
+        else {
+          has_value = true
+        }
+        
+        if (!doc_types[doc_type]) {
+          doc_types[doc_type] = 0
+        }
+        doc_types[doc_type] ++
+      })
+
+      if (has_value) {
+        const doc_type_count = []
+        for (const [doc_type, count] of Object.entries(doc_types)) {
+          doc_type_count.push(`${doc_type} (${count})`)
+        }
+        this.default_doc_types_display = `biothing_type from data source(s): ${doc_type_count.join(", ")}`
+      }
+      else {
+        this.default_doc_types_display = null
+      }
     },
     buildExists: function (_id) {
       var gotit = false
