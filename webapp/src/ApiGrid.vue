@@ -58,13 +58,27 @@
                             <br>
                             <br>
 
+                            <label>Select a ElasticSeach server</label>
+                            <div>
+                                <select class="ui fluid es_servers dropdown" name="es_server">
+                                  <option value="">------</option>
+                                  <option v-if="es_servers" v-for="(server_data, es_server) in es_servers"
+                                    :value="es_server"
+                                  >
+                                  {{ es_server}} ({{ server_data.host }})
+                                  </option>
+                                </select>
+                                <br>
+                                <br>
+                            </div>
+
                             <label>Select a backend the API will connect to to serve the data</label>
                             <div>
                                 <select class="ui fluid apibackends dropdown" name="api_backend">
-                                        <option v-if="backends.length" v-for="idx_info in backends"
-                                                :data-es_host="idx_info.host"
-                                                :data-index="idx_info.index"
-                                                :data-doc_type="idx_info.doc_type">{{idx_info.env}} ({{idx_info.host}} | {{idx_info.index}})</option>
+                                  <option v-if="backends.length" v-for="idx_info in backends"
+                                          :data-es_host="idx_info.host"
+                                          :data-index="idx_info.index"
+                                          :data-doc_type="idx_info.doc_type">{{idx_info.host}} | {{idx_info.index}}</option>
                                 </select>
                                 <br>
                                 <br>
@@ -117,6 +131,7 @@ export default {
   name: 'api-grid',
   mixins: [Loader, Actionable],
   mounted () {
+    $('.ui.es_servers.dropdown').dropdown()
     $('.ui.apibackends.dropdown').dropdown()
     $('#apis .ui.sidebar')
       .sidebar({ context: $('#apis') })
@@ -145,7 +160,8 @@ export default {
     return {
       apis: [],
       errors: [],
-      backends: []
+      es_servers: {},
+      backends: [],
     }
   },
   components: { API, PaginatedList },
@@ -167,38 +183,55 @@ export default {
       // (there's not much events and data isn't big)
       this.getApis()
     },
+    onESServerChanged: function() {
+      const self = this
+      const es_server = $('.ui.es_servers.dropdown').dropdown("get value")
+      const server_data = self.es_servers[es_server]
+      self.backends = []
+
+      if (!server_data) {
+        return
+      }
+
+      const fillbackend = function (idxs) {
+        for (const idx in idxs) {
+          self.backends.push({
+            env: es_server,
+            host: server_data.host,
+            index: idxs[idx].index,
+            doc_type: idxs[idx].doc_type
+          })
+        }
+      }
+      // either directly a list of index definition
+      // or a dict with different
+      if (Array.isArray(server_data.index)) {
+        const idxs = server_data.index
+        fillbackend(idxs)
+      } else {
+        for (const cat in server_data.index) {
+          const idxs = server_data.index[cat]
+          fillbackend(idxs)
+        }
+      }
+
+      $('.ui.apibackends.dropdown').dropdown()
+    },
     createAPI: function () {
       $('#apis .ui.sidebar').sidebar('hide')
       var self = this
+
+      self.es_servers = {}
+      self.backends = []
       self.loading()
       axios.get(axios.defaults.baseURL + '/index_manager?remote=1')
         .then(response => {
-          self.backends = []
-          var envs = response.data.result
-          $.each(envs.env, function (env, value) {
-            var fillbackend = function (idxs) {
-              for (var idx in idxs) {
-                self.backends.push({
-                  env: env,
-                  host: value.host,
-                  index: idxs[idx].index,
-                  doc_type: idxs[idx].doc_type
-                })
-              }
-            }
-            // either directly a list of index definition
-            // or a dict with different
-            if (Array.isArray(value.index)) {
-              var idxs = value.index
-              fillbackend(idxs)
-            } else {
-              for (var cat in value.index) {
-                var idxs = value.index[cat]
-                fillbackend(idxs)
-              }
-            }
-          })
+          self.es_servers = response.data.result.env
+
+          $('.ui.es_servers.dropdown').dropdown()
+          $('.ui.es_servers.dropdown').change(self.onESServerChanged).change()
           $('.ui.apibackends.dropdown').dropdown()
+          
           self.loaded()
         })
         .catch(err => {
@@ -242,12 +275,16 @@ export default {
                 console.log(err)
                 self.loaderror(err)
               })
+          },
+          onHidden: function () {
+            $('.ui.es_servers.dropdown').dropdown("clear cache")
+            $('.ui.apibackends.dropdown').dropdown("clear cache")
           }
         })
         .modal('show')
+      },
     }
   }
-}
 </script>
 
 <style>
