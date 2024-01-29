@@ -78,7 +78,7 @@
                                   <option v-if="backends.length" v-for="idx_info in backends"
                                           :data-es_host="idx_info.host"
                                           :data-index="idx_info.index"
-                                          :data-doc_type="idx_info.doc_type">{{idx_info.host}} | {{idx_info.index}}</option>
+                                          :data-doc_type="idx_info.doc_type">{{idx_info.index}}</option>
                                 </select>
                                 <br>
                                 <br>
@@ -131,12 +131,16 @@ export default {
   name: 'api-grid',
   mixins: [Loader, Actionable],
   mounted () {
+    $('.ui.es_servers.dropdown').change(this.onESServerChanged)
     $('.ui.es_servers.dropdown').dropdown()
+
     $('.ui.apibackends.dropdown').dropdown()
+
     $('#apis .ui.sidebar')
       .sidebar({ context: $('#apis') })
       .sidebar('setting', 'transition', 'overlay')
       .sidebar('attach events', '#side_menu')
+
     $('.ui.form').form()
   },
   updated () {
@@ -147,12 +151,14 @@ export default {
   created () {
     this.getApis()
     bus.$on('change_api', this.onApiChanged)
+    bus.$on('current_config', this.onConfig)
   },
   beforeDestroy () {
     // hacky to remove modal from div outside of app, preventing having more than one
     // modal displayed when getting back to that page. https://github.com/Semantic-Org/Semantic-UI/issues/4049
     $('.ui.basic.createapi.modal').remove()
     bus.$off('change_api', this.onApiChanged)
+    bus.$off('current_config', this.onConfig)
   },
   watch: {
   },
@@ -160,7 +166,7 @@ export default {
     return {
       apis: [],
       errors: [],
-      es_servers: {},
+      es_servers: [],
       backends: [],
     }
   },
@@ -183,53 +189,33 @@ export default {
       // (there's not much events and data isn't big)
       this.getApis()
     },
+    onConfig: function (conf) {
+      this.es_servers = conf.scope.config.INDEX_CONFIG.value.env
+      $('.ui.es_servers.dropdown').dropdown()
+    },
     onESServerChanged: function() {
       const self = this
       const es_server = $('.ui.es_servers.dropdown').dropdown("get value")
       const server_data = self.es_servers[es_server]
       self.backends = []
 
-      if (!server_data) {
-        return
-      }
-
-      const fillbackend = function (idxs) {
-        for (const idx in idxs) {
-          self.backends.push({
-            env: es_server,
-            host: server_data.host,
-            index: idxs[idx].index,
-            doc_type: idxs[idx].doc_type
-          })
-        }
-      }
-      // either directly a list of index definition
-      // or a dict with different
-      if (Array.isArray(server_data.index)) {
-        const idxs = server_data.index
-        fillbackend(idxs)
-      } else {
-        for (const cat in server_data.index) {
-          const idxs = server_data.index[cat]
-          fillbackend(idxs)
-        }
-      }
-
-      $('.ui.apibackends.dropdown').dropdown()
-    },
-    createAPI: function () {
-      $('#apis .ui.sidebar').sidebar('hide')
-      var self = this
-
-      self.es_servers = {}
-      self.backends = []
       self.loading()
-      axios.get(axios.defaults.baseURL + '/index_manager?remote=1')
+      axios.get(axios.defaults.baseURL + `/indexes_by_name?env_name=${es_server}`)
         .then(response => {
-          self.es_servers = response.data.result.env
+          const fillbackend = function (idxs) {
+            for (const idx in idxs) {
+              self.backends.push({
+                env: es_server,
+                host: server_data.host,
+                index: idxs[idx].index_name,
+                doc_type: idxs[idx].doc_type
+              })
+            }
+          }
 
-          $('.ui.es_servers.dropdown').dropdown()
-          $('.ui.es_servers.dropdown').change(self.onESServerChanged).change()
+          const indexes = response.data.result
+          fillbackend(indexes)
+          
           $('.ui.apibackends.dropdown').dropdown()
           
           self.loaded()
@@ -239,6 +225,11 @@ export default {
           console.log(err)
           self.loaderror(err)
         })
+    },
+    createAPI: function () {
+      $('#apis .ui.sidebar').sidebar('hide')
+      var self = this
+
       $('.ui.basic.createapi.modal')
         .modal('setting', {
           detachable: false,
