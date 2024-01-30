@@ -69,19 +69,24 @@
                                   </option>
                                 </select>
                                 <br>
-                                <br>
                             </div>
 
                             <label>Select a backend the API will connect to to serve the data</label>
                             <div>
-                                <select class="ui fluid apibackends dropdown" name="api_backend">
-                                  <option v-if="backends.length" v-for="idx_info in backends"
-                                          :data-es_host="idx_info.host"
-                                          :data-index="idx_info.index"
-                                          :data-doc_type="idx_info.doc_type">{{idx_info.index}}</option>
-                                </select>
-                                <br>
-                                <br>
+                              <div class="ui fluid apibackends dropdown search selection">
+                                <input type="hidden" name="api_backend">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Select backend</div>
+                                <div class="menu">
+                                  <div v-if="backends" v-for="(_, idx_name) in backends"
+                                      class="item"
+                                      :data-value="idx_name"
+                                  >
+                                      {{ idx_name }}
+                                  </div>
+                                </div>
+                              </div>
+                              <br>
                             </div>
 
                             <label>Specify a port</label>
@@ -131,10 +136,16 @@ export default {
   name: 'api-grid',
   mixins: [Loader, Actionable],
   mounted () {
-    $('.ui.es_servers.dropdown').change(this.onESServerChanged)
+    const self = this
+
+    $('.ui.es_servers.dropdown').change(this.fetchIndexes)
     $('.ui.es_servers.dropdown').dropdown()
 
-    $('.ui.apibackends.dropdown').dropdown()
+    $('.ui.apibackends.dropdown').dropdown({
+      onSearch: function (search_term) {
+        self.fetchIndexes()
+      },
+    })
 
     $('#apis .ui.sidebar')
       .sidebar({ context: $('#apis') })
@@ -166,8 +177,8 @@ export default {
     return {
       apis: [],
       errors: [],
-      es_servers: [],
-      backends: [],
+      es_servers: {},
+      backends: {},
     }
   },
   components: { API, PaginatedList },
@@ -193,30 +204,36 @@ export default {
       this.es_servers = conf.scope.config.INDEX_CONFIG.value.env
       $('.ui.es_servers.dropdown').dropdown()
     },
-    onESServerChanged: function() {
+    fetchIndexes: function() {
       const self = this
       const es_server = $('.ui.es_servers.dropdown').dropdown("get value")
+      const search_term = $('.ui.apibackends.dropdown').dropdown("get query")
       const server_data = self.es_servers[es_server]
-      self.backends = []
+      self.backends = {}
+
+      if (!es_server || !server_data) {
+        return
+      }
+
+      const params = new URLSearchParams()
+      params.set("env_name", es_server)
+      if (search_term) {
+        params.set("index_name", search_term + "*")
+      }
 
       self.loading()
-      axios.get(axios.defaults.baseURL + `/indexes_by_name?env_name=${es_server}`)
+      axios.get(axios.defaults.baseURL + `/indexes_by_name?${params.toString()}`)
         .then(response => {
-          const fillbackend = function (idxs) {
-            for (const idx in idxs) {
-              self.backends.push({
-                env: es_server,
-                host: server_data.host,
-                index: idxs[idx].index_name,
-                doc_type: idxs[idx].doc_type
-              })
+          const new_backends = {}
+          response.data.result.forEach(index => {
+            new_backends[index.index_name] = {
+              env: es_server,
+              host: server_data.host,
+              index: index.index_name,
+              doc_type: index.doc_type
             }
-          }
-
-          const indexes = response.data.result
-          fillbackend(indexes)
-          
-          $('.ui.apibackends.dropdown').dropdown()
+          })
+          self.backends = new_backends
           
           self.loaded()
         })
@@ -237,10 +254,10 @@ export default {
             self.errors = []
             var api_id = $('.ui.form input[name=api_id]').val()
             var description = $('.ui.form input[name=description]').val()
-            var backend = $('.ui.form select[name=api_backend] :selected')
-            var es_host = $(backend).attr('data-es_host')
-            var index = $(backend).attr('data-index')
-            var doc_type = $(backend).attr('data-doc_type')
+            var index = $('.ui.form [name=api_backend]').val()
+            var backend = self.backends[index]
+            var es_host = backend.host
+            var doc_type = backend.doc_type
             var port = parseInt($('.ui.form input[name=port]').val())
             // form validation
             if (!api_id) { self.errors.push('Provide a name for the API') }
