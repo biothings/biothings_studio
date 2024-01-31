@@ -30,7 +30,7 @@
                     {{release.diff.stats.delete | formatInteger }} deleted.
                     <b v-if="release.diff.stats.mapping_changed">Mapping has changed.</b>
                     <div>
-                    <publish-summary v-if="build.publish && build.publish.incremental && build.publish.incremental.hasOwnProperty(release_id)":publish="build.publish.incremental[release_id]" :type="type"></publish-summary>
+                    <publish-summary v-if="build.publish && build.publish.incremental && build.publish.incremental.hasOwnProperty(release_id)" :publish="build.publish.incremental[release_id]" :type="type"></publish-summary>
                     </div>
                 </div>
             </div>
@@ -60,19 +60,24 @@
                                   </option>
                                 </select>
                                 <br>
-                                <br>
                             </div>
 
                             <label>Select a backend to apply the diff to</label>
                             <div>
-                                <select class="ui fluid backendenv dropdown" name="target_backend">
-                                        <option v-for="(idx_info, i) in compats"
-                                                :key="idx_info.host+i"
-                                                :data-es_host="idx_info.host"
-                                                :data-index="idx_info.index">{{idx_info.host}} | {{idx_info.index}}</option>
-                                </select>
-                                <br>
-                                <br>
+                              <div class="ui fluid backendenv dropdown search selection">
+                                <input type="hidden" name="target_backend">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Select backend</div>
+                                <div class="menu">
+                                  <div v-if="compats" v-for="compat of compats"
+                                      class="item"
+                                      :data-value="compat.index"
+                                  >
+                                      {{ compat.index }}
+                                  </div>
+                                </div>
+                              </div>
+                              <br>
                             </div>
                         </div>
 
@@ -181,8 +186,17 @@ export default {
   mixins: [BaseReleaseEvent],
   props: ['release', 'build', 'type'],
   mounted () {
+    const self = this
+
+    $('.ui.es_servers.dropdown').change(self.fetchIndexes)
     $('.ui.es_servers.dropdown').dropdown()
-    $('.ui.backendenv.dropdown').dropdown()
+    $('.ui.backendenv.dropdown').dropdown({
+      onSearch: function (search_term) {
+        self.fetchIndexes()
+      },
+    })
+
+    self.fetchESServers()
   },
   beforeDestroy () {
     $(`.ui.basic.applydiff.modal.${this.release.old.backend}`).remove()
@@ -211,58 +225,41 @@ export default {
     }
   },
   methods: {
-    displayError: function () {
-    },
-    onESServerChanged: function() {
+    fetchESServers: function () {
       const self = this
-      const es_server = $('.ui.es_servers.dropdown').dropdown("get value")
-      const server_data = self.es_servers[es_server]
 
-      self.compats = self.selectCompatibles(es_server, server_data)
+      axios.get(axios.defaults.baseURL + '/config')
+      .then(response => {
+        const conf = response.data.result.scope.config
+        const build_config_key = conf.INDEX_CONFIG.value.build_config_key
+        if (build_config_key) {
+          self.selecting_build_config = self.build.build_config[build_config_key]
+        }
+        else {
+          self.selecting_build_config = null
+        }
 
-      $('.ui.backendenv.dropdown').dropdown()
+        self.es_servers = conf.INDEX_CONFIG.value.env
+      })
     },
     applyDiff (release) {
       var self = this
       self.loading()
-      axios.get(axios.defaults.baseURL + '/index_manager?remote=1')
-        .then(response => {
-          // expecting a syncer exists with (diff_type,"es")
 
-          self.es_servers = response.data.result.env
-          const build_config_key = self.es_servers.build_config_key
-          self.selecting_build_config = null
-          if (build_config_key) {
-            self.selecting_build_config = this.build.build_config[build_config_key]
-          }
-
-          $('.ui.es_servers.dropdown').dropdown()
-          $('.ui.es_servers.dropdown').change(self.onESServerChanged).change()
-          $('.ui.backendenv.dropdown').dropdown()
-
-          self.loaded()
-        })
-        .catch(err => {
-          console.log('Error getting index environments: ')
-          console.log(err)
-          self.loaderror(err)
-          throw err
-        })
       var oldcol = release.old.backend
       var newcol = release.new.backend
-      var diff_type = release.diff.type
       var backend_type = 'es' // TODO: should we support more ?
       var doc_type = this.build.build_config.doc_type
-      var self = this
+
       $(`.ui.basic.applydiff.modal.${this.release.old.backend}`)
         .modal('setting', {
           detachable: false,
           closable: false,
           onApprove: function () {
-            var backend = $('.ui.form select[name=target_backend] :selected')
-            var host = $(backend).attr('data-es_host')
-            var index = $(backend).attr('data-index')
-            var target_backend = [host, index, doc_type]
+            var backend = $('.ui.form [name=target_backend]').val()
+            var host = self.compats[backend].host
+            var target_backend = [host, backend, doc_type]
+
             self.loading()
             axios.post(axios.defaults.baseURL + '/sync',
               {
@@ -285,40 +282,73 @@ export default {
         })
         .modal('show')
     },
-    selectCompatibles (env, env_data) {
-      if (!env_data) {
-        return []
+    fetchIndexes () {
+      const self = this
+      const es_server = $('.ui.es_servers.dropdown').dropdown("get value")
+      const server_data = self.es_servers[es_server]
+      const search_term = $('.ui.backendenv.dropdown').dropdown("get query")
+      self.compats = {}
+
+      if (!es_server || !server_data) {
+        return
       }
 
+      const params = new URLSearchParams()
+      params.set("env_name", es_server)
+      if (search_term) {
+        params.set("index_name", "*" + search_term + "*")
+      }
+
+      axios.get(axios.defaults.baseURL + `/indexes_by_name?${params.toString()}`)
+      .then(response => {
+        const indexes = response.data.result
+        self.compats = self.selectCompatibles(es_server, server_data, indexes)
+
+        self.loaded()
+      })
+      .catch(err => {
+        console.log('Error getting index environments: ')
+        console.log(err)
+        self.loaderror(err)
+        throw err
+      })
+    },
+    selectCompatibles (env, env_data, indexes) {
       const self = this
+
+      if (!env_data) {
+        return {}
+      }
 
       // check whether we can use one of build_config keys
       // to filter compatibles indices
       if (self.selecting_build_config) {
-        var found = false
-        for (var i in env_data.index) {
-          var idx = env_data.index[i]
-          console.log(idx)
+        let found = false
+        for (const i in indexes) {
+          const idx = indexes[i]
           if (!idx.hasOwnProperty(self.selecting_build_config)) {
             continue
-          } else {
-            found = true
           }
+          found = true
         }
 
         if (!found) {
-          return []
+          return {}
         }
       }
 
-      const _compat = []
-      for (var k in env_data.index) {
+      const _compat = {}
+      indexes.forEach(index => {
         // make sure doc_type is the same
-        if (env_data.index[k].doc_type && env_data.index[k].doc_type != self.build.build_config.doc_type) {
-          continue
+        if (index.doc_type && index.doc_type != self.build.build_config.doc_type) {
+          return
         }
-        _compat.push({ env: env, host: env_data.host, index: env_data.index[k].index })
-      }
+        _compat[index.index_name] = {
+          env: env,
+          host: env_data.host,
+          index: index.index_name,
+        }
+      })
 
       return _compat
     },

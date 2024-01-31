@@ -153,6 +153,8 @@ export default {
       .sidebar('attach events', '#side_menu')
 
     $('.ui.form').form()
+
+    self.fetchESServers()
   },
   updated () {
     // there's some kind of race-condition regarding dropdown init, if
@@ -162,14 +164,12 @@ export default {
   created () {
     this.getApis()
     bus.$on('change_api', this.onApiChanged)
-    bus.$on('current_config', this.onConfig)
   },
   beforeDestroy () {
     // hacky to remove modal from div outside of app, preventing having more than one
     // modal displayed when getting back to that page. https://github.com/Semantic-Org/Semantic-UI/issues/4049
     $('.ui.basic.createapi.modal').remove()
     bus.$off('change_api', this.onApiChanged)
-    bus.$off('current_config', this.onConfig)
   },
   watch: {
   },
@@ -200,9 +200,14 @@ export default {
       // (there's not much events and data isn't big)
       this.getApis()
     },
-    onConfig: function (conf) {
-      this.es_servers = conf.scope.config.INDEX_CONFIG.value.env
-      $('.ui.es_servers.dropdown').dropdown()
+    fetchESServers: function () {
+      const self = this
+
+      axios.get(axios.defaults.baseURL + '/config')
+      .then(response => {
+        const conf = response.data.result.scope.config
+        self.es_servers = conf.INDEX_CONFIG.value.env
+      })
     },
     fetchIndexes: function() {
       const self = this
@@ -218,7 +223,7 @@ export default {
       const params = new URLSearchParams()
       params.set("env_name", es_server)
       if (search_term) {
-        params.set("index_name", search_term + "*")
+        params.set("index_name", "*" + search_term + "*")
       }
 
       self.loading()
@@ -263,6 +268,7 @@ export default {
             if (!api_id) { self.errors.push('Provide a name for the API') }
             if (!port) { self.errors.push('Provide a port number') }
             if (self.errors.length) { return false }
+
             self.loading()
             axios.post(axios.defaults.baseURL + '/api',
               {
