@@ -30,7 +30,7 @@
                     {{release.diff.stats.delete | formatInteger }} deleted.
                     <b v-if="release.diff.stats.mapping_changed">Mapping has changed.</b>
                     <div>
-                    <publish-summary v-if="build.publish && build.publish.incremental && build.publish.incremental.hasOwnProperty(release_id)":publish="build.publish.incremental[release_id]" :type="type"></publish-summary>
+                    <publish-summary v-if="build.publish && build.publish.incremental && build.publish.incremental.hasOwnProperty(release_id)" :publish="build.publish.incremental[release_id]" :type="type"></publish-summary>
                     </div>
                 </div>
             </div>
@@ -49,17 +49,35 @@
                 <div class="ui form">
                     <div class="ui centered grid">
                         <div class="eight wide column">
+                            <label>Select a ElasticSeach server</label>
+                            <div>
+                                <select class="ui fluid es_servers dropdown" name="es_server">
+                                  <option value="">------</option>
+                                  <option v-if="es_servers" v-for="(server_data, es_server) in es_servers"
+                                    :value="es_server"
+                                  >
+                                  {{ es_server}} ({{ server_data.host }})
+                                  </option>
+                                </select>
+                                <br>
+                            </div>
 
                             <label>Select a backend to apply the diff to</label>
                             <div>
-                                <select class="ui fluid backendenv dropdown" name="target_backend">
-                                        <option v-for="(idx_info, i) in compats"
-                                                :key="idx_info.host+i"
-                                                :data-es_host="idx_info.host"
-                                                :data-index="idx_info.index">{{idx_info.env}} ({{idx_info.host}} | {{idx_info.index}})</option>
-                                </select>
-                                <br>
-                                <br>
+                              <div class="ui fluid backendenv dropdown search selection">
+                                <input type="hidden" name="target_backend">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Select backend</div>
+                                <div class="menu">
+                                  <div v-if="compats" v-for="compat of compats"
+                                      class="item"
+                                      :data-value="compat.index"
+                                  >
+                                      {{ compat.index }}
+                                  </div>
+                                </div>
+                              </div>
+                              <br>
                             </div>
                         </div>
 
@@ -168,7 +186,17 @@ export default {
   mixins: [BaseReleaseEvent],
   props: ['release', 'build', 'type'],
   mounted () {
-    $('.ui.backendenv.dropdown').dropdown()
+    const self = this
+
+    $('.ui.es_servers.dropdown').change(self.fetchIndexes)
+    $('.ui.es_servers.dropdown').dropdown()
+    $('.ui.backendenv.dropdown').dropdown({
+      onSearch: function (search_term) {
+        self.fetchIndexes()
+      },
+    })
+
+    self.fetchESServers()
   },
   beforeDestroy () {
     $(`.ui.basic.applydiff.modal.${this.release.old.backend}`).remove()
@@ -177,7 +205,9 @@ export default {
   data () {
     return {
       errors: [],
-      compats: {}
+      compats: {},
+      es_servers: {},
+      selecting_build_config: null
     }
   },
   computed: {
@@ -195,40 +225,41 @@ export default {
     }
   },
   methods: {
-    displayError: function () {
+    fetchESServers: function () {
+      const self = this
+
+      axios.get(axios.defaults.baseURL + '/config')
+      .then(response => {
+        const conf = response.data.result.scope.config
+        const build_config_key = conf.INDEX_CONFIG.value.build_config_key
+        if (build_config_key) {
+          self.selecting_build_config = self.build.build_config[build_config_key]
+        }
+        else {
+          self.selecting_build_config = null
+        }
+
+        self.es_servers = conf.INDEX_CONFIG.value.env
+      })
     },
     applyDiff (release) {
       var self = this
       self.loading()
-      axios.get(axios.defaults.baseURL + '/index_manager?remote=1')
-        .then(response => {
-          // expecting a syncer exists with (diff_type,"es")
-          var envs = response.data.result
-          this.compats = this.selectCompatibles(envs)
-          $('.ui.backendenv.dropdown').dropdown()
-          self.loaded()
-        })
-        .catch(err => {
-          console.log('Error getting index environments: ')
-          console.log(err)
-          self.loaderror(err)
-          throw err
-        })
+
       var oldcol = release.old.backend
       var newcol = release.new.backend
-      var diff_type = release.diff.type
       var backend_type = 'es' // TODO: should we support more ?
       var doc_type = this.build.build_config.doc_type
-      var self = this
+
       $(`.ui.basic.applydiff.modal.${this.release.old.backend}`)
         .modal('setting', {
           detachable: false,
           closable: false,
           onApprove: function () {
-            var backend = $('.ui.form select[name=target_backend] :selected')
-            var host = $(backend).attr('data-es_host')
-            var index = $(backend).attr('data-index')
-            var target_backend = [host, index, doc_type]
+            var backend = $('.ui.form [name=target_backend]').val()
+            var host = self.compats[backend].host
+            var target_backend = [host, backend, doc_type]
+
             self.loading()
             axios.post(axios.defaults.baseURL + '/sync',
               {
@@ -251,39 +282,74 @@ export default {
         })
         .modal('show')
     },
-    selectCompatibles (envs) {
-      var _compat = []
-      var selecting = null
-      var self = this
-      if (envs.build_config_key) {
-        selecting = this.build.build_config[envs.build_config_key]
+    fetchIndexes () {
+      const self = this
+      const es_server = $('.ui.es_servers.dropdown').dropdown("get value")
+      const server_data = self.es_servers[es_server]
+      const search_term = $('.ui.backendenv.dropdown').dropdown("get query")
+      self.compats = {}
+
+      if (!es_server || !server_data) {
+        return
       }
-      $.each(envs.env, function (env, value) {
-        // check whether we can use one of build_config keys
-        // to filter compatibles indices
-        if (selecting) {
-          var found = false
-          for (var i in value.index) {
-            var idx = value.index[i]
-            console.log(idx)
-            if (!idx.hasOwnProperty(selecting)) {
-              continue
-            } else {
-              found = true
-            }
-          }
-          if (!found) {
-            return true// continue next iter from $.each
-          }
-        }
-        for (var k in value.index) {
-          // make sure doc_type is the same
-          if (value.index[k].doc_type && value.index[k].doc_type != self.build.build_config.doc_type) {
+
+      const params = new URLSearchParams()
+      params.set("env_name", es_server)
+      if (search_term) {
+        params.set("index_name", "*" + search_term + "*")
+      }
+
+      axios.get(axios.defaults.baseURL + `/indexes_by_name?${params.toString()}`)
+      .then(response => {
+        const indexes = response.data.result
+        self.compats = self.selectCompatibles(es_server, server_data, indexes)
+
+        self.loaded()
+      })
+      .catch(err => {
+        console.log('Error getting index environments: ')
+        console.log(err)
+        self.loaderror(err)
+        throw err
+      })
+    },
+    selectCompatibles (env, env_data, indexes) {
+      const self = this
+
+      if (!env_data) {
+        return {}
+      }
+
+      // check whether we can use one of build_config keys
+      // to filter compatibles indices
+      if (self.selecting_build_config) {
+        let found = false
+        for (const i in indexes) {
+          const idx = indexes[i]
+          if (!idx.hasOwnProperty(self.selecting_build_config)) {
             continue
           }
-          _compat.push({ env: env, host: value.host, index: value.index[k].index })
+          found = true
+        }
+
+        if (!found) {
+          return {}
+        }
+      }
+
+      const _compat = {}
+      indexes.forEach(index => {
+        // make sure doc_type is the same
+        if (index.doc_type && index.doc_type != self.build.build_config.doc_type) {
+          return
+        }
+        _compat[index.index_name] = {
+          env: env,
+          host: env_data.host,
+          index: index.index_name,
         }
       })
+
       return _compat
     },
     publish: function (release, previous_build, current_build) {

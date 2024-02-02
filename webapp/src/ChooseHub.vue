@@ -177,8 +177,8 @@ export default {
           var data = response.data.result
           self.getExistings()
           data.url = url.replace(/\/$/, '')
-          if (!data.name) { data.name = self.$parent.default_conn.name }
-          if (!data.icon) { data.icon = self.$parent.default_conn.icon }
+          if (!data.name) { data.name = self.$parent.$parent.default_conn.name }
+          if (!data.icon) { data.icon = self.$parent.$parent.default_conn.icon }
           self.existings[data.name] = data
           Vue.localStorage.set('hub_connections', JSON.stringify(self.existings))
           // update base URL for all API calls
