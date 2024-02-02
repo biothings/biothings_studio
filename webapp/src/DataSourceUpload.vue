@@ -79,10 +79,10 @@
                             <div :class="['ui upload form',actionable,subsrc]">
                                 <div class="fields">
                                     <div class="required ten wide field">
-                                        <input type="text" id="release" placeholder="Specify a release (optional)" autofocus v-if="info.uploader.dummy">
+                                        <input type="text" id="release" placeholder="Specify a release" autofocus v-if="info.uploader.dummy" v-model="release">
                                     </div>
                                     <div class="required six wide field">
-                                        <button :class="['ui labeled small icon button',info.status == 'uploading' ? 'disabled' : '']" @click="do_upload(subsrc)">
+                                        <button :class="['ui labeled small icon button',info.status == 'uploading' ? 'disabled' : '']" @click="do_upload(subsrc, release)">
                                             <i class="database icon"></i>
                                             Upload
                                         </button>
@@ -164,6 +164,7 @@ export default {
   data () {
     return {
         metadataCompareData: [],
+        release: null
     }
   },
   methods: {
@@ -175,8 +176,8 @@ export default {
         self.do_update_source_meta(subsrc, false)
       })
     },
-    do_upload: function (subsrc = null) {
-      return this.$parent.upload(subsrc = subsrc)
+    do_upload: function (subsrc = null, release = null) {
+      return this.$parent.upload(subsrc = subsrc, release = release)
     },
     do_update_source_meta: function(subsrc=null, dry=true) {
         const self = this
