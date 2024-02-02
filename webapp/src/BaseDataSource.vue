@@ -111,10 +111,14 @@ export default {
           console.log('Error getting job manager information: ' + err)
         })
     },
-    upload: function (subsrc = null) {
+    upload: function (subsrc = null, release = null){
       var srcname = this.source.name
       if (subsrc != null) { srcname += '.' + subsrc } // upload a sub-source only
-      axios.put(axios.defaults.baseURL + `/source/${srcname}/upload`)
+      let payload = {};
+      if (release && release.trim() !== '') {
+        payload.release = release;
+      }
+      axios.put(axios.defaults.baseURL + `/source/${srcname}/upload`, payload)
         .then(response => {
           console.log(response.data.result)
         })
