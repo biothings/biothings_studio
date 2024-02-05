@@ -64,16 +64,19 @@
 
                             <label>Select a backend to apply the diff to</label>
                             <div>
-                              <div class="ui fluid backendenv dropdown search selection">
+                              <div class="ui fluid backendenv dropdown search selection" :class="{disabled: backendsDisabled}">
                                 <input type="hidden" name="target_backend">
                                 <i class="dropdown icon"></i>
                                 <div class="default text">Select backend</div>
                                 <div class="menu">
-                                  <div v-if="compats" v-for="compat of compats"
+                                  <div v-if="!isLoadingBackends && compats" v-for="compat of compats"
                                       class="item"
                                       :data-value="compat.index"
                                   >
                                       {{ compat.index }}
+                                  </div>
+                                  <div v-if="isLoadingBackends" class="item loading">
+                                    Loading...
                                   </div>
                                 </div>
                               </div>
@@ -188,13 +191,14 @@ export default {
   mounted () {
     const self = this
 
-    $('.ui.es_servers.dropdown').change(self.fetchIndexes)
-    $('.ui.es_servers.dropdown').dropdown()
+    $('.ui.es_servers.dropdown').dropdown().change(function() {
+      self.fetchIndexes();
+      $('.ui.backendenv.dropdown').dropdown('clear');
+    });
+
     $('.ui.backendenv.dropdown').dropdown({
-      onSearch: function (search_term) {
-        self.fetchIndexes()
-      },
-    })
+      fullTextSearch: true
+    });
 
     self.fetchESServers()
   },
@@ -207,7 +211,9 @@ export default {
       errors: [],
       compats: {},
       es_servers: {},
-      selecting_build_config: null
+      selecting_build_config: null,
+      isLoadingBackends: false,
+      backendsDisabled: true
     }
   },
   computed: {
@@ -284,6 +290,7 @@ export default {
     },
     fetchIndexes () {
       const self = this
+      self.isLoadingBackends = true
       const es_server = $('.ui.es_servers.dropdown').dropdown("get value")
       const server_data = self.es_servers[es_server]
       const search_term = $('.ui.backendenv.dropdown').dropdown("get query")
@@ -299,7 +306,7 @@ export default {
         params.set("index_name", "*" + search_term + "*")
       }
 
-      axios.get(axios.defaults.baseURL + `/indexes_by_name?${params.toString()}`)
+      axios.get(axios.defaults.baseURL + `/indexes_by_name?${params.toString()}&limit=1000`)
       .then(response => {
         const indexes = response.data.result
         self.compats = self.selectCompatibles(es_server, server_data, indexes)
@@ -311,6 +318,10 @@ export default {
         console.log(err)
         self.loaderror(err)
         throw err
+      })
+      .finally(() => {
+        self.isLoadingBackends = false
+        self.backendsDisabled = false
       })
     },
     selectCompatibles (env, env_data, indexes) {
@@ -386,6 +397,9 @@ export default {
                 console.log(err)
                 self.loaderror(err)
               })
+          },
+          onHidden: function () {
+            self.backendsDisabled = true
           }
         })
         .modal('show')
