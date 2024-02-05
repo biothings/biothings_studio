@@ -73,16 +73,16 @@
 
                             <label>Select a backend the API will connect to to serve the data</label>
                             <div>
-                              <div class="ui fluid apibackends dropdown search selection">
+                              <div class="ui fluid apibackends dropdown search selection" :class="{disabled: backendsDisabled}">
                                 <input type="hidden" name="api_backend">
                                 <i class="dropdown icon"></i>
                                 <div class="default text">Select backend</div>
                                 <div class="menu">
-                                  <div v-if="backends" v-for="(_, idx_name) in backends"
-                                      class="item"
-                                      :data-value="idx_name"
-                                  >
-                                      {{ idx_name }}
+                                  <div v-if="!isLoadingBackends && backends" v-for="(_, idx_name) in backends" class="item" :data-value="idx_name">
+                                    {{ idx_name }}
+                                  </div>
+                                  <div v-if="isLoadingBackends" class="item loading">
+                                    Loading...
                                   </div>
                                 </div>
                               </div>
@@ -138,14 +138,15 @@ export default {
   mounted () {
     const self = this
 
-    $('.ui.es_servers.dropdown').change(this.fetchIndexes)
-    $('.ui.es_servers.dropdown').dropdown()
+    $('.ui.es_servers.dropdown').dropdown().change(function() {
+      self.fetchIndexes();
+      $('.ui.apibackends.dropdown').dropdown('clear');
+    });
 
     $('.ui.apibackends.dropdown').dropdown({
-      onSearch: function (search_term) {
-        self.fetchIndexes()
-      },
-    })
+      fullTextSearch: true
+    });
+
 
     $('#apis .ui.sidebar')
       .sidebar({ context: $('#apis') })
@@ -179,6 +180,8 @@ export default {
       errors: [],
       es_servers: {},
       backends: {},
+      isLoadingBackends: false,
+      backendsDisabled: true
     }
   },
   components: { API, PaginatedList },
@@ -211,6 +214,7 @@ export default {
     },
     fetchIndexes: function() {
       const self = this
+      self.isLoadingBackends = true
       const es_server = $('.ui.es_servers.dropdown').dropdown("get value")
       const search_term = $('.ui.apibackends.dropdown').dropdown("get query")
       const server_data = self.es_servers[es_server]
@@ -227,7 +231,7 @@ export default {
       }
 
       self.loading()
-      axios.get(axios.defaults.baseURL + `/indexes_by_name?${params.toString()}`)
+      axios.get(axios.defaults.baseURL + `/indexes_by_name?${params.toString()}&limit=1000`)
         .then(response => {
           const new_backends = {}
           response.data.result.forEach(index => {
@@ -239,13 +243,17 @@ export default {
             }
           })
           self.backends = new_backends
-          
+
           self.loaded()
         })
         .catch(err => {
           console.log('Error getting index environments: ')
           console.log(err)
           self.loaderror(err)
+        })
+        .finally(() => {
+          self.isLoadingBackends = false
+          self.backendsDisabled = false
         })
     },
     createAPI: function () {
@@ -293,6 +301,7 @@ export default {
           onHidden: function () {
             $('.ui.es_servers.dropdown').dropdown("clear cache")
             $('.ui.apibackends.dropdown').dropdown("clear cache")
+            self.backendsDisabled = true
           }
         })
         .modal('show')
