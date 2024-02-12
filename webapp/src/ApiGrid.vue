@@ -58,17 +58,20 @@
                             <br>
                             <br>
 
-                            <label>Select a ElasticSeach server</label>
+                            <label>Select an ElasticSearch server</label>
                             <div>
-                                <select class="ui fluid es_servers dropdown" name="es_server">
-                                  <option value="">------</option>
-                                  <option v-if="es_servers" v-for="(server_data, es_server) in es_servers"
-                                    :value="es_server"
-                                  >
-                                  {{ es_server}} ({{ server_data.host }})
-                                  </option>
-                                </select>
-                                <br>
+                              <div class="ui fluid es_servers dropdown selection" :class="{loading: isLoadingESServers}">
+                                <input type="hidden" name="es_server">
+                                <i class="dropdown icon"></i>
+                                <div class="default text" v-if="isLoadingESServers">Loading...</div>
+                                <div class="default text" v-else>Select an ElasticSearch server</div>
+                                <div class="menu">
+                                  <div v-if="!isLoadingESServers" v-for="(server_data, es_server) in es_servers" :key="es_server" class="item" :data-value="es_server">
+                                    {{ es_server }} ({{ server_data.host }})
+                                  </div>
+                                </div>
+                              </div>
+                              <br>
                             </div>
 
                             <label>Select a backend the API will connect to to serve the data</label>
@@ -181,7 +184,8 @@ export default {
       es_servers: {},
       backends: {},
       isLoadingBackends: false,
-      backendsDisabled: true
+      backendsDisabled: true,
+      isLoadingESServers: false
     }
   },
   components: { API, PaginatedList },
@@ -205,11 +209,20 @@ export default {
     },
     fetchESServers: function () {
       const self = this
+      self.isLoadingESServers = true
 
       axios.get(axios.defaults.baseURL + '/config')
       .then(response => {
         const conf = response.data.result.scope.config
         self.es_servers = conf.INDEX_CONFIG.value.env
+      })
+      .catch(err => {
+        console.log('Error getting index environments: ')
+        console.log(err)
+        self.loaderror(err)
+      })
+      .finally(() => {
+        self.isLoadingESServers = false
       })
     },
     fetchIndexes: function() {
