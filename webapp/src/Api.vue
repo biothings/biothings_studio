@@ -72,6 +72,11 @@
                     <i class="stop icon"></i>
                 </button>
             </div>
+            <div class="ui icon buttons middle floated mini" v-if="api.status != 'running'">
+                <button class="ui button" v-on:click="testAPI" data-tooltip="Test API">
+                    <i class="tools icon"></i>
+                </button>
+            </div>
             <div class="ui icon buttons right floated mini">
                 <button class="ui button delete-btn" data-tooltip="Delete API">
                     <i class="trash icon" :data-api_id="api._id" @click="deleteAPI($event)"></i>
@@ -166,6 +171,18 @@ export default {
           }
         })
         .modal('show')
+    },
+    testAPI: function () {
+      this.loading()
+      axios.post(axios.defaults.baseURL + `/api/${this.api._id}/test`)
+        .then(response => {
+          this.loaded()
+          console.log(response.data.result)
+        })
+        .catch(err => {
+          console.log(err)
+          this.loaderror(err)
+        })
     },
     startStopAPI: function (mode) {
       this.loading()
