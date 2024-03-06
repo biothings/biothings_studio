@@ -1,14 +1,11 @@
 <template>
     <div id="apilogviewer" class="ui inverted segment" style="overflow-y: auto;">
-        <div style="position: absolute; top: 2px; right: 2px; cursor: pointer;">
-            <i class="red large close icon" @click="$emit('close')"></i>
-        </div>
         <table class="ui single line super compact inverted table" v-if="records.length">
             <tbody>
                 <div class="log-entry" v-for="(record, i) in records" :key="i + 'r'">
                     <div @click="toggleLog(record.id)" class="toggle-logs-button">
                         <span class="log-timestamp">{{ formatTimestamp(record.ts) }}</span>
-                        <span :class="`log-level-${record.level}`">{{ record.msg | truncate }}</span>
+                        <span :class="`log-level-${record.level}`">{{ record.msg }}</span>
                     </div>
                     <div v-if="record.isExpanded" class="collapsed-log">
                         {{ record.detailedMsg }}
@@ -35,10 +32,12 @@ export default {
     name: 'api-log-viewer',
     components: { LogRecord },
     created() {
+        bus.$on('clearLogs', () => this.records = [])
         bus.$on('log', this.onLog)
         bus.$on('ws_connected', this.onWSConnected)
     },
     beforeDestroy() {
+        bus.$off('clearLogs', this.records = [])
         bus.$off('log', this.onLog)
         bus.$off('ws_connected', this.onWSConnected)
     },
@@ -73,11 +72,6 @@ export default {
             // Format your timestamp as needed
             return new Date(timestamp).toLocaleTimeString();
         }
-    },
-    filters: {
-        truncate(value, length = 50) {
-            return value.length > length ? value.substring(0, length) + '…' : value;
-        }
     }
 }
 </script>
@@ -92,11 +86,6 @@ table .nowrap {
 }
 
 
-#apilogviewer {
-    /* ...existing styles... */
-    font-size: 0.75rem;
-    /* Smaller text */
-}
 
 /* Adjust padding for a more compact display */
 .ui[class*="super compact"].table td {

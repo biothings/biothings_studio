@@ -24,12 +24,6 @@
 
       <div class="ui clearing divider"></div>
 
-      <div class="ui logs" v-if="showLogs">
-        <div class="content">
-          <api-log-viewer @close="showLogs = false"></api-log-viewer>
-        </div>
-      </div>
-
       <div class="left aligned description">
         <p class="center aligned">
           <b>{{ api.description }}</b>
@@ -76,24 +70,35 @@
           <i class="stop icon"></i>
         </button>
       </div>
-      <div class="ui icon buttons middle floated mini" v-if="api.status == 'running'">
-        <button class="ui button" v-on:click="testAPI"
-          :data-tooltip="isTestRunning ? 'Testing in progress...' : 'Test API'" :disabled="isTestRunning"
+
+
+      <div class="ui icon buttons floated mini" v-if="api.status == 'running'">
+        <button class="ui button" v-on:click="testAPI" data-tooltip="Test API" v-if=!isTestRunning
           @click="showLogs = true">
-          <div v-if="isTestRunning" class="ui active middle loader"></div>
-          <i v-else class="tools icon"></i>
+          <i class="tools icon"></i>
         </button>
       </div>
-      <div class="ui icon buttons middle floated mini" v-else>
+
+      <div class="ui icon buttons floated mini" v-if="api.status == 'running'" style="margin-right: 10px;">
+        <div v-if="isTestRunning" data-tooltip="Testing in progress...">
+          <button class="ui button active loading" disabled="true">
+            <i class="tools icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class=" ui icon buttons floated mini" v-else>
         <button class="ui button" v-on:click="testAPI" data-tooltip="Test API" disabled="true">
           <i class="tools icon"></i>
         </button>
       </div>
-      <!-- <div class="ui icon buttons floated mini" v-if="api.status == 'running'">
-              <button class="ui button" @click="showLogs = true" data-tooltip="View Logs">
-                <i class="file alternate outline icon"></i>
-              </button>
-            </div> -->
+      <div class="ui icon buttons floated mini" v-if="api.status == 'running'">
+        <button class="ui button focus" @click="openApiLogViewer" data-tooltip="View API Test Logs">
+          <i class="file alternate outline icon"></i>
+        </button>
+      </div>
+
+
 
       <div class="ui icon buttons right floated mini">
         <button class="ui button delete-btn" data-tooltip="Delete API">
@@ -121,6 +126,18 @@
         </div>
       </div>
     </div>
+
+    <!-- ApiLogViewer Modal -->
+    <div class="ui fullscreen-scrolling modal" id="apiLogViewerModal">
+      <i class="close icon"></i>
+      <div class="header">
+        API Test Logs
+      </div>
+      <div class="scrolling content">
+        <api-log-viewer></api-log-viewer>
+      </div>
+    </div>
+
 
   </div>
 </template>
@@ -150,7 +167,7 @@ export default {
     }
   },
   components: {
-    'api-log-viewer': ApiLogViewer,
+    'api-log-viewer': ApiLogViewer
   },
   computed: {
     url_metadata: function () {
@@ -158,7 +175,7 @@ export default {
     },
     url_query: function () {
       return this.api.url + '/query?q=*'
-    }
+    },
   },
   methods: {
     displayError: function () {
@@ -210,6 +227,9 @@ export default {
         .finally(() => {
           this.isTestRunning = false
         })
+    },
+    openApiLogViewer() {
+      $('#apiLogViewerModal').modal('show');
     },
     startStopAPI: function (mode) {
       this.loading()
@@ -264,5 +284,43 @@ a {
 .close-button {
   padding: 5px 10px;
   margin-top: 3px;
+}
+
+.spinner {
+  /* position: relative; */
+  bottom: 15%;
+  left: 15%;
+  /* transform: translate(-110%, -110%); */
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #3498db;
+  width: 22px;
+  /* or the size you want */
+  height: 22px;
+  /* or the size you want */
+  -webkit-animation: spin 1s linear infinite;
+  /* Safari */
+  animation: spin 1s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
