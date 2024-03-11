@@ -1,19 +1,19 @@
 <template>
-    <div id="apis">
-        <div class="ui left vertical labeled icon small inverted sidebar menu" :class="actionable">
-            <a class="item"  v-on:click="createAPI">
-                <i class="big icons addNewAPI">
-                    <i class="shield icon"></i>
-                    <i class="corner top right add icon"></i>
-                </i>
-                <br>
-                <br>
-                <div>New API</div>
-            </a>
-        </div>
-        <div class="pusher main-background">
-            <div class="ui main container">
-                <!-- <div class="ui green segment">
+  <div id="apis">
+    <div class="ui left vertical labeled icon small inverted sidebar menu" :class="actionable">
+      <a class="item" v-on:click="createAPI">
+        <i class="big icons addNewAPI">
+          <i class="shield icon"></i>
+          <i class="corner top right add icon"></i>
+        </i>
+        <br>
+        <br>
+        <div>New API</div>
+      </a>
+    </div>
+    <div class="pusher main-background">
+      <div class="ui main container">
+        <!-- <div class="ui green segment">
                     <div class="ui secondary small menu" :class="actionable">
                         <div class="item">
                             <h1 class="ui green header">(<small>{{apis ? apis.length : 0}}</small>) APIs</h1>
@@ -24,106 +24,109 @@
                         </a>
                     </div>
                 </div> -->
-                <div class="ui big message flex-center clearMenu">
-                  <h1 class="ui green header">(<small>{{apis ? apis.length : 0}}</small>) APIs</h1>
-                  <button id="side_menu" style="margin-left:20px;" class="circular ui icon green button"><i class="icon ellipsis horizontal"></i></button>
-                </div>
-                <div class="ui centered grid">
-                    <!-- <div class="ui five wide column" v-for="api in apis" :key="api.id">
+        <div class="ui big message flex-center clearMenu">
+          <h1 class="ui green header">(<small>{{ apis ? apis.length : 0 }}</small>) APIs</h1>
+          <button id="side_menu" style="margin-left:20px;" class="circular ui icon green button"><i
+              class="icon ellipsis horizontal"></i></button>
+        </div>
+        <div class="ui centered grid">
+          <!-- <div class="ui five wide column" v-for="api in apis" :key="api.id">
                         <api v-bind:api="api"></api>
                     </div> -->
-                    <PaginatedList :content="apis" type="APIs"></PaginatedList>
-                </div>
-            </div>
+          <PaginatedList :content="apis" type="APIs"></PaginatedList>
         </div>
-
-        <!-- create new api -->
-        <div class="ui basic createapi modal">
-            <h3 class="ui icon">
-                <i class="shield icon"></i>
-                Create new API
-            </h3>
-            <div class="content">
-                <div class="ui form">
-                    <div class="ui centered grid">
-                        <div class="eight wide column">
-
-                            <label>Enter a name for the API</label>
-                            <input type="text" name="api_id" placeholder="API name" autofocus>
-                            <br>
-                            <br>
-
-                            <label>Enter a description for the API (optional)</label>
-                            <input type="text" name="description" placeholder="Description">
-                            <br>
-                            <br>
-
-                            <label>Select an ElasticSearch server</label>
-                            <div>
-                              <div class="ui fluid es_servers dropdown selection" :class="{loading: isLoadingESServers}">
-                                <input type="hidden" name="es_server">
-                                <i class="dropdown icon"></i>
-                                <div class="default text" v-if="isLoadingESServers">Loading...</div>
-                                <div class="default text" v-else>Select an ElasticSearch server</div>
-                                <div class="menu">
-                                  <div v-if="!isLoadingESServers" v-for="(server_data, es_server) in es_servers" :key="es_server" class="item" :data-value="es_server">
-                                    {{ es_server }} ({{ server_data.host }})
-                                  </div>
-                                </div>
-                              </div>
-                              <br>
-                            </div>
-
-                            <label>Select a backend the API will connect to to serve the data</label>
-                            <div>
-                              <div class="ui fluid apibackends dropdown search selection" :class="{disabled: backendsDisabled}">
-                                <input type="hidden" name="api_backend">
-                                <i class="dropdown icon"></i>
-                                <div class="default text">Select backend</div>
-                                <div class="menu">
-                                  <div v-if="!isLoadingBackends && backends" v-for="(_, idx_name) in backends" class="item" :data-value="idx_name">
-                                    {{ idx_name }}
-                                  </div>
-                                  <div v-if="isLoadingBackends" class="item loading">
-                                    Loading...
-                                  </div>
-                                </div>
-                              </div>
-                              <br>
-                            </div>
-
-                            <label>Specify a port</label>
-                            <input type="text" name="port" placeholder="API port">
-                            <br>
-                            <br>
-
-                        </div>
-
-                        <div class="eight wide column">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="ui error message" v-if="errors.length">
-                <ul class="ui list">
-                    <li v-for="err in errors">{{err}}</li>
-                </ul>
-            </div>
-
-            <div class="actions">
-                <div class="ui red basic cancel inverted button">
-                    <i class="remove icon"></i>
-                    Cancel
-                </div>
-                <div class="ui green ok inverted button" id="newapi_ok">
-                    <i class="checkmark icon"></i>
-                    OK
-                </div>
-            </div>
-        </div>
-
+      </div>
     </div>
+
+    <!-- create new api -->
+    <div class="ui basic createapi modal">
+      <h3 class="ui icon">
+        <i class="shield icon"></i>
+        Create new API
+      </h3>
+      <div class="content">
+        <div class="ui form">
+          <div class="ui centered grid">
+            <div class="eight wide column">
+
+              <label>Enter a name for the API</label>
+              <input type="text" name="api_id" placeholder="API name" autofocus>
+              <br>
+              <br>
+
+              <label>Enter a description for the API (optional)</label>
+              <input type="text" name="description" placeholder="Description">
+              <br>
+              <br>
+
+              <label>Select an ElasticSearch server</label>
+              <div>
+                <div class="ui fluid es_servers dropdown selection" :class="{ loading: isLoadingESServers }">
+                  <input type="hidden" name="es_server">
+                  <i class="dropdown icon"></i>
+                  <div class="default text" v-if="isLoadingESServers">Loading...</div>
+                  <div class="default text" v-else>Select an ElasticSearch server</div>
+                  <div class="menu">
+                    <div v-if="!isLoadingESServers" v-for="(server_data, es_server) in es_servers" :key="es_server"
+                      class="item" :data-value="es_server">
+                      {{ es_server }} ({{ server_data.host }})
+                    </div>
+                  </div>
+                </div>
+                <br>
+              </div>
+
+              <label>Select a backend the API will connect to to serve the data</label>
+              <div>
+                <div class="ui fluid apibackends dropdown search selection" :class="{ disabled: backendsDisabled }">
+                  <input type="hidden" name="api_backend">
+                  <i class="dropdown icon"></i>
+                  <div class="default text">Select backend</div>
+                  <div class="menu">
+                    <div v-if="!isLoadingBackends && backends" v-for="(_, idx_name) in backends" class="item"
+                      :data-value="idx_name">
+                      {{ idx_name }}
+                    </div>
+                    <div v-if="isLoadingBackends" class="item loading">
+                      Loading...
+                    </div>
+                  </div>
+                </div>
+                <br>
+              </div>
+
+              <label>Specify a port</label>
+              <input type="text" name="port" placeholder="API port">
+              <br>
+              <br>
+
+            </div>
+
+            <div class="eight wide column">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ui error message" v-if="errors.length">
+        <ul class="ui list">
+          <li v-for="err in errors">{{ err }}</li>
+        </ul>
+      </div>
+
+      <div class="actions">
+        <div class="ui red basic cancel inverted button">
+          <i class="remove icon"></i>
+          Cancel
+        </div>
+        <div class="ui green ok inverted button" id="newapi_ok">
+          <i class="checkmark icon"></i>
+          OK
+        </div>
+      </div>
+    </div>
+
+  </div>
 
 </template>
 
@@ -135,13 +138,13 @@ import Actionable from './Actionable.vue'
 import bus from './bus.js'
 import PaginatedList from './components/PaginatedList.vue'
 
-export default {
+export default {
   name: 'api-grid',
   mixins: [Loader, Actionable],
-  mounted () {
+  mounted() {
     const self = this
 
-    $('.ui.es_servers.dropdown').dropdown().change(function() {
+    $('.ui.es_servers.dropdown').dropdown().change(function () {
       self.fetchIndexes();
       $('.ui.apibackends.dropdown').dropdown('clear');
     });
@@ -160,16 +163,16 @@ export default {
 
     self.fetchESServers()
   },
-  updated () {
+  updated() {
     // there's some kind of race-condition regarding dropdown init, if
     // in mounted() they won't get init, prob. because data changed and needs to
     // be re-rendered
   },
-  created () {
+  created() {
     this.getApis()
     bus.$on('change_api', this.onApiChanged)
   },
-  beforeDestroy () {
+  beforeDestroy() {
     // hacky to remove modal from div outside of app, preventing having more than one
     // modal displayed when getting back to that page. https://github.com/Semantic-Org/Semantic-UI/issues/4049
     $('.ui.basic.createapi.modal').remove()
@@ -177,7 +180,7 @@ export default {
   },
   watch: {
   },
-  data () {
+  data() {
     return {
       apis: [],
       errors: [],
@@ -212,20 +215,20 @@ export default {
       self.isLoadingESServers = true
 
       axios.get(axios.defaults.baseURL + '/config')
-      .then(response => {
-        const conf = response.data.result.scope.config
-        self.es_servers = conf.INDEX_CONFIG.value.env
-      })
-      .catch(err => {
-        console.log('Error getting index environments: ')
-        console.log(err)
-        self.loaderror(err)
-      })
-      .finally(() => {
-        self.isLoadingESServers = false
-      })
+        .then(response => {
+          const conf = response.data.result.scope.config
+          self.es_servers = conf.INDEX_CONFIG.value.env
+        })
+        .catch(err => {
+          console.log('Error getting index environments: ')
+          console.log(err)
+          self.loaderror(err)
+        })
+        .finally(() => {
+          self.isLoadingESServers = false
+        })
     },
-    fetchIndexes: function() {
+    fetchIndexes: function () {
       const self = this
       self.isLoadingBackends = true
       const es_server = $('.ui.es_servers.dropdown').dropdown("get value")
@@ -287,6 +290,7 @@ export default {
             var port = parseInt($('.ui.form input[name=port]').val())
             // form validation
             if (!api_id) { self.errors.push('Provide a name for the API') }
+            else if (api_id.includes(' ')) { self.errors.push('The API name cannot have spaces') }
             if (!port) { self.errors.push('Provide a port number') }
             if (self.errors.length) { return false }
 
@@ -318,14 +322,14 @@ export default {
           }
         })
         .modal('show')
-      },
-    }
+    },
   }
+}
 </script>
 
 <style>
 .ui.sidebar {
-    overflow: visible !important;
+  overflow: visible !important;
 }
 
 .ui.sidebar .icons.addNewAPI {
