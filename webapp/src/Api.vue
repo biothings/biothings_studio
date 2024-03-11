@@ -1,7 +1,7 @@
 <template>
   <div class="ui fluid card">
     <div class="content">
-      <div class="ui tiny red label right floated" v-if="api.status == 'running'">running</div>
+      <div class="ui tiny green label right floated" v-if="api.status == 'running'">running</div>
 
       <!-- error -->
       <div class="ui" v-bind:data-tooltip="displayError()">
