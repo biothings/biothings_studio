@@ -1,5 +1,5 @@
 <template>
-    <div id="apilogviewer" class="ui inverted segment" style="overflow-y: auto;">
+    <div id="apilogviewer" class="ui inverted segment" style="overflow-y: auto; font-family: JetBrains Mono">
         <table class="ui single line super compact inverted table" v-if="records.length">
             <tbody>
                 <div class="log-entry" v-for="(record, i) in records" :key="i + 'r'">
