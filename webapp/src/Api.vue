@@ -129,18 +129,18 @@
     </div>
 
     <!-- ApiLogViewer Modal -->
-    <div class="ui fullscreen-scrolling modal" id="apiLogViewerModal">
+    <div class="ui fullscreen-scrolling modal" id="apiLogViewerModal" v-if="showModal">
       <i class="close icon"></i>
       <div class="api header">
         API Test Logs
         <!-- Running status indicator -->
-        <!-- <div v-if="isTestRunning" class="running-status">
+        <div v-if="isTestRunning" class="running-status">
           Tests are running...
-        </div> -->
+        </div>
         <!-- Stopped status indicator -->
-        <!-- <div v-else class="stopped-status">
+        <div v-else class="stopped-status">
           Tests are stopped
-        </div> -->
+        </div>
       </div>
       <div class="scrolling content" ref="contentContainer" @scroll="handleScroll">
         <api-log-viewer></api-log-viewer>
@@ -166,6 +166,14 @@ export default {
     $('.menu .item')
       .tab();
     bus.$on('testFinished', this.handleTestFinished);
+    this.$nextTick(function () {
+      $('#apiLogViewerModal').modal({
+        closable: false,
+        onHidden: () => {
+          this.showModal = false;
+        }
+      });
+    });
   },
   created() {
     bus.$on('apiLogAdded', this.scrollToBottom);
@@ -179,7 +187,8 @@ export default {
     return {
       errors: [],
       isTestRunning: false,
-      autoScroll: true
+      autoScroll: true,
+      showModal: false
     }
   },
   components: {
@@ -243,6 +252,7 @@ export default {
         })
     },
     openApiLogViewer() {
+      this.showModal = true; // Ensure this is set before showing the modal
       $('#apiLogViewerModal').modal('show');
     },
     startStopAPI: function (mode) {
@@ -280,6 +290,7 @@ export default {
     handleScroll() {
       const contentContainer = this.$refs.contentContainer;
       // This threshold can be adjusted based on when you want to lock back to auto-scroll
+      if (!contentContainer) return;
       const isAtBottom = contentContainer.scrollTop >= (contentContainer.scrollHeight - contentContainer.offsetHeight - 10); // 10 is a threshold in pixels
       this.autoScroll = isAtBottom;
     },
@@ -287,7 +298,16 @@ export default {
       this.autoScroll = true;
       this.scrollToBottom();
     }
-  }
+  },
+  watch: {
+    showModal(newValue) {
+      if (newValue) {
+        $('#apiLogViewerModal').modal('show');
+      } else {
+        $('#apiLogViewerModal').modal('hide');
+      }
+    }
+  },
 }
 </script>
 
@@ -382,6 +402,7 @@ a {
   align-items: center;
   color: #3BA55D;
   animation: fadeInOut 3s linear infinite;
+  margin-top: -25px;
 }
 
 .stopped-status {
@@ -389,6 +410,7 @@ a {
   justify-content: center;
   align-items: center;
   color: #DC143C;
+  margin-top: -25px;
 }
 
 /* Add keyframes for the fade-in-out animation */
