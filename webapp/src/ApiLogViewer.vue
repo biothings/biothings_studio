@@ -5,7 +5,8 @@
                 <div class="log-entry" v-for="(record, i) in records" :key="i + 'r'">
                     <div @click="toggleLog(record.id)" class="toggle-logs-button">
                         <span class="log-timestamp">{{ formatTimestamp(record.ts) }}</span>
-                        <span :class="`log-level-${record.level}`">{{ record.msg }}</span>
+                        <span style="white-space: pre;" :class="getLogColor(record.msg)">{{
+            record.msg }}</span>
                     </div>
                     <div v-if="record.isExpanded" class="collapsed-log">
                         {{ record.detailedMsg }}
@@ -32,12 +33,12 @@ export default {
     name: 'api-log-viewer',
     components: { LogRecord },
     created() {
-        bus.$on('clearLogs', () => this.records = [])
+        bus.$on('clearApiLogs', () => this.records = [])
         bus.$on('log', this.onLog)
         bus.$on('ws_connected', this.onWSConnected)
     },
     beforeDestroy() {
-        bus.$off('clearLogs', this.records = [])
+        bus.$off('clearApiLogs', () => this.records = [])
         bus.$off('log', this.onLog)
         bus.$off('ws_connected', this.onWSConnected)
     },
@@ -49,14 +50,34 @@ export default {
     },
     methods: {
         onLog(record) {
-            // Example: Only push logs from apimanager
             if (record.logger === 'apimanager') {
-                this.records.push(record);
-                while (this.records.length > MAX_RECORDS) {
-                    this.records.shift();
+                if (!record.msg.includes('%')) {
+                    this.records.push(record);
+                    bus.$emit('apiLogAdded');
+                    while (this.records.length > MAX_RECORDS) {
+                        this.records.shift();
+                    }
+                    var d = $('#apilogviewer');
+                    d.scrollTop(d.prop('scrollHeight'));
+
+                    // Check for end of test
+                    if (record.msg.includes("Finished running pytests for")) {
+                        bus.$emit('testFinished');
+                    }
                 }
-                var d = $('#apilogviewer');
-                d.scrollTop(d.prop('scrollHeight'));
+            }
+        },
+        getLogColor(message) {
+            if (message.includes('PASSED')) {
+                return 'log-passed';
+            } else if (message.includes('FAILED') || message.includes("FAILURES")) {
+                return 'log-failed';
+            } else if (message.includes('SKIPPED') || message.includes('warnings summary')) {
+                return 'log-skipped';
+            } else if (message.includes('short test summary info') || message.includes('________________________')) {
+                return 'log-blue';
+            } else {
+                return '';
             }
         },
         onWSConnected(state) {
@@ -69,28 +90,27 @@ export default {
             }
         },
         formatTimestamp(timestamp) {
-            // Format your timestamp as needed
             return new Date(timestamp).toLocaleTimeString();
-        }
-    }
+        },
+    },
 }
 </script>
 
 <style>
-table .nowrap {
-    white-space: nowrap;
+/* table .nowrap {
+    white-space: pre;
 }
 
 .ui[class*="super compact"].table td {
     padding: 0.1em .6em !important;
-}
+} */
 
 
 
 /* Adjust padding for a more compact display */
-.ui[class*="super compact"].table td {
+/* .ui[class*="super compact"].table td {
     padding: 0.4em 0.6em !important;
-}
+} */
 
 /* Style for timestamp and message for a more compact display */
 .log-timestamp,
@@ -112,14 +132,23 @@ table .nowrap {
     /* Hide the detailed logs initially */
 }
 
-/* Color coding for log levels */
-.log-level-info {
-    color: #2c662d;
+.log-passed {
+    color: #009B72;
 }
 
-.log-level-error {
-    color: #9f3a38;
+.log-failed {
+    color: #BB8588;
 }
 
-/* ...other styles... */
+.log-skipped {
+    color: #D6CE93;
+}
+
+.log-blue {
+    color: #8ACDEA;
+}
+
+.api-log {
+    font-family: 'JetBrains Mono', sans-serif;
+}
 </style>
