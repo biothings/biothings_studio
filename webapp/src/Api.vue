@@ -71,31 +71,32 @@
         </button>
       </div>
 
-
-      <div class="ui icon buttons floated mini" v-if="api.status == 'running'">
-        <button class="ui button" v-on:click="testAPI" data-tooltip="Test API" v-if=!isTestRunning
-          @click="showLogs = true">
-          <i class="tools icon"></i>
-        </button>
-      </div>
-
-      <div class="ui icon buttons floated mini" v-if="api.status == 'running'" style="margin-right: 10px;">
-        <div v-if="isTestRunning" data-tooltip="Testing in progress...">
-          <button class="ui button active loading" disabled="true">
+      <!-- Test API button -->
+      <div class="ui icon buttons floated mini" v-if="api.status === 'running'" style="margin-right: 10px;">
+        <div :data-tooltip="isTestRunning ? 'Testing in progress...' : 'Test API'">
+          <button class="ui button" @click="testAPI" :class="{ 'active loading': isTestRunning }"
+            :disabled="isTestRunning">
             <i class="tools icon"></i>
           </button>
         </div>
       </div>
 
-      <div class=" ui icon buttons floated mini" v-else>
-        <button class="ui button" v-on:click="testAPI" data-tooltip="Test API" disabled="true">
-          <i class="tools icon"></i>
-        </button>
+      <!-- Disabled test button if API is not running -->
+      <div class="ui icon buttons floated mini" v-else style="margin-right: 10px;">
+        <div data-tooltip="Start API to run test">
+          <button class="ui button" disabled="true">
+            <i class="tools icon"></i>
+          </button>
+        </div>
       </div>
-      <div class="ui icon buttons floated mini" v-if="api.status == 'running'">
-        <button class="ui button focus" @click="openApiLogViewer" data-tooltip="View API Test Logs">
-          <i class="file alternate outline icon"></i>
-        </button>
+
+      <!-- Button to view API logs -->
+      <div class="ui icon buttons floated mini" style="margin-right: 10px;">
+        <div :data-tooltip="api.status === 'running' ? 'View API Test Logs' : 'Start API to view logs'">
+          <button class="ui button focus" @click="openApiLogViewer" :disabled="api.status !== 'running'">
+            <i class="file alternate outline icon"></i>
+          </button>
+        </div>
       </div>
 
 
@@ -130,10 +131,18 @@
     <!-- ApiLogViewer Modal -->
     <div class="ui fullscreen-scrolling modal" id="apiLogViewerModal">
       <i class="close icon"></i>
-      <div class="header">
+      <div class="api header">
         API Test Logs
+        <!-- Running status indicator -->
+        <!-- <div v-if="isTestRunning" class="running-status">
+          Tests are running...
+        </div> -->
+        <!-- Stopped status indicator -->
+        <!-- <div v-else class="stopped-status">
+          Tests are stopped
+        </div> -->
       </div>
-      <div class="scrolling content">
+      <div class="scrolling content" ref="contentContainer" @scroll="handleScroll">
         <api-log-viewer></api-log-viewer>
       </div>
     </div>
@@ -147,6 +156,7 @@ import axios from 'axios'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 import ApiLogViewer from './ApiLogViewer.vue';
+import bus from './bus.js';
 
 export default {
   name: 'API',
@@ -154,16 +164,22 @@ export default {
   props: ['api'],
   mounted() {
     $('.menu .item')
-      .tab()
+      .tab();
+    bus.$on('testFinished', this.handleTestFinished);
+  },
+  created() {
+    bus.$on('apiLogAdded', this.scrollToBottom);
   },
   beforeDestroy() {
-    $(`#${this.api._id}.ui.basic.deleteapi.modal`).remove()
+    $(`#${this.api._id}.ui.basic.deleteapi.modal`).remove();
+    bus.$on('testFinished', this.handleTestFinished);
+    bus.$off('apiLogAdded', this.scrollToBottom);
   },
   data() {
     return {
       errors: [],
       isTestRunning: false,
-      showLogs: false
+      autoScroll: true
     }
   },
   components: {
@@ -214,6 +230,7 @@ export default {
     },
     testAPI: function () {
       this.isTestRunning = true
+      bus.$emit('clearApiLogs');
       this.loading()
       axios.post(axios.defaults.baseURL + `/api/${this.api._id}/test`)
         .then(response => {
@@ -223,9 +240,6 @@ export default {
         .catch(err => {
           console.log(err)
           this.loaderror(err)
-        })
-        .finally(() => {
-          this.isTestRunning = false
         })
     },
     openApiLogViewer() {
@@ -249,6 +263,29 @@ export default {
     },
     stopAPI: function () {
       return this.startStopAPI('stop')
+    },
+    handleTestFinished() {
+      this.isTestRunning = false;
+    },
+    scrollToBottom() {
+      this.$nextTick(() => {
+        if (this.autoScroll) {
+          const contentContainer = this.$refs.contentContainer;
+          if (contentContainer) {
+            contentContainer.scrollTop = contentContainer.scrollHeight;
+          }
+        }
+      });
+    },
+    handleScroll() {
+      const contentContainer = this.$refs.contentContainer;
+      // This threshold can be adjusted based on when you want to lock back to auto-scroll
+      const isAtBottom = contentContainer.scrollTop >= (contentContainer.scrollHeight - contentContainer.offsetHeight - 10); // 10 is a threshold in pixels
+      this.autoScroll = isAtBottom;
+    },
+    enableAutoScroll() {
+      this.autoScroll = true;
+      this.scrollToBottom();
     }
   }
 }
@@ -321,6 +358,49 @@ a {
 
   100% {
     transform: rotate(360deg);
+  }
+}
+
+.api-header {
+  border: none;
+  margin: calc(2rem - 0.14285714em) 0em 1rem;
+  padding: 0em 0em;
+  font-family: 'Lato', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  line-height: 1.28571429em;
+  text-transform: none;
+  color: rgba(0, 0, 0, 0.87);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.running-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #3BA55D;
+  animation: fadeInOut 3s linear infinite;
+}
+
+.stopped-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #DC143C;
+}
+
+/* Add keyframes for the fade-in-out animation */
+@keyframes fadeInOut {
+
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
   }
 }
 </style>
