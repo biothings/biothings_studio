@@ -93,7 +93,7 @@
       <!-- Button to view API logs -->
       <div class="ui icon buttons floated mini" style="margin-right: 10px;">
         <div :data-tooltip="api.status === 'running' ? 'View API Test Logs' : 'Start API to view logs'">
-          <button class="ui button focus" @click="openApiLogViewer" :disabled="api.status !== 'running'">
+          <button class="ui button focus" @click="openApiLogViewer(api._id)" :disabled="api.status !== 'running'">
             <i class="file alternate outline icon"></i>
           </button>
         </div>
@@ -129,7 +129,7 @@
     </div>
 
     <!-- ApiLogViewer Modal -->
-    <div class="ui fullscreen-scrolling modal" id="apiLogViewerModal" v-if="showModal">
+    <div class="ui fullscreen-scrolling modal" :id="`apiLogViewerModal-${api._id}`" v-if="showModal">
       <i class="close icon"></i>
       <div class="api header">
         API Test Logs
@@ -251,9 +251,9 @@ export default {
           this.loaderror(err)
         })
     },
-    openApiLogViewer() {
+    openApiLogViewer(apiId) {
       this.showModal = true; // Ensure this is set before showing the modal
-      $('#apiLogViewerModal').modal('show');
+      $(`#apiLogViewerModal-${apiId}`).modal('show');
     },
     startStopAPI: function (mode) {
       this.loading()
