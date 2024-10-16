@@ -1,23 +1,25 @@
 <template>
-  <div class="ui basic cleanup modal">
+  <div class="ui basic scrolling cleanup modal">
     <div class="header">
       <i class="trash alternate outline icon"></i> Cleaning up old Hub entities
     </div>
 
-    <div class="center">
+    <div class="content">
       <div class="ui fluid container">
-
         <!-- Loader -->
-        <div :class="['ui dimmer inverted', show_loader? 'active': '' ]">
+        <div :class="['ui dimmer inverted', show_loader ? 'active' : '']">
           <div class="ui text loader">Loading</div>
         </div>
 
         <div class="ui centered fluid card">
+          <!-- Top Attached Menu -->
           <div class="ui top attached pointing menu">
             <a class="active item" data-tab="snapshot">Snapshots</a>
           </div>
+
+          <!-- Tab Content -->
           <div class="ui bottom attached active tab segment snapshot-wrapper" data-tab="snapshot">
-            <!-- Actions panel -->
+            <!-- Actions Panel -->
             <div class="ui grid">
               <div class="row">
                 <div class="three wide column">
@@ -29,37 +31,39 @@
                 <div class="thirteen wide column">
                   <div class="ui grid">
                     <div class="column w-auto">
-                        <select class="ui dropdown build_config_filter" v-model="build_config_filter" @change="loadData()">
-                          <option value="">Build configuration filter</option>
-                          <template v-for="name in build_configs">
-                              <option :value="name" :key="name+'filter'">{{name}}</option>
-                          </template>
-                        </select>
-                        <button class="ui red button white text" v-if="build_config_filter" @click="clearFilter('build_config')">
-                            Clear
-                        </button>
+                      <select class="ui dropdown build_config_filter" v-model="build_config_filter"
+                        @change="loadData()">
+                        <option value="">Build configuration filter</option>
+                        <template v-for="name in build_configs">
+                          <option :value="name" :key="name + 'filter'">{{ name }}</option>
+                        </template>
+                      </select>
+                      <button class="ui red button white text" v-if="build_config_filter"
+                        @click="clearFilter('build_config')">
+                        Clear
+                      </button>
                     </div>
                     <div class="column w-auto">
-                        <select class="ui dropdown build_filter" v-model="build_filter" @change="loadData()">
-                            <option value="">Build filter</option>
-                            <template v-for="name in build_names">
-                                <option :value="name" :key="name+'filter'">{{name}}</option>
-                            </template>
-                        </select>
-                        <button class="ui red button white text" v-if="build_filter" @click="clearFilter('build')">
-                            Clear
-                        </button>
+                      <select class="ui dropdown build_filter" v-model="build_filter" @change="loadData()">
+                        <option value="">Build filter</option>
+                        <template v-for="name in build_names">
+                          <option :value="name" :key="name + 'filter'">{{ name }}</option>
+                        </template>
+                      </select>
+                      <button class="ui red button white text" v-if="build_filter" @click="clearFilter('build')">
+                        Clear
+                      </button>
                     </div>
                     <div class="column w-auto">
-                        <select class="ui dropdown env_filter" v-model="env_filter" @change="loadData()">
-                            <option value="">Environment filter</option>
-                            <template v-for="env in environments">
-                                <option :value="env" :key="env+'filter'">{{env}}</option>
-                            </template>
-                        </select>
-                        <button class="ui red button white text" v-if="env_filter" @click="clearFilter('env')">
-                            Clear
-                        </button>
+                      <select class="ui dropdown env_filter" v-model="env_filter" @change="loadData()">
+                        <option value="">Environment filter</option>
+                        <template v-for="env in environments">
+                          <option :value="env" :key="env + 'filter'">{{ env }}</option>
+                        </template>
+                      </select>
+                      <button class="ui red button white text" v-if="env_filter" @click="clearFilter('env')">
+                        Clear
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -68,19 +72,20 @@
               <div class="row ml-3 mb-3" v-if="snapshots_error" v-html="snapshots_error"></div>
             </div>
 
-            <!-- Snapshots table -->
-            <div class="table-responsive">
+            <!-- Snapshots Table Container -->
+            <div class="table-container">
               <table class="ui celled table table-snapshots">
                 <thead>
                   <tr>
                     <th class="w-1">
                       <div class="ui checkbox checkbox-popup" title="Select all snapshots">
-                        <input type="checkbox" @click="toggleAllSnapshots($event)">
+                        <input type="checkbox" @change="toggleAllSnapshots($event)">
                         <label class="pl-0"></label>
                       </div>
                     </th>
                     <th>Name</th>
                     <th>Build Name</th>
+                    <th>S3 Path</th>
                     <th>Environment</th>
                     <th>Indexer Env</th>
                     <th>Index Name</th>
@@ -98,20 +103,19 @@
                         </div>
                       </td>
                     </tr>
-                    
+
                     <tr v-for="snapshot_data in build_config_snapshots.items" v-bind="build_config_snapshots">
                       <td>
                         <div class="ui checkbox">
                           <input class="checkbox-snapshot" type="checkbox"
-                            :data-build-config="build_config_snapshots._id"
-                            :data-snapshot-name="snapshot_data._id"
-                            :data-environment="snapshot_data.environment"
-                          >
+                            :data-build-config="build_config_snapshots._id" :data-snapshot-name="snapshot_data._id"
+                            :data-environment="snapshot_data.environment">
                           <label class="pl-0"></label>
                         </div>
                       </td>
                       <td>{{ snapshot_data._id }}</td>
                       <td>{{ snapshot_data.build_name }}</td>
+                      <td>{{ getBucketName(snapshot_data) }}</td>
                       <td>{{ snapshot_data.environment }}</td>
                       <td>{{ snapshot_data.indexer_env }}</td>
                       <td>{{ snapshot_data.index_name }}</td>
@@ -121,9 +125,13 @@
                 </tbody>
               </table>
             </div>
-          </div>  
+          </div>
         </div>
       </div>
+    </div>
+    <!-- Modal Actions -->
+    <div class="actions">
+      <div class="ui cancel button">Close</div>
     </div>
   </div>
 </template>
@@ -134,22 +142,36 @@ import axios from 'axios'
 import Actionable from './Actionable.vue'
 import AsyncCommandLauncher from './AsyncCommandLauncher.vue'
 
-export default {
+export default {
   name: 'cleanup',
   mixins: [AsyncCommandLauncher, Actionable],
-  mounted () {
+  mounted() {
     const self = this
-    $(".cleanup.modal").modal("setting", {
+    // Initialize the modal
+    $(".cleanup.modal").modal({
+      autofocus: false,
       onShow: function () {
-        self.loadData()
-        $(".checkbox-popup").popup()
+        self.loadData();
+        $(".checkbox-popup").popup();
       }
-    })
+    });
+
+    // Initialize tabs
+    $('.menu .item').tab();
+
+    // Initialize dropdowns
+    $('.ui.dropdown').dropdown();
+
+    // Initialize popup for delete button
     $(".delete-snapshots").popup({
       on: "manual"
-    })
+    });
+
+    // Initialize checkboxes
+    $('.ui.checkbox').checkbox();
+
   },
-  data () {
+  data() {
     return {
       snapshots: [],
       build_configs: [],
@@ -163,11 +185,11 @@ export default {
     }
   },
   methods: {
-    loading () {
+    loading() {
       this.show_loader = true
       this.snapshots_error = null
     },
-    loaded () {
+    loaded() {
       this.show_loader = false
     },
     extractError: function (err) {
@@ -183,7 +205,7 @@ export default {
       this.snapshots_error = `<div class="text red"><b>${title}</b><br>Detail: ${this.extractError(err)}</div>`
       this.loaded()
     },
-    loadData () {
+    loadData() {
       const self = this
       self.loading()
 
@@ -202,41 +224,40 @@ export default {
       }
 
       axios.get(axios.defaults.baseURL + '/list_snapshots?' + snapshot_filters.join("&"))
-      .then(response => {
-        self.snapshots = response.data.result
+        .then(response => {
+          self.snapshots = response.data.result
 
-        self.build_configs = []
-        self.build_names = new Set()
-        self.environments = new Set()
+          self.build_configs = []
+          self.build_names = new Set()
+          self.environments = new Set()
 
-        self.snapshots.forEach(build_configuration_snapshot => {
-          self.build_configs.push(build_configuration_snapshot._id)
-          build_configuration_snapshot.items.forEach(snapshot => {
-            self.build_names.add(snapshot.build_name)
-            self.environments.add(snapshot.environment)
+          self.snapshots.forEach(build_configuration_snapshot => {
+            self.build_configs.push(build_configuration_snapshot._id)
+            build_configuration_snapshot.items.forEach(snapshot => {
+              self.build_names.add(snapshot.build_name)
+              self.environments.add(snapshot.environment)
+            })
           })
+          self.loaded()
         })
-        self.loaded()
-      })
-      .catch(err => {
-        console.log('Error when getting snapshots information: ' + err)
-        self.loaderror("Error when getting snapshots", err)
-      })
+        .catch(err => {
+          console.log('Error when getting snapshots information: ' + err)
+          self.loaderror("Error when getting snapshots", err)
+        })
     },
-    clearFilter (filter_type) {
+    clearFilter(filter_type) {
       $(`.ui.${filter_type}_filter.dropdown`).dropdown('clear')
-      this[filter_type+ "_filter"] = ""
+      this[filter_type + "_filter"] = ""
     },
-    toggleAllSnapshots (event, build_config=null) {
-      const is_checked = $(event.target).is(":checked")
+    toggleAllSnapshots(event, build_config = null) {
+      const is_checked = event.target.checked;
       if (build_config) {
-        $(`.snapshot-wrapper [type=checkbox][data-build-config=${build_config}]`).prop("checked", is_checked)
-      }
-      else {
-        $(".snapshot-wrapper [type=checkbox]").prop("checked", is_checked)
+        $(`.snapshot-wrapper [type=checkbox][data-build-config=${build_config}]`).prop("checked", is_checked);
+      } else {
+        $(".snapshot-wrapper [type=checkbox]").prop("checked", is_checked);
       }
     },
-    delete_snapshots (event) {
+    delete_snapshots(event) {
       const self = this
       const $checked_snapshots = $(".checkbox-snapshot:checked")
       if ($checked_snapshots.length == 0) {
@@ -247,11 +268,12 @@ export default {
       self.loading()
 
       const cmd = function () {
-        const data = {snapshots_data: {}}
+        const data = { snapshots_data: {} }
         $checked_snapshots.map((_, element) => {
           const name = $(element).data("snapshotName")
           const environment = $(element).data("environment")
-          if (! data.snapshots_data[environment]) {
+          console.log(name, environment)
+          if (!data.snapshots_data[environment]) {
             data.snapshots_data[environment] = []
           }
           data.snapshots_data[environment].push(name)
@@ -261,6 +283,7 @@ export default {
       }
 
       const onSuccess = function (response) {
+        console.log('Snapshots deleted: ' + response.data.result)
         self.loadData()
       }
 
@@ -270,6 +293,16 @@ export default {
       }
 
       this.launchAsyncCommand(cmd, onSuccess, onError)
+    },
+    getBucketName(snapshot_data) {
+      if (
+        snapshot_data.conf &&
+        snapshot_data.conf.repository &&
+        snapshot_data.conf.repository.settings &&
+        snapshot_data.conf.repository.settings.bucket
+      ) {
+        return snapshot_data.conf.repository.settings.bucket + '/' + snapshot_data.conf.repository.settings.base_path;
+      }
     },
   }
 }
@@ -293,11 +326,11 @@ export default {
 }
 
 .pl-0 {
-  padding-left: 0!important;
+  padding-left: 0 !important;
 }
 
 [data-tab="snapshot"] {
-  margin-bottom: 0!important;
+  margin-bottom: 0 !important;
 }
 
 .table-responsive {
@@ -310,5 +343,22 @@ export default {
 
 .w-auto {
   width: auto !important;
+}
+
+.table-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-top: 5px;
+}
+
+.cleanup.modal {
+  width: 90% !important;
+}
+
+.table-snapshots thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-top: 1px solid rgba(34, 36, 38, 0.1);
 }
 </style>
