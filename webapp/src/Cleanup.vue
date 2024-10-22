@@ -1,86 +1,101 @@
 <template>
-  <div class="ui basic cleanup modal">
+  <div class="ui basic scrolling cleanup modal">
     <div class="header">
       <i class="trash alternate outline icon"></i> Cleaning up old Hub entities
     </div>
 
-    <div class="center">
+    <div class="content">
       <div class="ui fluid container">
-
         <!-- Loader -->
-        <div :class="['ui dimmer inverted', show_loader? 'active': '' ]">
+        <div :class="['ui dimmer inverted', show_loader ? 'active' : '']">
           <div class="ui text loader">Loading</div>
         </div>
 
         <div class="ui centered fluid card">
+          <!-- Top Attached Menu -->
           <div class="ui top attached pointing menu">
             <a class="active item" data-tab="snapshot">Snapshots</a>
           </div>
+
+          <!-- Tab Content -->
           <div class="ui bottom attached active tab segment snapshot-wrapper" data-tab="snapshot">
-            <!-- Actions panel -->
+            <!-- Actions Panel -->
             <div class="ui grid">
               <div class="row">
-                <div class="three wide column">
+                <div class="four wide column">
                   <button class="ui button delete-snapshots" @click="delete_snapshots($event)"
                     data-content="You must choose at least one snapshot to delete">
                     <i></i> Delete
                   </button>
+                  <button class="ui button validate-snapshots" @click="validate_snapshots($event)">
+                    <i class="sync icon"></i> Validate
+                  </button>
                 </div>
-                <div class="thirteen wide column">
+                <div class="ten wide column">
                   <div class="ui grid">
                     <div class="column w-auto">
-                        <select class="ui dropdown build_config_filter" v-model="build_config_filter" @change="loadData()">
-                          <option value="">Build configuration filter</option>
-                          <template v-for="name in build_configs">
-                              <option :value="name" :key="name+'filter'">{{name}}</option>
-                          </template>
-                        </select>
-                        <button class="ui red button white text" v-if="build_config_filter" @click="clearFilter('build_config')">
-                            Clear
-                        </button>
+                      <select class="ui dropdown build_config_filter" v-model="build_config_filter"
+                        @change="loadData()">
+                        <option value="">Build configuration filter</option>
+                        <template v-for="name in build_configs">
+                          <option :value="name" :key="name + 'filter'">{{ name }}</option>
+                        </template>
+                      </select>
+                      <button class="ui red button white text" v-if="build_config_filter"
+                        @click="clearFilter('build_config')">
+                        Clear
+                      </button>
                     </div>
                     <div class="column w-auto">
-                        <select class="ui dropdown build_filter" v-model="build_filter" @change="loadData()">
-                            <option value="">Build filter</option>
-                            <template v-for="name in build_names">
-                                <option :value="name" :key="name+'filter'">{{name}}</option>
-                            </template>
-                        </select>
-                        <button class="ui red button white text" v-if="build_filter" @click="clearFilter('build')">
-                            Clear
-                        </button>
+                      <select class="ui dropdown build_filter" v-model="build_filter" @change="loadData()">
+                        <option value="">Build filter</option>
+                        <template v-for="name in build_names">
+                          <option :value="name" :key="name + 'filter'">{{ name }}</option>
+                        </template>
+                      </select>
+                      <button class="ui red button white text" v-if="build_filter" @click="clearFilter('build')">
+                        Clear
+                      </button>
                     </div>
                     <div class="column w-auto">
-                        <select class="ui dropdown env_filter" v-model="env_filter" @change="loadData()">
-                            <option value="">Environment filter</option>
-                            <template v-for="env in environments">
-                                <option :value="env" :key="env+'filter'">{{env}}</option>
-                            </template>
-                        </select>
-                        <button class="ui red button white text" v-if="env_filter" @click="clearFilter('env')">
-                            Clear
-                        </button>
+                      <select class="ui dropdown env_filter" v-model="env_filter" @change="loadData()">
+                        <option value="">Environment filter</option>
+                        <template v-for="env in environments">
+                          <option :value="env" :key="env + 'filter'">{{ env }}</option>
+                        </template>
+                      </select>
+                      <button class="ui red button white text" v-if="env_filter" @click="clearFilter('env')">
+                        Clear
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <div class="row ml-3 mb-3" v-if="snapshots_error" v-html="snapshots_error"></div>
+              <div class="row ml-3" v-if="show_snapshots_validated">
+                <div class="ui message green">
+                  <div class="header">Snapshots deleted</div>
+                  <p>{{ snapshots_validated }} snapshots were removed during validation.</p>
+                </div>
+              </div>
+              <div class="row ml-3 mb-3" v-if="snapshots_error">
+                <div class="error-messages" v-html="snapshots_error"></div>
+              </div>
             </div>
 
-            <!-- Snapshots table -->
-            <div class="table-responsive">
+            <!-- Snapshots Table Container -->
+            <div class="table-container">
               <table class="ui celled table table-snapshots">
                 <thead>
                   <tr>
                     <th class="w-1">
                       <div class="ui checkbox checkbox-popup" title="Select all snapshots">
-                        <input type="checkbox" @click="toggleAllSnapshots($event)">
+                        <input type="checkbox" @change="toggleAllSnapshots($event)">
                         <label class="pl-0"></label>
                       </div>
                     </th>
                     <th>Name</th>
                     <th>Build Name</th>
+                    <th>S3 Path</th>
                     <th>Environment</th>
                     <th>Indexer Env</th>
                     <th>Index Name</th>
@@ -98,22 +113,21 @@
                         </div>
                       </td>
                     </tr>
-                    
+
                     <tr v-for="snapshot_data in build_config_snapshots.items" v-bind="build_config_snapshots">
                       <td>
                         <div class="ui checkbox">
                           <input class="checkbox-snapshot" type="checkbox"
-                            :data-build-config="build_config_snapshots._id"
-                            :data-snapshot-name="snapshot_data._id"
-                            :data-environment="snapshot_data.environment"
-                          >
+                            :data-build-config="build_config_snapshots._id" :data-snapshot-name="snapshot_data._id"
+                            :data-environment="snapshot_data.environment">
                           <label class="pl-0"></label>
                         </div>
                       </td>
                       <td>{{ snapshot_data._id }}</td>
                       <td>{{ snapshot_data.build_name }}</td>
+                      <td>{{ getBucketName(snapshot_data) }}</td>
                       <td>{{ snapshot_data.environment }}</td>
-                      <td>{{ snapshot_data.indexer_env }}</td>
+                      <td>{{ snapshot_data.indexer_env || snapshot_data.conf.indexer.env }}</td>
                       <td>{{ snapshot_data.index_name }}</td>
                       <td class="min-width-9">{{ snapshot_data.created_at | moment('MMM Do YYYY, h:mm:ss a') }}</td>
                     </tr>
@@ -121,9 +135,13 @@
                 </tbody>
               </table>
             </div>
-          </div>  
+          </div>
         </div>
       </div>
+    </div>
+    <!-- Modal Actions -->
+    <div class="actions">
+      <div class="ui cancel button">Close</div>
     </div>
   </div>
 </template>
@@ -134,22 +152,38 @@ import axios from 'axios'
 import Actionable from './Actionable.vue'
 import AsyncCommandLauncher from './AsyncCommandLauncher.vue'
 
-export default {
+export default {
   name: 'cleanup',
   mixins: [AsyncCommandLauncher, Actionable],
-  mounted () {
+  mounted() {
     const self = this
-    $(".cleanup.modal").modal("setting", {
+    // Initialize the modal
+    $(".cleanup.modal").modal({
+      autofocus: false,
+      observeChanges: true,
       onShow: function () {
-        self.loadData()
-        $(".checkbox-popup").popup()
+        self.resetMessages();
+        self.loadData();
+        $(".checkbox-popup").popup();
       }
-    })
+    });
+
+    // Initialize tabs
+    $('.menu .item').tab();
+
+    // Initialize dropdowns
+    $('.ui.dropdown').dropdown();
+
+    // Initialize popup for delete button
     $(".delete-snapshots").popup({
       on: "manual"
-    })
+    });
+
+    // Initialize checkboxes
+    $('.ui.checkbox').checkbox();
+
   },
-  data () {
+  data() {
     return {
       snapshots: [],
       build_configs: [],
@@ -160,32 +194,55 @@ export default {
       env_filter: '',
       show_loader: false,
       snapshots_error: null,
+      snapshots_validated: 0,
+      show_snapshots_validated: false,
     }
   },
   methods: {
-    loading () {
+    loading() {
       this.show_loader = true
-      this.snapshots_error = null
     },
-    loaded () {
+    loaded() {
       this.show_loader = false
     },
     extractError: function (err) {
-      if (err.response) {
-        return err.response.data.error
+      if (typeof err === 'string') {
+        return err;
       }
 
-      if (err.data) {
-        return err.data.result.results.join("<br>")
+      if (err.response && err.response.data && err.response.data.error) {
+        return err.response.data.error;
       }
+
+      if (err.data && err.data.error) {
+        return err.data.error;
+      }
+
+      if (err.data && err.data.result && err.data.result.results) {
+        const results = err.data.result.results;
+        if (Array.isArray(results) && results.length > 0) {
+          const result = results[0];
+          if (result.errors && result.errors.length > 0) {
+            return result.errors.join('<br>');
+          } else if (typeof result === 'string') {
+            return result;
+          }
+        }
+      }
+
+      return "An unknown error occurred.";
     },
     loaderror: function (title, err) {
-      this.snapshots_error = `<div class="text red"><b>${title}</b><br>Detail: ${this.extractError(err)}</div>`
-      this.loaded()
+      const errorContent = this.extractError(err);
+      this.snapshots_error = `<div class="text red"><b>${title}</b><br>${errorContent}</div>`;
+      this.loaded();
     },
-    loadData () {
-      const self = this
-      self.loading()
+    loadData(preserveMessages = false) {
+      const self = this;
+      if (!preserveMessages) {
+        self.resetMessages();
+      }
+      self.loading();
 
       $(".table-snapshots [type='checkbox']").prop("checked", false)
 
@@ -202,42 +259,43 @@ export default {
       }
 
       axios.get(axios.defaults.baseURL + '/list_snapshots?' + snapshot_filters.join("&"))
-      .then(response => {
-        self.snapshots = response.data.result
+        .then(response => {
+          self.snapshots = response.data.result
 
-        self.build_configs = []
-        self.build_names = new Set()
-        self.environments = new Set()
+          self.build_configs = []
+          self.build_names = new Set()
+          self.environments = new Set()
 
-        self.snapshots.forEach(build_configuration_snapshot => {
-          self.build_configs.push(build_configuration_snapshot._id)
-          build_configuration_snapshot.items.forEach(snapshot => {
-            self.build_names.add(snapshot.build_name)
-            self.environments.add(snapshot.environment)
+          self.snapshots.forEach(build_configuration_snapshot => {
+            self.build_configs.push(build_configuration_snapshot._id)
+            build_configuration_snapshot.items.forEach(snapshot => {
+              self.build_names.add(snapshot.build_name)
+              self.environments.add(snapshot.environment)
+            })
           })
+          self.loaded()
         })
-        self.loaded()
-      })
-      .catch(err => {
-        console.log('Error when getting snapshots information: ' + err)
-        self.loaderror("Error when getting snapshots", err)
-      })
+        .catch(err => {
+          console.log('Error when getting snapshots information: ' + err)
+          self.loaderror("Error when getting snapshots", err)
+        })
     },
-    clearFilter (filter_type) {
+    clearFilter(filter_type) {
       $(`.ui.${filter_type}_filter.dropdown`).dropdown('clear')
-      this[filter_type+ "_filter"] = ""
+      this[filter_type + "_filter"] = "";
+      this.resetMessages();
     },
-    toggleAllSnapshots (event, build_config=null) {
-      const is_checked = $(event.target).is(":checked")
+    toggleAllSnapshots(event, build_config = null) {
+      const is_checked = event.target.checked;
       if (build_config) {
-        $(`.snapshot-wrapper [type=checkbox][data-build-config=${build_config}]`).prop("checked", is_checked)
-      }
-      else {
-        $(".snapshot-wrapper [type=checkbox]").prop("checked", is_checked)
+        $(`.snapshot-wrapper [type=checkbox][data-build-config=${build_config}]`).prop("checked", is_checked);
+      } else {
+        $(".snapshot-wrapper [type=checkbox]").prop("checked", is_checked);
       }
     },
-    delete_snapshots (event) {
+    delete_snapshots(event) {
       const self = this
+      this.resetMessages();
       const $checked_snapshots = $(".checkbox-snapshot:checked")
       if ($checked_snapshots.length == 0) {
         $(event.target).popup("show")
@@ -247,20 +305,28 @@ export default {
       self.loading()
 
       const cmd = function () {
-        const data = {snapshots_data: {}}
+        const data = { snapshots_data: {} };
         $checked_snapshots.map((_, element) => {
-          const name = $(element).data("snapshotName")
-          const environment = $(element).data("environment")
-          if (! data.snapshots_data[environment]) {
-            data.snapshots_data[environment] = []
+          const name = $(element).data("snapshotName");
+          let environment = $(element).data("environment");
+
+          // Handle undefined environment
+          if (environment === undefined) {
+            environment = "__no_env__";
           }
-          data.snapshots_data[environment].push(name)
-        })
+
+          if (!data.snapshots_data[environment]) {
+            data.snapshots_data[environment] = [];
+          }
+          data.snapshots_data[environment].push(name);
+        });
+
 
         return axios.put(axios.defaults.baseURL + '/delete_snapshots', data)
       }
 
       const onSuccess = function (response) {
+        console.log('Snapshots deleted: ' + response.data.result)
         self.loadData()
       }
 
@@ -270,6 +336,105 @@ export default {
       }
 
       this.launchAsyncCommand(cmd, onSuccess, onError)
+    },
+    getBucketName(snapshot_data) {
+      if (
+        snapshot_data.conf &&
+        snapshot_data.conf.repository &&
+        snapshot_data.conf.repository.settings &&
+        snapshot_data.conf.repository.settings.bucket
+      ) {
+        return snapshot_data.conf.repository.settings.bucket + '/' + snapshot_data.conf.repository.settings.base_path;
+      }
+    },
+    validate_snapshots(event) {
+      const self = this;
+      self.loading();
+
+      const cmd = function () {
+        return axios.post(axios.defaults.baseURL + '/validate_snapshots');
+      };
+
+      const onSuccess = function (response) {
+        if (response.data.result) {
+          self.handleValidateResult(response.data.result);
+        } else {
+          const cmd_id = response.data.result.id;
+          self.running[cmd_id] = { cb: self.handleValidateResult, eb: self.handleValidateError };
+        }
+        self.loaded();
+      };
+
+      const onError = function (err) {
+        self.loaderror("Error when validating snapshots", err);
+        console.error('Failed to validate snapshots:', err);
+        self.loaded();
+      };
+
+      this.launchAsyncCommand(cmd, onSuccess, onError);
+    },
+    extractAsyncError: function (err) {
+      if (err.data && err.data.result && err.data.result.failed) {
+        const results = err.data.result.results;
+        if (Array.isArray(results) && results.length > 0) {
+          const result = results[0];
+          if (result.errors && result.errors.length > 0) {
+            return result.errors.join('<br>');
+          } else if (typeof result === 'string') {
+            return result;
+          }
+        }
+      }
+      console.log("Can't extract async error, it's not an error");
+      console.log(err);
+      return "An unknown error occurred.";
+    },
+    launchAsyncCommand: function (cmd, callback, errback) {
+      var self = this;
+      self.loading();
+      cmd()
+        .then(response => {
+          if (response.data.status !== 'ok') {
+            throw new Error(`Couldn't launch async command ${cmd}`);
+          }
+          if (response.data.result.is_done) {
+            const result = response.data.result.results[0];
+            callback(result);
+          } else {
+            const cmd_id = response.data.result.id;
+            self.running[cmd_id] = { cb: callback, eb: errback };
+          }
+          self.loaded();
+        })
+        .catch(err => {
+          errback(err);
+          self.loaderror(err);
+          self.loaded();
+        });
+    },
+    handleValidateResult(result) {
+      const results = result.results[0];
+      const snapshotsDeleted = results.snapshots_validated || 0;
+      this.snapshots_validated = snapshotsDeleted;
+      this.show_snapshots_validated = true;
+      if (results.errors && results.errors.length > 0) {
+        const errorMessage = results.errors.join('<br>');
+        this.snapshots_error = `<div class="text red"><b>Validation completed with errors</b><br>${errorMessage}</div>`;
+      } else {
+        // Successful validation
+        this.snapshots_error = `<div class="text green"><b>Validation completed successfully</b><br>${snapshotsDeleted} snapshots were removed during validation.</div>`;
+      }
+      this.loadData(true);
+      this.loaded();
+    },
+    handleValidateError(err) {
+      const errorMsg = this.extractAsyncError(err);
+      this.snapshots_error = `<div class="text red"><b>Validation failed</b><br>${errorMsg}</div>`;
+      this.loaded();
+    },
+    resetMessages() {
+      this.show_snapshots_validated = false;
+      this.snapshots_error = null;
     },
   }
 }
@@ -293,11 +458,11 @@ export default {
 }
 
 .pl-0 {
-  padding-left: 0!important;
+  padding-left: 0 !important;
 }
 
 [data-tab="snapshot"] {
-  margin-bottom: 0!important;
+  margin-bottom: 0 !important;
 }
 
 .table-responsive {
@@ -310,5 +475,31 @@ export default {
 
 .w-auto {
   width: auto !important;
+}
+
+.table-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-top: 5px;
+}
+
+.cleanup.modal {
+  width: 90% !important;
+}
+
+.table-snapshots thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-top: 1px solid rgba(34, 36, 38, 0.1);
+}
+
+.error-messages {
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #fff6f6;
+  border: 1px solid #e0b4b4;
+  border-radius: 5px;
 }
 </style>
