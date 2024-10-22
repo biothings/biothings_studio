@@ -22,13 +22,16 @@
             <!-- Actions Panel -->
             <div class="ui grid">
               <div class="row">
-                <div class="three wide column">
+                <div class="four wide column">
                   <button class="ui button delete-snapshots" @click="delete_snapshots($event)"
                     data-content="You must choose at least one snapshot to delete">
                     <i></i> Delete
                   </button>
+                  <button class="ui button validate-snapshots" @click="validate_snapshots($event)">
+                    <i class="sync icon"></i> Validate
+                  </button>
                 </div>
-                <div class="thirteen wide column">
+                <div class="ten wide column">
                   <div class="ui grid">
                     <div class="column w-auto">
                       <select class="ui dropdown build_config_filter" v-model="build_config_filter"
@@ -68,8 +71,15 @@
                   </div>
                 </div>
               </div>
-
-              <div class="row ml-3 mb-3" v-if="snapshots_error" v-html="snapshots_error"></div>
+              <div class="row ml-3" v-if="show_snapshots_validated">
+                <div class="ui message green">
+                  <div class="header">Snapshots deleted</div>
+                  <p>{{ snapshots_validated }} snapshots were removed during validation.</p>
+                </div>
+              </div>
+              <div class="row ml-3 mb-3" v-if="snapshots_error">
+                <div class="error-messages" v-html="snapshots_error"></div>
+              </div>
             </div>
 
             <!-- Snapshots Table Container -->
@@ -117,7 +127,7 @@
                       <td>{{ snapshot_data.build_name }}</td>
                       <td>{{ getBucketName(snapshot_data) }}</td>
                       <td>{{ snapshot_data.environment }}</td>
-                      <td>{{ snapshot_data.indexer_env }}</td>
+                      <td>{{ snapshot_data.indexer_env || snapshot_data.conf.indexer.env }}</td>
                       <td>{{ snapshot_data.index_name }}</td>
                       <td class="min-width-9">{{ snapshot_data.created_at | moment('MMM Do YYYY, h:mm:ss a') }}</td>
                     </tr>
@@ -150,7 +160,9 @@ export default {
     // Initialize the modal
     $(".cleanup.modal").modal({
       autofocus: false,
+      observeChanges: true,
       onShow: function () {
+        self.resetMessages();
         self.loadData();
         $(".checkbox-popup").popup();
       }
@@ -182,32 +194,55 @@ export default {
       env_filter: '',
       show_loader: false,
       snapshots_error: null,
+      snapshots_validated: 0,
+      show_snapshots_validated: false,
     }
   },
   methods: {
     loading() {
       this.show_loader = true
-      this.snapshots_error = null
     },
     loaded() {
       this.show_loader = false
     },
     extractError: function (err) {
-      if (err.response) {
-        return err.response.data.error
+      if (typeof err === 'string') {
+        return err;
       }
 
-      if (err.data) {
-        return err.data.result.results.join("<br>")
+      if (err.response && err.response.data && err.response.data.error) {
+        return err.response.data.error;
       }
+
+      if (err.data && err.data.error) {
+        return err.data.error;
+      }
+
+      if (err.data && err.data.result && err.data.result.results) {
+        const results = err.data.result.results;
+        if (Array.isArray(results) && results.length > 0) {
+          const result = results[0];
+          if (result.errors && result.errors.length > 0) {
+            return result.errors.join('<br>');
+          } else if (typeof result === 'string') {
+            return result;
+          }
+        }
+      }
+
+      return "An unknown error occurred.";
     },
     loaderror: function (title, err) {
-      this.snapshots_error = `<div class="text red"><b>${title}</b><br>Detail: ${this.extractError(err)}</div>`
-      this.loaded()
+      const errorContent = this.extractError(err);
+      this.snapshots_error = `<div class="text red"><b>${title}</b><br>${errorContent}</div>`;
+      this.loaded();
     },
-    loadData() {
-      const self = this
-      self.loading()
+    loadData(preserveMessages = false) {
+      const self = this;
+      if (!preserveMessages) {
+        self.resetMessages();
+      }
+      self.loading();
 
       $(".table-snapshots [type='checkbox']").prop("checked", false)
 
@@ -247,7 +282,8 @@ export default {
     },
     clearFilter(filter_type) {
       $(`.ui.${filter_type}_filter.dropdown`).dropdown('clear')
-      this[filter_type + "_filter"] = ""
+      this[filter_type + "_filter"] = "";
+      this.resetMessages();
     },
     toggleAllSnapshots(event, build_config = null) {
       const is_checked = event.target.checked;
@@ -259,6 +295,7 @@ export default {
     },
     delete_snapshots(event) {
       const self = this
+      this.resetMessages();
       const $checked_snapshots = $(".checkbox-snapshot:checked")
       if ($checked_snapshots.length == 0) {
         $(event.target).popup("show")
@@ -268,16 +305,22 @@ export default {
       self.loading()
 
       const cmd = function () {
-        const data = { snapshots_data: {} }
+        const data = { snapshots_data: {} };
         $checked_snapshots.map((_, element) => {
-          const name = $(element).data("snapshotName")
-          const environment = $(element).data("environment")
-          console.log(name, environment)
-          if (!data.snapshots_data[environment]) {
-            data.snapshots_data[environment] = []
+          const name = $(element).data("snapshotName");
+          let environment = $(element).data("environment");
+
+          // Handle undefined environment
+          if (environment === undefined) {
+            environment = "__no_env__";
           }
-          data.snapshots_data[environment].push(name)
-        })
+
+          if (!data.snapshots_data[environment]) {
+            data.snapshots_data[environment] = [];
+          }
+          data.snapshots_data[environment].push(name);
+        });
+
 
         return axios.put(axios.defaults.baseURL + '/delete_snapshots', data)
       }
@@ -303,6 +346,95 @@ export default {
       ) {
         return snapshot_data.conf.repository.settings.bucket + '/' + snapshot_data.conf.repository.settings.base_path;
       }
+    },
+    validate_snapshots(event) {
+      const self = this;
+      self.loading();
+
+      const cmd = function () {
+        return axios.post(axios.defaults.baseURL + '/validate_snapshots');
+      };
+
+      const onSuccess = function (response) {
+        if (response.data.result) {
+          self.handleValidateResult(response.data.result);
+        } else {
+          const cmd_id = response.data.result.id;
+          self.running[cmd_id] = { cb: self.handleValidateResult, eb: self.handleValidateError };
+        }
+        self.loaded();
+      };
+
+      const onError = function (err) {
+        self.loaderror("Error when validating snapshots", err);
+        console.error('Failed to validate snapshots:', err);
+        self.loaded();
+      };
+
+      this.launchAsyncCommand(cmd, onSuccess, onError);
+    },
+    extractAsyncError: function (err) {
+      if (err.data && err.data.result && err.data.result.failed) {
+        const results = err.data.result.results;
+        if (Array.isArray(results) && results.length > 0) {
+          const result = results[0];
+          if (result.errors && result.errors.length > 0) {
+            return result.errors.join('<br>');
+          } else if (typeof result === 'string') {
+            return result;
+          }
+        }
+      }
+      console.log("Can't extract async error, it's not an error");
+      console.log(err);
+      return "An unknown error occurred.";
+    },
+    launchAsyncCommand: function (cmd, callback, errback) {
+      var self = this;
+      self.loading();
+      cmd()
+        .then(response => {
+          if (response.data.status !== 'ok') {
+            throw new Error(`Couldn't launch async command ${cmd}`);
+          }
+          if (response.data.result.is_done) {
+            const result = response.data.result.results[0];
+            callback(result);
+          } else {
+            const cmd_id = response.data.result.id;
+            self.running[cmd_id] = { cb: callback, eb: errback };
+          }
+          self.loaded();
+        })
+        .catch(err => {
+          errback(err);
+          self.loaderror(err);
+          self.loaded();
+        });
+    },
+    handleValidateResult(result) {
+      const results = result.results[0];
+      const snapshotsDeleted = results.snapshots_validated || 0;
+      this.snapshots_validated = snapshotsDeleted;
+      this.show_snapshots_validated = true;
+      if (results.errors && results.errors.length > 0) {
+        const errorMessage = results.errors.join('<br>');
+        this.snapshots_error = `<div class="text red"><b>Validation completed with errors</b><br>${errorMessage}</div>`;
+      } else {
+        // Successful validation
+        this.snapshots_error = `<div class="text green"><b>Validation completed successfully</b><br>${snapshotsDeleted} snapshots were removed during validation.</div>`;
+      }
+      this.loadData(true);
+      this.loaded();
+    },
+    handleValidateError(err) {
+      const errorMsg = this.extractAsyncError(err);
+      this.snapshots_error = `<div class="text red"><b>Validation failed</b><br>${errorMsg}</div>`;
+      this.loaded();
+    },
+    resetMessages() {
+      this.show_snapshots_validated = false;
+      this.snapshots_error = null;
     },
   }
 }
@@ -360,5 +492,14 @@ export default {
   top: 0;
   z-index: 1;
   border-top: 1px solid rgba(34, 36, 38, 0.1);
+}
+
+.error-messages {
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #fff6f6;
+  border: 1px solid #e0b4b4;
+  border-radius: 5px;
 }
 </style>
