@@ -288,15 +288,14 @@ export default {
             })
           })
 
-          // Now that the data is assigned, wait for the DOM to update
           self.$nextTick(function () {
             // Re-initialize the checkboxes
             $('.ui.checkbox').checkbox();
 
             // Re-initialize the popups
             $(".checkbox-popup").popup({
-              boundary: '.table-container', // Ensures the popup calculates position within this boundary
-              scrollContext: '.table-container', // Adjusts for scrolling within the container
+              boundary: '.table-container',
+              scrollContext: '.table-container',
             });
           });
 
@@ -332,7 +331,7 @@ export default {
       self.loading();
 
       const cmd = function () {
-        const data = { snapshots_data: {}, ignoreErrors: self.ignoreErrors }; // Include ignoreErrors
+        const data = { snapshots_data: {}, ignoreErrors: self.ignoreErrors };
         $checked_snapshots.map((_, element) => {
           const name = $(element).data("snapshotName");
           let environment = $(element).data("environment");
@@ -354,7 +353,6 @@ export default {
         console.log('Snapshots deleted: ' + response.data.result);
         self.loadData();
 
-        // Re-initialize checkboxes after data reload
         self.$nextTick(() => {
           $('.ui.checkbox').checkbox();
         });
@@ -452,7 +450,6 @@ export default {
         const errorMessage = results.errors.join('<br>');
         this.snapshots_error = `<div class="text red"><b>Validation completed with errors</b><br>${errorMessage}</div>`;
       } else {
-        // Successful validation
         this.snapshots_error = `<div class="text green"><b>Validation completed successfully</b><br>${snapshotsDeleted} snapshots were removed during validation.</div>`;
       }
       this.loadData(true);
