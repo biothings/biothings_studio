@@ -22,13 +22,27 @@
             <!-- Actions Panel -->
             <div class="ui grid">
               <div class="row">
-                <div class="four wide column">
-                  <button class="ui button delete-snapshots" @click="delete_snapshots($event)"
-                    data-content="You must choose at least one snapshot to delete">
-                    <i></i> Delete
-                  </button>
-                  <button class="ui button validate-snapshots" @click="validate_snapshots($event)">
-                    <i class="sync icon"></i> Validate
+                <div class="five wide column">
+                  <div class="ui buttons">
+                    <div class="ui labeled icon button delete-snapshots" data-tooltip="Delete selected snapshots"
+                      v-on:click="delete_snapshots($event)">
+                      <i class="trash icon"></i>Delete
+                    </div>
+                    <div class="ui floating dropdown icon button button-spacing">
+                      <i class="dropdown icon"></i>
+                      <div class="menu">
+                        <div class="ui checkbox item"
+                          data-tooltip="Delete will ignore errors related to the environment"
+                          data-position="bottom center">
+                          <input type="checkbox" v-model="ignoreErrors" />
+                          <label>Ignore Env Errors</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <button class="ui labeled icon button validate-snapshots" @click="validate_snapshots($event)"
+                    data-tooltip="Confirm that the snapshots exist in the S3 bucket">
+                    <i class="sync icon"></i>Validate
                   </button>
                 </div>
                 <div class="ten wide column">
@@ -104,8 +118,8 @@
                 </thead>
 
                 <tbody>
-                  <template v-for="build_config_snapshots in snapshots" v-bind="snapshots">
-                    <tr>
+                  <template v-for="build_config_snapshots in snapshots">
+                    <tr :key="'build-config-' + build_config_snapshots._id">
                       <td colspan="5">
                         <div class="ui checkbox checkbox-popup" title="Select all snapshots for this build config">
                           <input type="checkbox" @click="toggleAllSnapshots($event, build_config_snapshots._id)">
@@ -114,7 +128,7 @@
                       </td>
                     </tr>
 
-                    <tr v-for="snapshot_data in build_config_snapshots.items" v-bind="build_config_snapshots">
+                    <tr v-for="snapshot_data in build_config_snapshots.items" :key="'snapshot-' + snapshot_data._id">
                       <td>
                         <div class="ui checkbox">
                           <input class="checkbox-snapshot" type="checkbox"
@@ -164,7 +178,6 @@ export default {
       onShow: function () {
         self.resetMessages();
         self.loadData();
-        $(".checkbox-popup").popup();
       }
     });
 
@@ -196,6 +209,7 @@ export default {
       snapshots_error: null,
       snapshots_validated: 0,
       show_snapshots_validated: false,
+      ignoreErrors: false,
     }
   },
   methods: {
@@ -273,6 +287,19 @@ export default {
               self.environments.add(snapshot.environment)
             })
           })
+
+          // Now that the data is assigned, wait for the DOM to update
+          self.$nextTick(function () {
+            // Re-initialize the checkboxes
+            $('.ui.checkbox').checkbox();
+
+            // Re-initialize the popups
+            $(".checkbox-popup").popup({
+              boundary: '.table-container', // Ensures the popup calculates position within this boundary
+              scrollContext: '.table-container', // Adjusts for scrolling within the container
+            });
+          });
+
           self.loaded()
         })
         .catch(err => {
@@ -294,23 +321,22 @@ export default {
       }
     },
     delete_snapshots(event) {
-      const self = this
+      const self = this;
       this.resetMessages();
-      const $checked_snapshots = $(".checkbox-snapshot:checked")
+      const $checked_snapshots = $(".checkbox-snapshot:checked");
       if ($checked_snapshots.length == 0) {
-        $(event.target).popup("show")
-        return
+        $(event.target).popup("show");
+        return;
       }
 
-      self.loading()
+      self.loading();
 
       const cmd = function () {
-        const data = { snapshots_data: {} };
+        const data = { snapshots_data: {}, ignoreErrors: self.ignoreErrors }; // Include ignoreErrors
         $checked_snapshots.map((_, element) => {
           const name = $(element).data("snapshotName");
           let environment = $(element).data("environment");
 
-          // Handle undefined environment
           if (environment === undefined) {
             environment = "__no_env__";
           }
@@ -321,22 +347,27 @@ export default {
           data.snapshots_data[environment].push(name);
         });
 
-
-        return axios.put(axios.defaults.baseURL + '/delete_snapshots', data)
-      }
+        return axios.put(axios.defaults.baseURL + '/delete_snapshots', data);
+      };
 
       const onSuccess = function (response) {
-        console.log('Snapshots deleted: ' + response.data.result)
-        self.loadData()
-      }
+        console.log('Snapshots deleted: ' + response.data.result);
+        self.loadData();
+
+        // Re-initialize checkboxes after data reload
+        self.$nextTick(() => {
+          $('.ui.checkbox').checkbox();
+        });
+      };
 
       const onError = function (err) {
-        self.loaderror("Error when deleting snapshots", err)
-        console.error('Failed delete snapshots: ' + err)
-      }
+        self.loaderror("Error when deleting snapshots", err);
+        console.error('Failed delete snapshots: ' + err);
+      };
 
-      this.launchAsyncCommand(cmd, onSuccess, onError)
+      this.launchAsyncCommand(cmd, onSuccess, onError);
     },
+
     getBucketName(snapshot_data) {
       if (
         snapshot_data.conf &&
@@ -481,6 +512,7 @@ export default {
   max-height: 60vh;
   overflow-y: auto;
   margin-top: 5px;
+  position: relative;
 }
 
 .cleanup.modal {
@@ -501,5 +533,9 @@ export default {
   background-color: #fff6f6;
   border: 1px solid #e0b4b4;
   border-radius: 5px;
+}
+
+.button-spacing {
+  margin-right: 10px !important;
 }
 </style>
