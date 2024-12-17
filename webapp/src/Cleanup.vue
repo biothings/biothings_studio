@@ -1,5 +1,5 @@
 <template>
-  <div class="ui basic scrolling cleanup modal">
+  <div class="ui basic scrolling cleanup modal cleanup-container">
     <div class="header">
       <i class="trash alternate outline icon"></i> Cleaning up old Hub entities
     </div>
@@ -185,7 +185,7 @@ export default {
     $('.menu .item').tab();
 
     // Initialize dropdowns
-    $('.ui.dropdown').dropdown();
+    $('.cleanup-container .ui.dropdown').dropdown();
 
     // Initialize popup for delete button
     $(".delete-snapshots").popup({
