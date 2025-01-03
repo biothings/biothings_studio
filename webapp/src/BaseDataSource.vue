@@ -23,14 +23,14 @@ export default {
     }
   },
   computed: {
-    validate_status: function () {
-      return this.getStatus('validate')
-    },
     inspect_status: function () {
       return this.getStatus('inspect')
     },
     upload_status: function () {
       return this.getStatus('upload')
+    },
+    validate_status: function () {
+      return this.getStatus('validate')
     },
     download_status: function () {
       if (this.source.download && this.source.download.status) { return this.source.download.status } else { return 'unknown status' }
@@ -54,6 +54,9 @@ export default {
     },
     upload_error: function () {
       return this.getError('upload')
+    },
+    validate_error: function () {
+      return this.getError('validate')
     },
     download_error: function () {
       if (this.source.download && this.source.download.error) { return this.source.download.error }
@@ -133,6 +136,43 @@ export default {
         })
         .catch(err => {
           console.log('Error getting job manager information: ' + err)
+        })
+    },
+    createValidation: function (subsrc = null) {
+      var srcname = this.source.name
+      if (subsrc != null) { srcname += '.' + subsrc } // validate a sub-source only
+      axios.put(axios.defaults.baseURL + `/source/${srcname}/model`)
+        .then(response => {
+          console.log(response.data.result)
+        })
+        .catch(err => {
+          console.log('Error getting job manager information: ' + err)
+        })
+    },
+    validate: function (subsrc = null, model_file = null) {
+      var srcname = this.source.name
+      if (subsrc != null) { srcname += '.' + subsrc } // validate a sub-source only
+      let payload = {};
+      if (model_file && model_file.trim() !== '') {
+        payload.model_file = model_file;
+      }
+      axios.post(axios.defaults.baseURL + `/source/${srcname}/validate`, payload)
+        .then(response => {
+          console.log(response.data.result)
+        })
+        .catch(err => {
+          console.log('Error getting job manager information: ' + err)
+        })
+    },
+    getValidations: function (subsrc = null) {
+      var srcname = this.source.name
+      if (subsrc != null) { srcname += '.' + subsrc } // validate a sub-source only
+      axios.get(axios.defaults.baseURL + `/source/${srcname}/validations`)
+        .then(response => {
+          console.log(response.data.result)
+        })
+        .catch(err => {
+          console.log('Error getting validations information: ' + err)
         })
     },
     unregister: function () {
