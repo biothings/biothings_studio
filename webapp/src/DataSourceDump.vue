@@ -143,9 +143,9 @@ export default {
     dry_run_callback (result) {
         this.dry_run_result = result
         setTimeout(() => {
-            $('.modal.mark_dump_success').modal('show')    
+            $('.modal.mark_dump_success').modal('show')
         }, 0);
-        
+
     },
   }
 }

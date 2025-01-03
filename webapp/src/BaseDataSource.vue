@@ -23,6 +23,9 @@ export default {
     }
   },
   computed: {
+    validate_status: function () {
+      return this.getStatus('validate')
+    },
     inspect_status: function () {
       return this.getStatus('inspect')
     },
@@ -74,7 +77,7 @@ export default {
       var status = 'unknown'
       if (this.source.hasOwnProperty(subkey)) {
         for (var subsrc in this.source[subkey].sources) {
-          if (['failed', 'inspecting', 'uploading'].indexOf(this.source[subkey].sources[subsrc].status) != -1) {
+          if (['failed', 'inspecting', 'uploading', 'validating'].indexOf(this.source[subkey].sources[subsrc].status) != -1) {
             status = this.source[subkey].sources[subsrc].status
             // precedence to these statuses
             break
@@ -111,12 +114,18 @@ export default {
           console.log('Error getting job manager information: ' + err)
         })
     },
-    upload: function (subsrc = null, release = null){
+    upload: function (subsrc = null, release = null, validate = false, generateModel = false) {
       var srcname = this.source.name
       if (subsrc != null) { srcname += '.' + subsrc } // upload a sub-source only
       let payload = {};
       if (release && release.trim() !== '') {
         payload.release = release;
+      }
+      if (validate) {
+        payload.validate = true;
+      }
+      if (generateModel) {
+        payload.generateModel = true;
       }
       axios.put(axios.defaults.baseURL + `/source/${srcname}/upload`, payload)
         .then(response => {
