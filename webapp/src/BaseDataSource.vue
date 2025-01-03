@@ -5,21 +5,22 @@
 import axios from 'axios'
 import bus from './bus.js'
 
-export default {
+export default {
   name: 'base-data-source',
   // Note: we don't declare "source", it must be defined in subclass/mixed
   // (sometimes it's a prop, sometimes it's a data field
-  created () {
+  created() {
     bus.$on('change_source', this.onSourceChanged)
   },
-  beforeDestroy () {
+  beforeDestroy() {
     bus.$off('change_source', this.onSourceChanged)
     $('.ui.basic.unregister.modal').remove()
   },
-  data () {
+  data() {
     return {
       limit_error: null,
-      sample_error: null
+      sample_error: null,
+      validations: {}
     }
   },
   computed: {
@@ -171,6 +172,7 @@ export default {
       axios.get(axios.defaults.baseURL + `/source/${srcname}/validations`)
         .then(response => {
           console.log(response.data.result)
+          this.$set(this.validations, subsrc, response.data.result)
         })
         .catch(err => {
           console.log('Error getting validations information: ' + err)
@@ -197,8 +199,8 @@ export default {
     inspect: function () {
       bus.$emit('do_inspect', ['src', this.source._id])
     },
-    mark_dump_success (dry_run=false, dry_run_callback) {
-      axios.put(axios.defaults.baseURL + `/source/${this.source.name}/mark_dump_success`, {dry_run: dry_run})
+    mark_dump_success(dry_run = false, dry_run_callback) {
+      axios.put(axios.defaults.baseURL + `/source/${this.source.name}/mark_dump_success`, { dry_run: dry_run })
         .then(response => {
           if (dry_run && dry_run_callback) {
             dry_run_callback(response.data.result)
@@ -209,7 +211,7 @@ export default {
           console.log('Error getting job manager information: ' + err)
         })
     },
-    onSourceChanged (_id = null, op = null) {
+    onSourceChanged(_id = null, op = null) {
       // this method acts as a dispatcher, reacting to change_source events, filtering
       // them for the proper source
       // _id null: event containing change about a source but we don't know which one
