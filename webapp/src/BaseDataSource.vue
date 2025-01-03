@@ -103,6 +103,7 @@ export default {
       if (this.download_error) { errs.push('Dump') }
       if (this.upload_error.length) { errs.push('Upload') }
       if (this.inspect_error.length) { errs.push('Inspect') }
+      if (this.validate_error.length) { errs.push('Validate') }
       return errs.join(' - ') + ' error'
     },
     dump: function (release = null, force = null) {
@@ -141,7 +142,7 @@ export default {
     createValidation: function (subsrc = null) {
       var srcname = this.source.name
       if (subsrc != null) { srcname += '.' + subsrc } // validate a sub-source only
-      axios.put(axios.defaults.baseURL + `/source/${srcname}/model`)
+      axios.put(axios.defaults.baseURL + `/source/${srcname}/create_validation`)
         .then(response => {
           console.log(response.data.result)
         })
