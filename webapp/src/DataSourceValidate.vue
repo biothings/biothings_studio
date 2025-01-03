@@ -89,7 +89,47 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="six wide column" v-if="info.uploader">
+                                <div :class="['ui form upload', actionable, subsrc]">
+                                    <div class="fields"
+                                        style="display: flex; justify-content: flex-end; align-items: flex-start;">
+                                        <div class="required field" style="margin-right: 1rem;">
+                                            <label>Select Model</label>
+                                            <div class="ui selection dropdown custom-dropdown-width">
+                                                <input type="hidden" name="modelOption" />
+                                                <i class="dropdown icon"></i>
+                                                <div class="default text">Select Model</div>
+                                                <div class="menu">
+                                                    <div class="item"
+                                                        v-for="modelFile in $parent.validations[subsrc] || []"
+                                                        :key="modelFile" :data-value="modelFile"
+                                                        :class="{ active: selectedModels[subsrc] === modelFile }"
+                                                        @click="setSelectedModel(subsrc, modelFile)">
+                                                        {{ modelFile }}
+                                                        <span v-if="modelFile.replace('_model.py', '') === subsrc"
+                                                            class="ui grey">
+                                                            (default)
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="field" style="display: flex; flex-direction: column;">
+                                            <button class="ui labeled small icon button same-width-btn"
+                                                @click="do_validate(subsrc)">
+                                                <i class="database icon"></i>
+                                                Validate
+                                            </button>
+                                            <button class="ui labeled small icon button same-width-btn"
+                                                @click="do_generate_model(subsrc)" style="margin-top: 0.5rem;">
+                                                <i class="cubes icon"></i>
+                                                Generate Model
+                                            </button>
+                                        </div>
+                                    </div>
 
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -149,24 +189,33 @@
                                         style="display: flex; justify-content: flex-end; align-items: flex-start;">
                                         <div class="required field" style="margin-right: 1rem;">
                                             <label>Select Model</label>
-                                            <div class="ui selection dropdown">
+                                            <div class="ui selection dropdown custom-dropdown-width">
                                                 <input type="hidden" name="modelOption" />
                                                 <i class="dropdown icon"></i>
                                                 <div class="default text">Select Model</div>
                                                 <div class="menu">
+                                                    <div class="item"
+                                                        v-for="modelFile in $parent.validations[subsrc] || []"
+                                                        :key="modelFile" :data-value="modelFile"
+                                                        :class="{ active: selectedModels[subsrc] === modelFile }"
+                                                        @click="setSelectedModel(subsrc, modelFile)">
+                                                        {{ modelFile }}
+                                                        <span v-if="modelFile.replace('_model.py', '') === subsrc"
+                                                            class="ui grey">
+                                                            (default)
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="field" style="display: flex; flex-direction: column;">
-                                            <button :class="[
-                                                'ui labeled small icon button same-width-btn',
-                                                info.status === 'uploading' ? 'disabled' : ''
-                                            ]" @click="do_upload(subsrc, release)">
+                                            <button class="ui labeled small icon button same-width-btn"
+                                                @click="do_validate(subsrc)">
                                                 <i class="database icon"></i>
                                                 Validate
                                             </button>
                                             <button class="ui labeled small icon button same-width-btn"
-                                                @click="do_generate_model(subsrc, release)" style="margin-top: 0.5rem;">
+                                                @click="do_generate_model(subsrc)" style="margin-top: 0.5rem;">
                                                 <i class="cubes icon"></i>
                                                 Generate Model
                                             </button>
@@ -175,8 +224,6 @@
 
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
                 </div>
@@ -191,7 +238,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 import TracebackViewer from './components/TracebackViewer.vue'
@@ -204,6 +250,11 @@ export default {
     mixins: [AsyncCommandLauncher, Loader, Actionable],
     mounted() {
         this.setup()
+        if (this.source.upload && this.source.upload.sources) {
+            Object.keys(this.source.upload.sources).forEach(subsrc => {
+                this.$parent.getValidations(subsrc)
+            })
+        }
     },
     components: {
         TracebackViewer,
@@ -211,34 +262,25 @@ export default {
     },
     data() {
         return {
-            metadataCompareData: [],
-            release: null
+            release: null,
+            selectedModels: {},
         }
     },
     methods: {
         setup: function () {
-            const self = this
             $('.menu .item').tab()
         },
-        do_upload: function (subsrc = null, release = null) {
-            return this.$parent.upload(subsrc = subsrc, release = release)
+        setSelectedModel(subsrc, modelFile) {
+            this.$set(this.selectedModels, subsrc, modelFile)
         },
-        reset: function (subsrc) {
-            var self = this
-            self.loading()
-            var data = {
-                name: self.source._id,
-                key: 'upload',
-                subkey: subsrc
-            }
-            axios.post(axios.defaults.baseURL + `/source/${self.source._id}/reset`, data)
-                .then(response => {
-                    self.loaded()
-                })
-                .catch(err => {
-                    self.loaderror(err)
-                })
-        }
+        do_generate_model: function (subsrc = null) {
+            console.log('do_generate_model', subsrc)
+            return this.$parent.createValidation(subsrc = subsrc)
+        },
+        do_validate(subsrc) {
+            const model = this.selectedModels[subsrc] || null
+            return this.$parent.validate(subsrc, model)
+        },
     }
 }
 </script>
@@ -270,6 +312,18 @@ export default {
 }
 
 .no-data {
-    min-width: 400px
+    min-width: 200px
+}
+
+.custom-dropdown-width {
+    min-width: 200px !important;
+}
+
+.custom-dropdown-width .menu {
+    min-width: 200px !important;
+}
+
+.custom-dropdown-width .menu .item {
+    min-width: 200px !important;
 }
 </style>
