@@ -79,7 +79,7 @@
                 v-if="source.upload">Uploader</a>
               <a class="blue item" data-tab="plugin" v-if="source.data_plugin">Plugin</a>
               <a class="blue item" data-tab="mapping">Mapping</a>
-              <a class="blue item" data-tab="validate">Validate</a>
+              <a class="blue item" data-tab="validate">Validation</a>
               <a class="blue item" data-tab="quick_index">Quick Index</a>
             </div>
             <div class="ui bottom attached tab segment active" data-tab="dump" v-if="source.download">
@@ -97,9 +97,6 @@
             </div>
             <div class="ui bottom attached tab segment" data-tab="plugin" v-if="source.data_plugin">
               <data-source-plugin :source="source"></data-source-plugin>
-            </div>
-            <div class="ui bottom attached tab segment" data-tab="mapping">
-              <data-source-mapping :maps="maps" :_id="_id" :source="source"></data-source-mapping>
             </div>
             <div class="ui bottom attached tab segment" data-tab="mapping">
               <data-source-mapping :maps="maps" :_id="_id" :source="source"></data-source-mapping>

@@ -143,12 +143,15 @@ export default {
     createValidation: function (subsrc = null) {
       var srcname = this.source.name
       if (subsrc != null) { srcname += '.' + subsrc } // validate a sub-source only
-      axios.put(axios.defaults.baseURL + `/source/${srcname}/create_validation`)
+      return axios.put(axios.defaults.baseURL + `/source/${srcname}/create_validation`)
         .then(response => {
-          console.log(response.data.result)
+          // console.log(response.data.result)
         })
         .catch(err => {
           console.log('Error getting job manager information: ' + err)
+        })
+        .finally(() => {
+          this.getValidations(subsrc)
         })
     },
     validate: function (subsrc = null, model_file = null) {
@@ -160,7 +163,7 @@ export default {
       }
       axios.post(axios.defaults.baseURL + `/source/${srcname}/validate`, payload)
         .then(response => {
-          console.log(response.data.result)
+          // console.log(response.data.result)
         })
         .catch(err => {
           console.log('Error getting job manager information: ' + err)
@@ -171,7 +174,7 @@ export default {
       if (subsrc != null) { srcname += '.' + subsrc } // validate a sub-source only
       axios.get(axios.defaults.baseURL + `/source/${srcname}/validations`)
         .then(response => {
-          console.log(response.data.result)
+          // console.log(response.data.result)
           this.$set(this.validations, subsrc, response.data.result)
         })
         .catch(err => {

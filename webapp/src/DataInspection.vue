@@ -2,7 +2,7 @@
 
   <div class="ui tab" :data-tab="source_name + '-type-stats'">
     <p>
-      This is the field type and stats for <b>{{page_type}}</b>.
+      This is the field type and stats for <b>{{ page_type }}</b>.
     </p>
     <p>
       It provides a summary of the data structure,
@@ -34,12 +34,8 @@
         <tbody>
           <tr v-for="row in inspection_data">
             <td>
-              <div v-if="hasInspectionFieldValidationWarnings(row)"
-                class="tooltip"
-                data-position="top left"
-                data-variation="very wide"
-                :data-html="formatInspectionValidationTooltipMessage(row.warnings)"
-              >
+              <div v-if="hasInspectionFieldValidationWarnings(row)" class="tooltip" data-position="top left"
+                data-variation="very wide" :data-html="formatInspectionValidationTooltipMessage(row.warnings)">
                 <span class="ui text warning">{{ row.field_name }} <i class="exclamation circle icon"></i></span>
               </div>
               <div v-else>{{ row.field_name }}</div>
@@ -76,10 +72,10 @@ export default {
     'source_name',
     'source_data',
   ],
-  mounted () {
+  mounted() {
     this.fetch_flatten_inspection_data()
   },
-  data () {
+  data() {
     return {
       inspection_data: [],
     }
@@ -103,29 +99,29 @@ export default {
       }
 
       axios.put(axios.defaults.baseURL + '/flatten_inspection_data', data)
-      .then(response => {
-        console.log(response.data.result)
-        if (response.data.result?.[self.source_name]) {
-          const inspection_data_by_modes = response.data.result[self.source_name]
-          self.inspection_data = inspection_data_by_modes.type || []
-          if (Object.keys(inspection_data_by_modes.stats).length > 1) {
-            self.inspection_data = inspection_data_by_modes.stats
+        .then(response => {
+          // console.log(response.data.result)
+          if (response.data.result?.[self.source_name]) {
+            const inspection_data_by_modes = response.data.result[self.source_name]
+            self.inspection_data = inspection_data_by_modes.type || []
+            if (Object.keys(inspection_data_by_modes.stats).length > 1) {
+              self.inspection_data = inspection_data_by_modes.stats
+            }
           }
-        }
-        else {
-          self.inspection_data = []
-        }
-        setTimeout(() => {$('.tooltip').popup()}, 0)
-      })
-      .catch(err => {
-        console.log('Error fetching flatten inspection data: ' + err)
-      })
+          else {
+            self.inspection_data = []
+          }
+          setTimeout(() => { $('.tooltip').popup() }, 0)
+        })
+        .catch(err => {
+          console.log('Error fetching flatten inspection data: ' + err)
+        })
     },
     hasInspectionFieldValidationWarnings: function (field_inspection) {
       return field_inspection.warnings.length > 0
     },
     hasInspectionValidationWarnings: function (inspection_data) {
-      for (const field_inspection of inspection_data) {        
+      for (const field_inspection of inspection_data) {
         if (this.hasInspectionFieldValidationWarnings(field_inspection)) {
           return true
         }
@@ -151,7 +147,7 @@ export default {
 .sortable .row {
   padding-top: 0.2rem;
   padding-bottom: 0.2rem;
-  border: 1px solid rgba(34,36,38,.1);
+  border: 1px solid rgba(34, 36, 38, .1);
 }
 
 .sortable .column {
