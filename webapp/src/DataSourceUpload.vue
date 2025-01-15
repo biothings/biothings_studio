@@ -84,7 +84,7 @@
                                     <div class="ten wide field">
                                         <div class="ui checkbox">
                                             <input type="checkbox" tabindex="0" class="hidden" v-model="validate">
-                                            <label>Validate</label>
+                                            <label>Validate After Upload</label>
                                         </div>
                                     </div>
                                     <div class="required six wide field">
