@@ -91,8 +91,7 @@
               data-tab="upload" v-if="source.upload">
               <data-source-upload :source="source"></data-source-upload>
             </div>
-            <div :class="['ui bottom attached tab segment', source.download == undefined ? 'active' : '']"
-              data-tab="validate" v-if="source.upload">
+            <div class="ui bottom attached tab segment" data-tab="validate" v-if="source.upload">
               <data-source-validate :source="source"></data-source-validate>
             </div>
             <div class="ui bottom attached tab segment" data-tab="plugin" v-if="source.data_plugin">
