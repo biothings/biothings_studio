@@ -137,18 +137,18 @@ export default {
           console.log('Error getting job manager information: ' + err)
         })
     },
-    createValidation: function (subsrc = null) {
+    createValidation(subsrc = null) {
       var srcname = this.source.name
-      if (subsrc != null) { srcname += '.' + subsrc } // validate a sub-source only
+      if (subsrc != null) srcname += '.' + subsrc
       return axios.put(axios.defaults.baseURL + `/source/${srcname}/create_validation`)
         .then(response => {
-          // console.log(response.data.result)
+          // Step 1: The create request finished
+          // Step 2: Now fetch the updated validations
+          return this.getValidations(subsrc)
         })
         .catch(err => {
-          console.log('Error getting job manager information: ' + err)
-        })
-        .finally(() => {
-          this.getValidations(subsrc)
+          console.error('Error creating validation:', err)
+          throw err
         })
     },
     validate: function (subsrc = null, model_file = null) {

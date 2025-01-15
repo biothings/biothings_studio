@@ -319,13 +319,12 @@ export default {
         },
         onClickGenerateModel(subsrc) {
             this.$set(this.isGeneratingModel, subsrc, true)
-            this.do_generate_model(subsrc)
-                .then(() => {
+            this.$parent.createValidation(subsrc)
+                .then(modelList => {
+                    // modelList = this.$parent.validations[subsrc] array
                     const newModel = `${subsrc}_model.py`
-                    const modelList = this.$parent.validations[subsrc] || []
                     if (modelList.includes(newModel)) {
                         this.setSelectedModel(subsrc, newModel)
-
                         this.$nextTick(() => {
                             $(this.$refs['dropdown_' + subsrc]).dropdown('set selected', newModel)
                         })
@@ -336,8 +335,8 @@ export default {
                 })
                 .finally(() => {
                     this.$set(this.isGeneratingModel, subsrc, false)
-                    this.$parent.getValidations(subsrc)
                 })
+
         },
         isSourceValidating(subsrc) {
             return (
