@@ -273,13 +273,24 @@ export default {
     props: ['source'],
     mixins: [AsyncCommandLauncher, Loader, Actionable],
     mounted() {
-        this.setup()
+        this.setup();
         if (this.source.upload && this.source.upload.sources) {
             Object.keys(this.source.upload.sources).forEach(subsrc => {
-                this.$parent.getValidations(subsrc)
-            })
+                console.log('Checking subsrc:', subsrc);
+                // Call the parent’s method that retrieves model files for this subsrc
+                this.$parent.getValidations(subsrc).then((modelList) => {
+                    // modelList is now `response.data.result`
+                    const defaultModel = modelList.find(m => m.replace('_model.py', '') === subsrc)
+                    if (defaultModel) {
+                        this.setSelectedModel(subsrc, defaultModel)
+                        this.$nextTick(() => {
+                            $(this.$refs['dropdown_' + subsrc]).dropdown('set selected', defaultModel)
+                        })
+                    }
+                })
+            });
         }
-        console.log('Component mounted, checking subsrc statuses...')
+        console.log('Component mounted, checking subsrc statuses...');
     },
     components: {
         TracebackViewer,
