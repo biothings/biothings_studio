@@ -119,7 +119,7 @@ export default {
           console.log('Error getting job manager information: ' + err)
         })
     },
-    upload: function (subsrc = null, release = null, validate = false, generateModel = false) {
+    upload: function (subsrc = null, release = null, validate = false) {
       var srcname = this.source.name
       if (subsrc != null) { srcname += '.' + subsrc } // upload a sub-source only
       let payload = {};
@@ -128,9 +128,6 @@ export default {
       }
       if (validate) {
         payload.validate = true;
-      }
-      if (generateModel) {
-        payload.generateModel = true;
       }
       axios.put(axios.defaults.baseURL + `/source/${srcname}/upload`, payload)
         .then(response => {

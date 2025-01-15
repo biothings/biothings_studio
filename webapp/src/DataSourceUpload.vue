@@ -87,12 +87,6 @@
                                             <label>Validate</label>
                                         </div>
                                     </div>
-                                    <div class="ten wide field">
-                                        <div class="ui checkbox">
-                                            <input type="checkbox" tabindex="0" class="hidden" v-model="generateModel">
-                                            <label>Generate Model</label>
-                                        </div>
-                                    </div>
                                     <div class="required six wide field">
                                         <button :class="['ui labeled small icon button',info.status == 'uploading' ? 'disabled' : '']" @click="do_upload(subsrc, release)">
                                             <i class="database icon"></i>
@@ -177,7 +171,6 @@ export default {
     return {
         metadataCompareData: [],
         validate: false,
-        generateModel: false
     }
   },
   methods: {
@@ -189,11 +182,8 @@ export default {
         self.do_update_source_meta(subsrc, false)
       })
     },
-    do_upload: function (subsrc = null, release = null, validate = false, generateModel = false) {
-      console.log(this.validate);
-      console.log(this.generateModel);
-      console.log(subsrc);
-      return this.$parent.upload(subsrc=subsrc, release=release, validate=this.validate, generateModel=this.generateModel)
+    do_upload: function (subsrc = null, release = null, validate = false) {
+      return this.$parent.upload(subsrc=subsrc, release=release, validate=this.validate)
     },
     do_update_source_meta: function(subsrc=null, dry=true) {
         const self = this
