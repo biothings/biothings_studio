@@ -93,6 +93,10 @@
                                                 </div>
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <td>Model File</td>
+                                            <td>{{ source.validate.sources[subsrc].model_file }}</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -193,6 +197,10 @@
                                         </tr>
                                         <tr>
                                             <td class="ui grey">Uploader</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ui grey">Model File</td>
                                             <td></td>
                                         </tr>
                                     </tbody>
