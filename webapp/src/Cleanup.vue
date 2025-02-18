@@ -107,12 +107,11 @@
                         <label class="pl-0"></label>
                       </div>
                     </th>
-                    <th>Name</th>
-                    <th>Build Name</th>
+                    <!-- Combined Name / Index Name column -->
+                    <th>Name / Index Name</th>
                     <th>S3 Path</th>
                     <th>Environment</th>
                     <th>Indexer Env</th>
-                    <th>Index Name</th>
                     <th class="min-width-9">Created At</th>
                   </tr>
                 </thead>
@@ -137,12 +136,16 @@
                           <label class="pl-0"></label>
                         </div>
                       </td>
-                      <td>{{ snapshot_data._id }}</td>
-                      <td>{{ snapshot_data.build_name }}</td>
-                      <td>{{ getBucketName(snapshot_data) }}</td>
+                      <!-- Combined Name / Index Name -->
+                      <td>{{ getCombinedName(snapshot_data) }}</td>
+                      <!-- Hyperlinked S3 Path -->
+                      <td>
+                        <a :href="getS3Url(snapshot_data)" target="_blank">
+                          {{ getBucketName(snapshot_data) }}
+                        </a>
+                      </td>
                       <td>{{ snapshot_data.environment }}</td>
                       <td>{{ snapshot_data.indexer_env || snapshot_data.conf.indexer.env }}</td>
-                      <td>{{ snapshot_data.index_name }}</td>
                       <td class="min-width-9">{{ snapshot_data.created_at | moment('MMM Do YYYY, h:mm:ss a') }}</td>
                     </tr>
                   </template>
@@ -161,7 +164,6 @@
 </template>
 
 <script>
-
 import axios from 'axios'
 import Actionable from './Actionable.vue'
 import AsyncCommandLauncher from './AsyncCommandLauncher.vue'
@@ -194,7 +196,6 @@ export default {
 
     // Initialize checkboxes
     $('.ui.checkbox').checkbox();
-
   },
   data() {
     return {
@@ -365,7 +366,7 @@ export default {
 
       this.launchAsyncCommand(cmd, onSuccess, onError);
     },
-
+    // Returns the S3 bucket path (bucket + base_path)
     getBucketName(snapshot_data) {
       if (
         snapshot_data.conf &&
@@ -375,6 +376,27 @@ export default {
       ) {
         return snapshot_data.conf.repository.settings.bucket + '/' + snapshot_data.conf.repository.settings.base_path;
       }
+      return '';
+    },
+    // Returns AWS URL based on the S3 bucket info.
+    getS3Url(snapshot_data) {
+      const settings = snapshot_data.conf?.repository?.settings;
+      if (settings && settings.bucket && settings.region && settings.base_path) {
+        const region = settings.region;
+        const bucket = settings.bucket;
+        const base_path = settings.base_path;
+        return `https://${region}.console.aws.amazon.com/s3/buckets/${bucket}?region=${region}&bucketType=general&prefix=${base_path}/&showversions=false`;
+      }
+      return '#';
+    },
+    // Combines the snapshot name (_id) and the index_name.
+    getCombinedName(snapshot_data) {
+      const name = snapshot_data._id;
+      const indexName = snapshot_data.index_name;
+      if (!indexName || name === indexName) {
+        return name;
+      }
+      return `${name} / ${indexName}`;
     },
     validate_snapshots(event) {
       const self = this;
