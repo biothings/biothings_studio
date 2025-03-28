@@ -256,7 +256,6 @@ export default {
       this.loading()
       axios.get(axios.defaults.baseURL + `/source/${this._id}`)
         .then(response => {
-          // console.log(response.data.result)
           self.source = response.data.result
           try {
             self.dumper_schedule = self.source.download.dumper.schedule

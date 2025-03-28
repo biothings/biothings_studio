@@ -100,10 +100,11 @@
                                     </div>
 
                                     <div class="field">
-                                        <div class="ui checkbox" :class="{ disabled: shouldDisableValidate(info) }">
+                                        <div class="ui checkbox"
+                                            :class="{ disabled: shouldDisableValidate(info, subsrc) }">
                                             <input type="checkbox" class="hidden"
-                                                :disabled="shouldDisableValidate(info)"
-                                                :checked="shouldDisableValidate(info) || validate"
+                                                :disabled="shouldDisableValidate(info, subsrc)"
+                                                :checked="shouldDisableValidate(info, subsrc) || validate"
                                                 @change="validate = $event.target.checked" />
                                             <label>Validate After Upload</label>
                                         </div>
@@ -197,14 +198,6 @@ export default {
             validate: false,
         }
     },
-    computed: {
-        getUploadValidations() {
-            if (!this.config || !this.config.Misc) return []
-            // find the one with name === "UPLOAD_VALIDATIONS"
-            const param = this.config.Misc.find(p => p.name === 'UPLOAD_VALIDATIONS')
-            return param && Array.isArray(param.value) ? param.value : []
-        }
-    },
     methods: {
         setup: function () {
             const self = this
@@ -275,20 +268,14 @@ export default {
                     self.loaderror(err)
                 })
         },
-        shouldDisableValidate(info) {
+        shouldDisableValidate(info, name) {
             if (!info.uploader) return false
-            console.log(Vue.config.hub_config)
-            const hubconfig = Vue.config.hub_config  // <--- read from the global
-            console.log(hubconfig)
-            if (!hubconfig) return false
-            console.log(hubconfig.UPLOAD_VALIDATIONS)
+            const auto_validate = this.source.auto_validate
             let validations = []
-            // Because hubconfig is { "UPLOAD_VALIDATIONS": { value: [...] } } at top-level or so
-            if (hubconfig.UPLOAD_VALIDATIONS && hubconfig.UPLOAD_VALIDATIONS.value) {
-                validations = hubconfig.UPLOAD_VALIDATIONS.value
-                console.log(validations)
+            if (auto_validate) {
+                validations = Object.keys(auto_validate).filter(key => auto_validate[key])
             }
-            return validations.includes(info.uploader.name)
+            return validations.includes(name)
         }
 
     }

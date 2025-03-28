@@ -284,7 +284,6 @@ export default {
         this.setup();
         if (this.source.upload && this.source.upload.sources) {
             Object.keys(this.source.upload.sources).forEach(subsrc => {
-                console.log('Checking subsrc:', subsrc);
                 // Call the parent’s method that retrieves model files for this subsrc
                 this.$parent.getValidations(subsrc).then((modelList) => {
                     // modelList is now `response.data.result`
@@ -298,7 +297,6 @@ export default {
                 })
             });
         }
-        console.log('Component mounted, checking subsrc statuses...');
     },
     components: {
         TracebackViewer,

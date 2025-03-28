@@ -125,7 +125,6 @@ export default {
     mounted() {
         $('select.dropdown').dropdown()
         $('.plugin-popup').popup()
-        console.log(this.source)
     },
     data() {
         return {
@@ -146,7 +145,6 @@ export default {
             return this.dump()
         },
         do_upload: function () {
-            console.log('do_upload')
             // just "eat" mouse event to clean final call
             return this.upload()
         }
