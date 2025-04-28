@@ -296,10 +296,6 @@ export default {
     margin: 0em !important;
 }
 
-/* .update-source-meta {
-    margin-top: 2rem;
-} */
-
 #metadata-confirming h3 {
     text-transform: capitalize;
 }

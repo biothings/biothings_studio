@@ -392,18 +392,12 @@ export default {
 }
 
 .custom-dropdown-width .menu {
-    /* keep a min-width, but allow expansion if needed */
     min-width: 200px !important;
 }
 
-/* Let the text wrap within dropdown items */
 .custom-dropdown-width .menu .item {
-    /* Make sure whitespace can wrap */
     white-space: normal !important;
-    /* Handle breaking long words/strings */
     word-wrap: break-word !important;
     overflow-wrap: anywhere !important;
-    /* optionally set a max-width if you want to prevent it from becoming too wide */
-    /* max-width: 400px !important; */
 }
 </style>
