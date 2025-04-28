@@ -1,20 +1,20 @@
 <template>
     <div class="ui two grid">
         <div class="row">
-
             <div class="ten wide column">
                 <table class="ui small very compact definition collapsing table">
                     <tbody>
                         <tr>
-                            <td >Release</td>
+                            <td>Release</td>
                             <td>
-                                {{source.download.release}}
+                                {{ source.download.release }}
                             </td>
                         </tr>
                         <tr>
-                            <td >Status</td>
+                            <td>Status</td>
                             <td>
-                                <i :class="source.download.status == 'failed' ? 'red' : 'green'">{{source.download.status}}</i>
+                                <i :class="source.download.status == 'failed' ? 'red' : 'green'">{{
+                                    source.download.status }}</i>
                             </td>
                         </tr>
                         <tr>
@@ -23,28 +23,32 @@
                                 Data folder
                             </td>
                             <td>
-                                <a v-if="source.download.data_folder" :href="source.download.data_folder | replace('/data/biothings_studio','')">{{ source.download.data_folder }}</a>
+                                <a v-if="source.download.data_folder"
+                                    :href="source.download.data_folder | replace('/data/biothings_studio', '')">{{
+                                        source.download.data_folder }}</a>
                             </td>
                         </tr>
                         <tr v-if="source.download.error">
-                            <td >Error</td>
+                            <td>Error</td>
                             <td>
-                                <div class="error-message red">{{source.download.error}}</div>
+                                <div class="error-message red">{{ source.download.error }}</div>
                                 <TracebackViewer :source="source"></TracebackViewer>
                             </td>
                         </tr>
                         <tr>
-                            <td >Last download</td>
-                            <td>{{source.download.started_at}} <i v-if="source.download.started_at">({{source.download.started_at | moment("from", "now")}})</i></td>
+                            <td>Last download</td>
+                            <td>{{ source.download.started_at }} <i v-if="source.download.started_at">({{
+                                source.download.started_at | moment("from",
+                                    "now") }})</i></td>
                         </tr>
                         <tr>
-                            <td >Duration</td>
-                            <td>{{source.download.time}}</td>
+                            <td>Duration</td>
+                            <td>{{ source.download.time }}</td>
                         </tr>
                         <tr>
                             <td class="ui grey">Dumper</td>
                             <td>
-                                {{source.download.dumper.name}}
+                                {{ source.download.dumper.name }}
                                 <span v-if="source.download.dumper.manual">(manual)</span>
                             </td>
                         </tr>
@@ -52,7 +56,10 @@
                 </table>
             </div>
             <div class="six wide column">
-                <div :class="['ui dump form',source._id, actionable]">
+                <div v-if="source.disabled" class="ui warning message">
+                    This dumper has been disabled, no action can be performed.
+                </div>
+                <div :class="['ui dump form', source._id, actionable]">
                     <div class="fields">
                         <div class="ten wide field">
                             <div class="ui checkbox">
@@ -61,11 +68,16 @@
                             </div>
                         </div>
                         <div class="required six wide field">
-                            <button :class="['ui labeled small icon button', $parent.download_status == 'downloading' ? 'disabled' : '']" @click="do_dump();">
+                            <button
+                                :class="['ui labeled small icon button', ($parent.download_status === 'downloading' || source.disabled) ? 'disabled' : '']"
+                                :disabled="source.disabled || $parent.download_status === 'downloading'"
+                                @click="do_dump()">
                                 <i class="download cloud icon"></i>
                                 Dump
                             </button>
-                            <button :class="['ui labeled small icon button teal mark-dump-success', $parent.download_status == 'downloading' ? 'disabled' : '']" @click="$event => show_mark_dump_success_modal()">
+                            <button
+                                :class="['ui labeled small icon button teal mark-dump-success', $parent.download_status == 'downloading' ? 'disabled' : '']"
+                                @click="$event => show_mark_dump_success_modal()">
                                 <i class="download cloud icon"></i>
                                 Mark dump success
                             </button>
@@ -81,7 +93,8 @@
             </div> -->
             <div class="content">
                 <p>Are you sure you want to mark the datasource as dump successful?</p>
-                <p>You can tick on the below checkbox to see what will be updated before actually update to the database</p>
+                <p>You can tick on the below checkbox to see what will be updated before actually update to the database
+                </p>
                 <div class="ui checkbox inverted">
                     <input type="checkbox" name="dry_run" tabindex="0" class="hidden" checked="checked">
                     <label>Dry run?</label>
@@ -89,7 +102,7 @@
 
                 <div class="dry-run-result-wrapper" v-if="dry_run_result">
                     This is the data will be stored when mark success.
-                    <pre class="dry-run-result">{{ JSON.stringify(dry_run_result, null, space=2) }}</pre>
+                    <pre class="dry-run-result">{{ JSON.stringify(dry_run_result, null, space = 2) }}</pre>
                 </div>
             </div>
             <div class="actions">
@@ -143,9 +156,9 @@ export default {
     dry_run_callback (result) {
         this.dry_run_result = result
         setTimeout(() => {
-            $('.modal.mark_dump_success').modal('show')    
+            $('.modal.mark_dump_success').modal('show')
         }, 0);
-        
+
     },
   }
 }
