@@ -44,7 +44,6 @@ export default {
   },
   beforeDestroy () {
     bus.$off('change_command', this.onCommandChanged)
-    $('.ui.basic.unregister.modal').remove()
   },
   ready () {
     console.log('command item ready')
