@@ -50,38 +50,48 @@
                             <td>
                                 {{ source.download.dumper.name }}
                                 <span v-if="source.download.dumper.manual">(manual)</span>
+                                <span v-if="source.download.dumper.disabled"
+                                    style="color: red; margin-left: 5px;">(Disabled)</span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             <div class="six wide column">
-                <div v-if="source.disabled" class="ui warning message">
-                    This dumper has been disabled, no action can be performed.
+                <div v-if="isDumperDisabled" class="ui red tiny message mb-1">
+                    <i class="ban icon"></i>
+                    This plugin’s dumper has been disabled.
                 </div>
-                <div :class="['ui dump form', source._id, actionable]">
-                    <div class="fields">
-                        <div class="ten wide field">
+                <div :class="['ui form dump', actionable, source._id]">
+                    <div class="inline fields">
+                        <div class="field">
+                            <div class="ui button-wrapper"
+                                :data-tooltip="isDumperDisabled ? 'Dumper is disabled' : 'Download data'"
+                                data-position="top center">
+                                <button class="ui labeled small icon button"
+                                    :class="{ disabled: isDumperDisabled || $parent.download_status === 'downloading' }"
+                                    :disabled="isDumperDisabled || $parent.download_status === 'downloading'"
+                                    @click="!isDumperDisabled && do_dump()">
+                                    <i class="download cloud icon"></i>
+                                    Dump
+                                </button>
+                            </div>
+                        </div>
+                        <div class="field">
                             <div class="ui checkbox">
-                                <input type="checkbox" tabindex="0" class="hidden" id="force">
+                                <input type="checkbox" name="force" tabindex="0" class="hidden" id="force" />
                                 <label>Bypass check for new release availability, and force dump</label>
                             </div>
                         </div>
-                        <div class="required six wide field">
-                            <button
-                                :class="['ui labeled small icon button', ($parent.download_status === 'downloading' || source.disabled) ? 'disabled' : '']"
-                                :disabled="source.disabled || $parent.download_status === 'downloading'"
-                                @click="do_dump()">
-                                <i class="download cloud icon"></i>
-                                Dump
-                            </button>
-                            <button
-                                :class="['ui labeled small icon button teal mark-dump-success', $parent.download_status == 'downloading' ? 'disabled' : '']"
-                                @click="$event => show_mark_dump_success_modal()">
-                                <i class="download cloud icon"></i>
-                                Mark dump success
-                            </button>
-                        </div>
+
+                    </div>
+                    <div class="field">
+                        <button class="ui labeled small icon button teal mark-dump-success"
+                            :class="{ disabled: $parent.download_status === 'downloading' }"
+                            @click="show_mark_dump_success_modal()">
+                            <i class="download cloud icon"></i>
+                            Mark dump success
+                        </button>
                     </div>
                 </div>
             </div>
@@ -123,44 +133,51 @@
 import Actionable from './Actionable.vue'
 import TracebackViewer from './components/TracebackViewer.vue'
 
-export default {
-  name: 'data-source-dump',
-  props: ['source'],
-  data () {
-    return {
-      dry_run_result: null,
-    }
-  },
-  mounted () {
-    $('.ui.checkbox')
-      .checkbox()
-  },
-  mixins: [Actionable],
-  components: { TracebackViewer },
-  methods: {
-    do_dump () {
-      var field = $(`.ui.dump.form.${this.source._id}`).form('get field', 'force')
-      var force = null
-      if (field) { force = field.is(':checked') }
-      console.log(force)
-      return this.$parent.dump(null, force)
+export default {
+    name: 'data-source-dump',
+    props: ['source'],
+    data() {
+        return {
+            dry_run_result: null,
+        }
     },
-    show_mark_dump_success_modal () {
-        $('.modal.mark_dump_success').modal('show')
+    mounted() {
+        $('.ui.checkbox')
+            .checkbox()
     },
-    do_mark_success () {
-        const dry_run = $(".modal.mark_dump_success [name=dry_run]").is(":checked")
-        this.dry_run_result = null
-        return this.$parent.mark_dump_success(dry_run, this.dry_run_callback)
+    mixins: [Actionable],
+    components: { TracebackViewer },
+    computed: {
+        isDumperDisabled() {
+            return Boolean(
+                this.source?.download?.dumper?.disabled
+            )
+        }
     },
-    dry_run_callback (result) {
-        this.dry_run_result = result
-        setTimeout(() => {
+    methods: {
+        do_dump() {
+            var field = $(`.ui.dump.form.${this.source._id}`).form('get field', 'force')
+            var force = null
+            if (field) { force = field.is(':checked') }
+            console.log(force)
+            return this.$parent.dump(null, force)
+        },
+        show_mark_dump_success_modal() {
             $('.modal.mark_dump_success').modal('show')
-        }, 0);
+        },
+        do_mark_success() {
+            const dry_run = $(".modal.mark_dump_success [name=dry_run]").is(":checked")
+            this.dry_run_result = null
+            return this.$parent.mark_dump_success(dry_run, this.dry_run_callback)
+        },
+        dry_run_callback(result) {
+            this.dry_run_result = result
+            setTimeout(() => {
+                $('.modal.mark_dump_success').modal('show')
+            }, 0);
 
-    },
-  }
+        },
+    }
 }
 </script>
 

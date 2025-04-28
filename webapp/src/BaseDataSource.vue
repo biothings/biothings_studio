@@ -14,7 +14,6 @@ export default {
   },
   beforeDestroy() {
     bus.$off('change_source', this.onSourceChanged)
-    $('.ui.basic.unregister.modal').remove()
   },
   data() {
     return {
