@@ -129,7 +129,12 @@
             </div>
             <div class="actions">
                 <div class="ui red basic cancel inverted button">
-                    @@ -104,72 +129,72 @@
+                    <i class="remove icon"></i>
+                    No
+                </div>
+                <div class="ui green ok inverted button" :id="source.name + '_unregister_yes'">
+                    <i class="checkmark icon"></i>
+                    Yes
                 </div>
             </div>
         </div>
