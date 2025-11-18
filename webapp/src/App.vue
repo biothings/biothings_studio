@@ -2,59 +2,56 @@
   <div id="app" class="m-0">
     <!--🌈🌈 NAV 🌈🌈-->
     <div class="ui pointing inverted menu br-0 m-0 flex-wrap flex-end">
-      <NavBar
-      :menu="menu"
-      :conn="conn"
-      :current_studio_version="current_studio_version"
-      :readonly_mode="readonly_mode"
-      :readonly_switch="readonly_switch"
-      :switchReadOnly="switchReadOnly"
-      ></NavBar>
+      <NavBar :menu="menu" :conn="conn" :current_studio_version="current_studio_version" :readonly_mode="readonly_mode"
+        :readonly_switch="readonly_switch" :switchReadOnly="switchReadOnly"></NavBar>
       <div class="item m-auto">
         <div data-tooltip="Quick Search" data-position="bottom center">
           <button class="mini circular ui icon button" @click="openQuickSearch"><i class="search icon"></i></button>
         </div>
 
         <div data-tooltip="Cleanup" data-position="bottom center">
-          <button class="mini circular ui icon button" @click="openCleanup"><i class="trash alternate outline icon"></i></button>
+          <button class="mini circular ui icon button" @click="openCleanup"><i
+              class="trash alternate outline icon"></i></button>
         </div>
 
         <div v-if="needs_upgrade">
-            <!-- <button class="mini circular ui icon button" @click="showUpgrades()" data-tooltip="Studio Upgrade Available" data-position="bottom center">
+          <!-- <button class="mini circular ui icon button" @click="showUpgrades()" data-tooltip="Studio Upgrade Available" data-position="bottom center">
                 <b class="upgrade">Upgrade</b>
             </button> -->
-            <div class="ui vertical animated mini circular button pointer" tabindex="0" @click="showUpgrades()" data-tooltip="Studio Upgrade Available" data-position="bottom center">
-              <div class="visible content">
-                <i class="wrench icon upgrade"></i>
-              </div>
-              <div class="hidden content">
-                Upgrade
-              </div>
+          <div class="ui vertical animated mini circular button pointer" tabindex="0" @click="showUpgrades()"
+            data-tooltip="Studio Upgrade Available" data-position="bottom center">
+            <div class="visible content">
+              <i class="wrench icon upgrade"></i>
             </div>
+            <div class="hidden content">
+              Upgrade
+            </div>
+          </div>
         </div>
 
         <div id="settings" v-if="has_feature('config')">
-            <button class="mini circular ui icon button" @click="openConfig" data-tooltip="Edit Studio Configuration" data-position="bottom center">
-                <i class="cog icon"></i>
-            </button>
+          <button class="mini circular ui icon button" @click="openConfig" data-tooltip="Edit Studio Configuration"
+            data-position="bottom center">
+            <i class="cog icon"></i>
+          </button>
         </div>
         <span v-if="has_feature('ws')">
-          <div v-if="socket && socket.readyState == 1" :data-tooltip="'Connection: ' + socket.transport" data-position="bottom center">
-              <button class="mini circular ui icon button" @click="closeConnection">
-                  <i class="green power off icon"></i>
-              </button>
+          <div v-if="socket && socket.readyState == 1" :data-tooltip="'Connection: ' + socket.transport"
+            data-position="bottom center">
+            <button class="mini circular ui icon button" @click="closeConnection">
+              <i class="green power off icon"></i>
+            </button>
           </div>
           <div v-else-if="ws_connection == 'connecting'" data-tooltip="Connecting" data-position="bottom center">
-              <button class="mini circular ui icon button" @click="closeConnection">
-                  <i class="spinning grey spinner icon"></i>
-              </button>
+            <button class="mini circular ui icon button" @click="closeConnection">
+              <i class="spinning grey spinner icon"></i>
+            </button>
           </div>
           <div v-else>
-              <button class="mini circular ui icon button" @click="openConnection"
-                  data-tooltip="Click to reconnect"
-                  data-position="bottom center">
-                  <i class="red plug icon"></i>
-              </button>
+            <button class="mini circular ui icon button" @click="openConnection" data-tooltip="Click to reconnect"
+              data-position="bottom center">
+              <i class="red plug icon"></i>
+            </button>
           </div>
         </span>
       </div>
@@ -63,128 +60,129 @@
 
     <!--🌈🌈 NAV END🌈🌈-->
 
-        <div class="ui basic redirect modal">
-            <div class="content" v-if="redirect_url">
-                <p>
-                    Hub requires a different Studio version, found here: <a :href="redirect_url">{{redirect_url}}</a>
-                </p>
-                <p>
-                    This page will automatically redirect to this URL in {{redirect_delay/1000}} second(s) unless cancelled.
-                </p>
-            </div>
-            <div class="content" v-else>
-                <p>
-                    Hub requires a different Studio version than the one currently running.<br/>
-                    No other URLs could be found as a compatible Studio version.<br/>
-                </p>
-                <p>
-                    For your information, required version is: <code><b>{{required_studio_version}}</b></code><br/>
-                    Tested URLs were:
-                    <div class="ui inverted segment">
-                    <div class="ui ordered inverted list">
-                        <div class="item" v-for="(url, i) in compat_urls" :key="url+i"><a :href="url">{{url}}</a></div>
-                    </div>
-                </div>
-                </p>
-            </div>
-            <div class="content">
-                <div class="ui form">
-                    <div class="ui checkbox">
-                        <input id="skip_compat" type="checkbox" @click="toggleCheckCompat($event)">
-                        <label class="white">Skip compatility check</label>
-                    </div>
-                </div>
-            </div>
-            <div class="actions">
-                <div class="ui red basic cancel inverted button" v-if="redirect_url">
-                    <i class="remove icon"></i>
-                    Keep this version (not recommended)
-                </div>
-                <div class="ui green ok inverted button">
-                    <i class="checkmark icon"></i>
-                    Validate
-                </div>
-            </div>
-        </div>
-
-        <quick-search></quick-search>
-
-        <cleanup></cleanup>
-
-        <div class="ui basic config modal" v-if="has_feature('config')">
-            <h3 class="ui icon">
-                <i class="cog icon"></i>
-                Hub Configuration
-            </h3>
-            <div class="content">
-                <hub-config></hub-config>
-            </div>
-            <div class="actions">
-                <div class="ui red basic cancel inverted button">
-                    <i class="remove icon"></i>
-                    Cancel
-                </div>
-                <div class="ui green ok inverted button">
-                    <i class="checkmark icon"></i>
-                    OK
-                </div>
-            </div>
-
-        </div>
-
-        <div id="page_content" class="clickable ui active tab p-0 m-0">
-            <router-view></router-view>
-        </div>
-
-        <div class="ui basic upgrade modal">
-            <h3 class="ui icon">
-                <i class="sync icon"></i>
-                Upgrade system
-            </h3>
-            <div class="content">
-                <system-upgrade v-bind:biothings_version="conn.biothings_version" v-bind:app_version="conn.app_version"></system-upgrade>
-            </div>
-            <div class="actions">
-                <div class="ui green ok inverted button">
-                    <i class="checkmark icon"></i>
-                    OK
-                </div>
-            </div>
-        </div>
-
-        <event-alert></event-alert>
-
-        <div class="ui mini grey bottom fixed inverted menu">
-            <div class="left menu">
-              <a class="clickable terminal item"  v-if="has_feature('terminal')">
-                  <i class="terminal icon"></i>
-                  Terminal
-              </a>
-            </div>
-
-            <div class="right menu">
-
-              <a class="clickable logs item" v-if="has_feature('ws')">
-                  <i class="bell outline icon"></i>
-                  Logs
-              </a>
-            </div>
+    <div class="ui basic redirect modal">
+      <div class="content" v-if="redirect_url">
+        <p>
+          Hub requires a different Studio version, found here: <a :href="redirect_url">{{ redirect_url }}</a>
+        </p>
+        <p>
+          This page will automatically redirect to this URL in {{ redirect_delay / 1000 }} second(s) unless cancelled.
+        </p>
+      </div>
+      <div class="content" v-else>
+        <p>
+          Hub requires a different Studio version than the one currently running.<br />
+          No other URLs could be found as a compatible Studio version.<br />
+        </p>
+        <p>
+          For your information, required version is: <code><b>{{ required_studio_version }}</b></code><br />
+          Tested URLs were:
+        <div class="ui inverted segment">
+          <div class="ui ordered inverted list">
+            <div class="item" v-for="(url, i) in compat_urls" :key="url + i"><a :href="url">{{ url }}</a></div>
           </div>
-
-          <div class="ui terminal popup top left transition hidden" style="width:50%;">
-              <div class="ui inverted segment" v-if="has_feature('terminal')">
-                  <terminal></terminal>
-              </div>
+        </div>
+        </p>
+      </div>
+      <div class="content">
+        <div class="ui form">
+          <div class="ui checkbox">
+            <input id="skip_compat" type="checkbox" @click="toggleCheckCompat($event)">
+            <label class="white">Skip compatility check</label>
           </div>
+        </div>
+      </div>
+      <div class="actions">
+        <div class="ui red basic cancel inverted button" v-if="redirect_url">
+          <i class="remove icon"></i>
+          Keep this version (not recommended)
+        </div>
+        <div class="ui green ok inverted button">
+          <i class="checkmark icon"></i>
+          Validate
+        </div>
+      </div>
+    </div>
 
-          <div class="ui logs popup top transition hidden" v-if="has_feature('ws')">
-              <log-viewer></log-viewer>
-          </div>
+    <quick-search></quick-search>
 
+    <cleanup></cleanup>
+
+    <div class="ui basic config modal" v-if="has_feature('config')">
+      <h3 class="ui icon">
+        <i class="cog icon"></i>
+        Hub Configuration
+      </h3>
+      <div class="content">
+        <hub-config></hub-config>
+      </div>
+      <div class="actions">
+        <div class="ui red basic cancel inverted button">
+          <i class="remove icon"></i>
+          Cancel
+        </div>
+        <div class="ui green ok inverted button">
+          <i class="checkmark icon"></i>
+          OK
+        </div>
       </div>
 
+    </div>
+
+    <div id="page_content" class="clickable ui active tab p-0 m-0">
+      <router-view></router-view>
+    </div>
+
+    <div class="ui basic upgrade modal">
+      <h3 class="ui icon">
+        <i class="sync icon"></i>
+        Upgrade system
+      </h3>
+      <div class="content">
+        <system-upgrade v-bind:biothings_version="conn.biothings_version"
+          v-bind:app_version="conn.app_version"></system-upgrade>
       </div>
-    </template>
+      <div class="actions">
+        <div class="ui green ok inverted button">
+          <i class="checkmark icon"></i>
+          OK
+        </div>
+      </div>
+    </div>
+
+    <event-alert></event-alert>
+
+    <div class="ui mini grey bottom fixed inverted menu">
+      <div class="left menu">
+        <a class="clickable terminal item" v-if="has_feature('terminal')">
+          <i class="terminal icon"></i>
+          Terminal
+        </a>
+      </div>
+
+      <div class="right menu">
+
+        <a class="clickable logs item" v-if="has_feature('ws')">
+          <i class="bell outline icon"></i>
+          Logs
+        </a>
+      </div>
+    </div>
+
+    <div class="ui terminal popup top left transition hidden" style="width:50%;">
+      <div class="ui inverted segment" v-if="has_feature('terminal')">
+        <terminal></terminal>
+      </div>
+    </div>
+
+    <div class="ui logs popup top transition hidden" v-if="has_feature('ws')">
+      <log-viewer></log-viewer>
+    </div>
+
+  </div>
+
+  </div>
+</template>
 
 <script>
 
@@ -231,7 +229,7 @@ Vue.use(Vue2Filters)
 Vue.use(require('vue-moment'))
 Vue.use(VueRouter)
 
-function timesofar (value) {
+function timesofar(value) {
   const hours = parseInt(Math.floor(value / 3600))
   const minutes = parseInt(Math.floor((value - (hours * 3600)) / 60))
   const seconds = parseInt((value - ((hours * 3600) + (minutes * 60))) % 60)
@@ -252,7 +250,7 @@ Vue.filter('timesofar', timesofar)
 var UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
 var STEP = 1024
 
-function pretty_size (bytes, precision = 2) {
+function pretty_size(bytes, precision = 2) {
   var units = [
     'bytes',
     'KB',
@@ -277,11 +275,11 @@ function pretty_size (bytes, precision = 2) {
 };
 Vue.filter('pretty_size', pretty_size)
 
-function split_and_join (str, sep = '_', glue = ' ') {
+function split_and_join(str, sep = '_', glue = ' ') {
   return str.split(sep).join(' ')
 }
 Vue.filter('splitjoin', split_and_join)
-function jsonstr (value) {
+function jsonstr(value) {
   return JSON.stringify(value)
 }
 Vue.filter('json', jsonstr)
@@ -338,7 +336,7 @@ export default {
     QuickSearch,
     Cleanup,
   },
-  mounted () {
+  mounted() {
     $('.menu .item').tab()
     $('.ui.sticky')
       .sticky({
@@ -353,7 +351,7 @@ export default {
     this.$store.dispatch('resetDefaultConnection')
     if (last) {
       this.conn = JSON.parse(last)
-      this.$store.commit('saveConnection', {new_conn: JSON.parse(last)})
+      this.$store.commit('saveConnection', { new_conn: JSON.parse(last) })
     }
     this.setupConnection()
     this.skip_studio_compat = Vue.localStorage.get('skip_studio_compat')
@@ -380,7 +378,7 @@ export default {
       }
     })
   },
-  created () {
+  created() {
     // //console.log('App created')
     bus.$on('reconnect', this.setupConnection)
     bus.$on('connect', this.setupConnection, null, '/')
@@ -390,14 +388,14 @@ export default {
     // connect to default one to start
     this.conn = this.default_conn
   },
-  beforeDestroy () {
+  beforeDestroy() {
     bus.$off('reconnect', this.setupConnection)
     bus.$off('connect', this.setupConnection)
     bus.$off('feature_terminal', this.setupTerminal)
     bus.$off('feature_ws', this.setupLogs)
     bus.$off('redirect', this.redirect)
   },
-  data () {
+  data() {
     return {
       routes: [],
       menu: [],
@@ -477,7 +475,7 @@ export default {
     }
   },
   methods: {
-    setupUIByFeatures () {
+    setupUIByFeatures() {
       var self = this
       //console.log('Setup UI according to listed features')
       //console.log(Vue.config.hub_features)
@@ -540,9 +538,9 @@ export default {
         this.menu[0].name = 'Home'
         this.routes[0].path = '/'
       }
-      this.routes.forEach(route=>router.addRoute(route))
+      this.routes.forEach(route => router.addRoute(route))
     },
-    dispatchEvent (evt) {
+    dispatchEvent(evt) {
       if (evt.op == 'log') {
         bus.$emit('log', evt)
       } else if (evt.op == 'shell') {
@@ -572,7 +570,7 @@ export default {
     },
     evalLatency: function (oldv, newv) {
       var info = {}
-      function getInfo (val) {
+      function getInfo(val) {
         // depending on websocket latency, adjust color and text info
         if (val == null) {
           info.color = 'grey'
@@ -601,13 +599,13 @@ export default {
       var oldinfo = getInfo(oldv)
       var newinfo = getInfo(newv)
     },
-    openQuickSearch () {
+    openQuickSearch() {
       $('.ui.basic.quick-search.modal').modal('show')
     },
-    openCleanup () {
+    openCleanup() {
       $('.ui.basic.cleanup.modal').modal('show')
     },
-    openConfig () {
+    openConfig() {
       this.loading()
       var self = this
       $('.ui.basic.config.modal')
@@ -623,13 +621,13 @@ export default {
         })
         .modal('show')
     },
-    openConnection () {
+    openConnection() {
       this.setupConnection(null, false)
     },
-    setupConnection (conn = null, redirect = false) {
+    setupConnection(conn = null, redirect = false) {
       if (conn != null) {
         this.conn = conn
-        this.$store.commit('saveConnection', {new_conn: conn})
+        this.$store.commit('saveConnection', { new_conn: conn })
       }
       // get connection setion anchor hash first
       if (/\/connect=/.test(window.location.hash)) {
@@ -702,7 +700,7 @@ export default {
         // compat_urls using index "i", but in then() we may treat "i" as the one from the
         // loop occurence since it's async (fetch() will immediately return, moving the next loop)
         // so we need to store "i" as "idx" on this function (like a clojure)
-        function doFetch (idx) {
+        function doFetch(idx) {
           fetch(self.compat_urls[idx])
             .then(function (response) {
               checked.push({ url: self.compat_urls[idx], valid: response.ok, order: idx })
@@ -773,7 +771,7 @@ export default {
         return
       }
 
-      function evalDateCompat (refd, d) {
+      function evalDateCompat(refd, d) {
         // check comparator operator if any (>, <, >= or <=)
         var res = /^\D+/.exec(refd)
         var op = null
@@ -905,7 +903,7 @@ export default {
           //console.log(response.data.result)
           this.checkCompat(response.data.result)
           this.conn = response.data.result
-          this.$store.commit('saveConnection', {new_conn: response.data.result})
+          this.$store.commit('saveConnection', { new_conn: response.data.result })
           this.conn.url = url
           Vue.config.hub_features = response.data.result.features
           self.setupUIByFeatures()
@@ -918,7 +916,7 @@ export default {
           bus.$emit('connection_failed', url, err)
         })
     },
-    setupSocket (redirect = false) {
+    setupSocket(redirect = false) {
       var self = this
       var transports = null// ["jsonp-polling"];//["websocket","xhr-polling"];
       // re-init timestamp so we can monitor it again
@@ -949,10 +947,10 @@ export default {
             // bus.$emit("alert",{type: "alert", event: "hub_stop", msg: "Lost connection"})
             self.closeConnection()
           },
-          this.socket.ontimeout = function (err) {
-            //console.log('got error')
-            //console.log(err)
-          }
+            this.socket.ontimeout = function (err) {
+              //console.log('got error')
+              //console.log(err)
+            }
         })
         .catch(err => {
           //console.log("Can't connect using websocket")
@@ -963,13 +961,13 @@ export default {
           this.$store.dispatch('resetDefaultConnection')
         })
     },
-    closeConnection () {
+    closeConnection() {
       this.ws_connection = 'disconnected'
       this.socket.close()
       this.msg_timestamp = null
       bus.$emit('ws_connected', false)
     },
-    pingServer () {
+    pingServer() {
       // check if we got a reply before, it not, we have a connection issue
       if (this.msg_timestamp != null) {
         //console.log('Sent a ping but got no pong, disconnect')
@@ -984,15 +982,15 @@ export default {
         this.ping_interval = Math.min(this.ping_interval * 1.2, PING_INTERVAL_MS * 6)
       }
     },
-    toggleCheckCompat (event) {
+    toggleCheckCompat(event) {
       var skip = $('#skip_compat').prop('checked')
       Vue.localStorage.set('skip_studio_compat', skip.toString())
       this.skip_studio_compat = skip
     },
-    switchReadOnly () {
+    switchReadOnly() {
       this.readonly_switch = !this.readonly_switch
     },
-    setupTerminal () {
+    setupTerminal() {
       $('.terminal.item').popup({
         popup: $('.terminal.popup'),
         on: 'click',
@@ -1004,7 +1002,7 @@ export default {
         position: 'top left'
       })
     },
-    setupLogs () {
+    setupLogs() {
       $('.logs.item').popup({
         popup: $('.logs.popup'),
         on: 'click',
@@ -1013,14 +1011,14 @@ export default {
         lastResort: 'top right'
       })
     },
-    showLogs (event) {
+    showLogs(event) {
       //console.log(event)
     },
     redirect: function (url, params) {
       //console.log(`Redirecting to ${url}, with param ${JSON.stringify(params)}`)
       router.push({ name: url, params: params })
     },
-    showUpgrades () {
+    showUpgrades() {
       this.loading()
       var self = this
       $('.ui.basic.upgrade.modal')
@@ -1048,70 +1046,90 @@ $.fn.modal.settings.useFlex = true;
 </script>
 
 <style>
-    #app {
-      font-family: 'Avenir', Helvetica, Arial, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      color: #2c3e50;
-      margin-top: 60px;
-    }
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #2c3e50;
+  margin-top: 60px;
+}
 
-    .main-background{
-      background-color: #f1f1f1 !important;
-    }
+.main-background {
+  background-color: #f1f1f1 !important;
+}
 
-    .logo {
-      margin-right: 0.5em !important;
-    }
+.logo {
+  margin-right: 0.5em !important;
+}
 
-    .white {
-        color: white !important;
-    }
+.white {
+  color: white !important;
+}
 
-    h1, h2 {
-      font-weight: normal;
-    }
+h1,
+h2 {
+  font-weight: normal;
+}
 
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
+ul {
+  list-style-type: none;
+  padding: 0;
+}
 
-    li {
-      display: inline-block;
-      margin: 0 10px;
-    }
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
 
-    a {
-      color: #42b983;
-    }
+a {
+  color: #42b983;
+}
 
-    table .nowrap {
-      white-space:  nowrap;
-    }
+table .nowrap {
+  white-space: nowrap;
+}
 
-    @keyframes pulse {
-      0% {transform: scale(1, 1);}
-      50% {transform: scale(1.2, 1.2);}
-      100% {transform: scale(1, 1);}
-    }
+@keyframes pulse {
+  0% {
+    transform: scale(1, 1);
+  }
 
-    .pulsing {
-      animation: pulse 1s linear infinite;
-    }
+  50% {
+    transform: scale(1.2, 1.2);
+  }
 
-    .running { animation: 1s rotate360 infinite linear; }
+  100% {
+    transform: scale(1, 1);
+  }
+}
 
-    @keyframes pulse {
-      0% {transform: scale(1, 1);}
-      50% {transform: scale(1.2, 1.2);}
-      100% {transform: scale(1, 1);}
-    }
-    .pulsing {
-      animation: pulse 1s linear infinite;
-    }
+.pulsing {
+  animation: pulse 1s linear infinite;
+}
 
-    @keyframes rotating {
+.running {
+  animation: 1s rotate360 infinite linear;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1, 1);
+  }
+
+  50% {
+    transform: scale(1.2, 1.2);
+  }
+
+  100% {
+    transform: scale(1, 1);
+  }
+}
+
+.pulsing {
+  animation: pulse 1s linear infinite;
+}
+
+@keyframes rotating {
   from {
     -ms-transform: rotate(0deg);
     -moz-transform: rotate(0deg);
@@ -1119,6 +1137,7 @@ $.fn.modal.settings.useFlex = true;
     -o-transform: rotate(0deg);
     transform: rotate(0deg);
   }
+
   to {
     -ms-transform: rotate(360deg);
     -moz-transform: rotate(360deg);
@@ -1127,6 +1146,7 @@ $.fn.modal.settings.useFlex = true;
     transform: rotate(360deg);
   }
 }
+
 .rotating {
   -webkit-animation: rotating 2s linear infinite;
   -moz-animation: rotating 2s linear infinite;
@@ -1136,11 +1156,11 @@ $.fn.modal.settings.useFlex = true;
 }
 
 .clickicon {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .upgrade {
-    color: red;
+  color: red;
 }
 
 html,
@@ -1157,26 +1177,32 @@ body,
   /* height: 100%; */
 }
 
-.red {color: #c31616;}
-.green {color: #0e7948;}
+.red {
+  color: #c31616;
+}
+
+.green {
+  color: #0e7948;
+}
 
 .ui.studio.container {
-    width: 100%;
-    margin-left: 1em !important;
-    margin-right: 2em !important;
+  width: 100%;
+  margin-left: 1em !important;
+  margin-right: 2em !important;
 }
 
 /*; very small buttons*/
 .tinytiny {
-    padding: .5em 1em .5em;
-    font-size: .6em;
+  padding: .5em 1em .5em;
+  font-size: .6em;
 }
 
 .segment.jobs {
-    margin:0;
+  margin: 0;
 }
 
 @import url('https://fonts.cdnfonts.com/css/jetbrains-mono');
+
 .font-jetbrains-mono {
   font-family: 'JetBrains Mono', sans-serif;
 }
