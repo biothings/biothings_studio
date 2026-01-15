@@ -26,7 +26,8 @@
               <i class="file outline icon"></i>
               {{ source.count | currency('', 0) }} document{{ source.count > 1 ? "s" : "" }}
             </div>
-            <div class="right floated">
+            <div
+              :class="['right floated', (license !== null && typeof license === 'object') ? 'source-meta-links' : '']">
               <span v-if="license !== null && typeof license === 'object'">
                 <table class="meta ui single line compact small table">
                   <thead>
@@ -37,13 +38,14 @@
                   <tbody>
                     <tr>
                       <td v-for="url in license" :key="url">
-                        <a v-if="url.startsWith('http')" :href="url">license</a>
-                        <span v-else>{{ license }}</span>
+                        <a v-if="url.startsWith('http')" :href="url" target="_blank" rel="noopener noreferrer"
+                          :title="url">license</a>
+                        <span v-else :title="url">{{ url }}</span>
                       </td>
                     </tr>
                     <tr>
                       <td v-for="url in website" :key="url">
-                        <a :href="url">website</a>
+                        <a :href="url" target="_blank" rel="noopener noreferrer" :title="url">website</a>
                       </td>
                     </tr>
                   </tbody>
@@ -54,14 +56,16 @@
                   <tbody>
                     <tr>
                       <td>
-                        <a v-if="license_url" :href="license_url">
+                        <a v-if="license_url" :href="license_url" target="_blank" rel="noopener noreferrer"
+                          :title="license_url">
                           <span v-if="license">{{ license }}</span>
                           <span v-else>license</span>
                         </a>
                         <span v-else>{{ license }}</span>
                       </td>
                       <td>
-                        <a v-if="website" :href="website">website</a>
+                        <a v-if="website" :href="website" target="_blank" rel="noopener noreferrer"
+                          :title="website">website</a>
                       </td>
                     </tr>
                   </tbody>
@@ -309,6 +313,34 @@ export default {
 </script>
 
 <style>
+.source-meta-links {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  clear: both;
+  overflow: hidden;
+}
+
+.source-meta-links .meta.ui.table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.source-meta-links .meta.ui.table th,
+.source-meta-links .meta.ui.table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.source-meta-links .meta.ui.table a {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .meta.ui.table {
   margin-bottom: 1em;
   border: 0px;
