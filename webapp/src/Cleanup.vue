@@ -15,6 +15,7 @@
           <!-- Top Attached Menu -->
           <div class="ui top attached pointing menu">
             <a class="active item" data-tab="snapshot">Snapshots</a>
+            <a class="item" data-tab="mongo-builds">Builds</a>
           </div>
 
           <!-- Tab Content -->
@@ -22,7 +23,7 @@
             <!-- Actions Panel -->
             <div class="ui grid">
               <div class="row">
-                <div class="five wide column">
+                <div class="six wide column">
                   <div class="ui buttons">
                     <div class="ui labeled icon button delete-snapshots" data-tooltip="Delete selected snapshots"
                       v-on:click="delete_snapshots($event)">
@@ -43,6 +44,10 @@
                   <button class="ui labeled icon button validate-snapshots" @click="validate_snapshots($event)"
                     data-tooltip="Confirm that the snapshots exist in the S3 bucket">
                     <i class="sync icon"></i>Validate
+                  </button>
+                  <button class="ui labeled icon button" @click="toggleAllSnapshots($event)"
+                    data-tooltip="Select or deselect all snapshots">
+                    <i class="check square icon"></i>Select All
                   </button>
                 </div>
                 <div class="ten wide column">
@@ -98,35 +103,32 @@
 
             <!-- Snapshots Table Container -->
             <div class="table-container">
-              <table class="ui celled table table-snapshots">
-                <thead>
-                  <tr>
-                    <th class="w-1">
-                      <div class="ui checkbox checkbox-popup" title="Select all snapshots">
-                        <input type="checkbox" @change="toggleAllSnapshots($event)">
-                        <label class="pl-0"></label>
-                      </div>
-                    </th>
-                    <!-- Combined Name / Index Name column -->
-                    <th>Name / Index Name</th>
-                    <th>S3 Path</th>
-                    <th>Environment</th>
-                    <th>Indexer Env</th>
-                    <th class="min-width-9">Created At</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  <template v-for="build_config_snapshots in snapshots">
-                    <tr :key="'build-config-' + build_config_snapshots._id">
-                      <td colspan="5">
-                        <div class="ui checkbox checkbox-popup" title="Select all snapshots for this build config">
-                          <input type="checkbox" @click="toggleAllSnapshots($event, build_config_snapshots._id)">
-                          <label><strong>{{ build_config_snapshots._id }}</strong></label>
-                        </div>
-                      </td>
+              <template v-for="build_config_snapshots in snapshots">
+                <div class="build-config-header" :key="'build-config-header-' + build_config_snapshots._id">
+                  <div class="ui checkbox checkbox-popup" title="Select all snapshots for this build config">
+                    <input type="checkbox" @change="toggleAllSnapshots($event, build_config_snapshots._id)">
+                    <label>
+                      <i class="folder icon"></i>
+                      <strong>Build Config: {{ build_config_snapshots._id }}</strong>
+                      <span class="build-config-count">&mdash; {{ build_config_snapshots.items.length }} snapshot{{
+                        build_config_snapshots.items.length === 1 ? '' : 's' }}</span>
+                    </label>
+                  </div>
+                </div>
+                <table class="ui celled table table-snapshots"
+                  :key="'build-config-table-' + build_config_snapshots._id">
+                  <thead>
+                    <tr>
+                      <th class="w-1"></th>
+                      <!-- Combined Name / Index Name column -->
+                      <th>Name / Index Name</th>
+                      <th>S3 Path</th>
+                      <th>Environment</th>
+                      <th>Indexer Env</th>
+                      <th class="min-width-9">Created At</th>
                     </tr>
-
+                  </thead>
+                  <tbody>
                     <tr v-for="snapshot_data in build_config_snapshots.items" :key="'snapshot-' + snapshot_data._id">
                       <td>
                         <div class="ui checkbox">
@@ -148,9 +150,183 @@
                       <td>{{ snapshot_data.indexer_env || snapshot_data.conf.indexer.env }}</td>
                       <td class="min-width-9">{{ snapshot_data.created_at | moment('MMM Do YYYY, h:mm:ss a') }}</td>
                     </tr>
-                  </template>
-                </tbody>
-              </table>
+                  </tbody>
+                </table>
+              </template>
+            </div>
+          </div>
+
+          <div class="ui bottom attached tab segment builds-wrapper" data-tab="mongo-builds">
+            <div class="ui grid">
+              <div class="row">
+                <div class="six wide column">
+                  <button class="ui labeled icon button delete-builds" data-tooltip="Delete selected MongoDB builds"
+                    :class="{ disabled: show_build_confirm || is_deleting_builds }" @click="delete_builds($event)">
+                    <i class="trash icon"></i>Delete
+                  </button>
+                  <button class="ui labeled icon button validate-builds" @click="validate_builds($event)"
+                    :class="{ disabled: show_build_confirm || is_deleting_builds }"
+                    data-tooltip="Remove build records whose target collections no longer exist">
+                    <i class="sync icon"></i>Validate
+                  </button>
+                  <button class="ui labeled icon button" @click="toggleAllBuilds($event)"
+                    :class="{ disabled: show_build_confirm || is_deleting_builds }"
+                    data-tooltip="Select or deselect all builds">
+                    <i class="check square icon"></i>Select All
+                  </button>
+                </div>
+                <div class="ten wide column">
+                  <div class="ui grid">
+                    <div class="column w-auto">
+                      <select class="ui dropdown mongo_build_config_filter" v-model="mongo_build_config_filter"
+                        :disabled="show_build_confirm || is_deleting_builds" @change="loadBuildsData()">
+                        <option value="">Build configuration filter</option>
+                        <template v-for="name in mongo_build_configs">
+                          <option :value="name" :key="name + 'mongo-build-config-filter'">{{ name }}</option>
+                        </template>
+                      </select>
+                      <button class="ui red button white text" v-if="mongo_build_config_filter"
+                        @click="clearBuildFilter('mongo_build_config')">
+                        Clear
+                      </button>
+                    </div>
+                    <div class="column w-auto">
+                      <select class="ui dropdown mongo_build_filter" v-model="mongo_build_filter"
+                        :disabled="show_build_confirm || is_deleting_builds" @change="loadBuildsData()">
+                        <option value="">Build filter</option>
+                        <template v-for="name in mongo_build_names">
+                          <option :value="name" :key="name + 'mongo-build-filter'">{{ name }}</option>
+                        </template>
+                      </select>
+                      <button class="ui red button white text" v-if="mongo_build_filter"
+                        @click="clearBuildFilter('mongo_build')">
+                        Clear
+                      </button>
+                    </div>
+                    <div class="column w-auto">
+                      <select class="ui dropdown mongo_year_filter" v-model="mongo_year_filter"
+                        :disabled="show_build_confirm || is_deleting_builds" @change="loadBuildsData()">
+                        <option value="">Year filter</option>
+                        <template v-for="year in available_years">
+                          <option :value="year" :key="year + 'mongo-year-filter'">{{ year }}</option>
+                        </template>
+                      </select>
+                      <button class="ui red button white text" v-if="mongo_year_filter"
+                        @click="clearBuildFilter('mongo_year')">
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Inline Confirmation Panel -->
+              <div class="row ml-3 mb-3" v-if="show_build_confirm">
+                <div class="ui warning message build-confirm-panel">
+                  <div class="header">Confirm Deletion</div>
+                  <p>The following {{ pending_build_delete_ids.length }} build(s) will be permanently deleted:</p>
+                  <div class="ui relaxed list build-confirm-list">
+                    <div class="item" v-for="name in pending_build_delete_ids" :key="'pending-delete-' + name">
+                      <i class="database icon"></i>
+                      <div class="content">{{ name }}</div>
+                    </div>
+                  </div>
+                  <div class="build-confirm-actions">
+                    <button class="ui button" @click="cancel_delete_builds()">Cancel</button>
+                    <button class="ui red button white text" @click="confirmed_delete_builds()">
+                      <i class="trash icon"></i>Delete {{ pending_build_delete_ids.length }} Build(s)
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Deleting Spinner -->
+              <div class="row ml-3 mb-3" v-if="is_deleting_builds">
+                <div class="ui icon message build-deleting-panel">
+                  <i class="notched circle loading icon"></i>
+                  <div class="content">
+                    <div class="header">Deleting builds&hellip;</div>
+                    <p>Please wait while {{ deleting_build_count }} build(s) are being removed.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Inline Success Message -->
+              <div class="row ml-3 mb-3" v-if="show_build_success">
+                <div class="ui success message visible build-success-panel">
+                  <i class="close icon" @click="show_build_success = false"></i>
+                  <div class="header">Deletion Complete</div>
+                  <p>{{ last_deleted_build_count }} build(s) were successfully removed.</p>
+                  <div class="ui relaxed list build-confirm-list" v-if="last_deleted_build_names.length">
+                    <div class="item" v-for="name in last_deleted_build_names" :key="'deleted-build-' + name">
+                      <i class="check circle outline icon green"></i>
+                      <div class="content">{{ name }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Inline Validation Result -->
+              <div class="row ml-3 mb-3" v-if="show_build_validated">
+                <div class="ui message green build-success-panel">
+                  <i class="close icon" @click="show_build_validated = false"></i>
+                  <div class="header">Validation Complete</div>
+                  <p>{{ builds_validated }} orphaned build record(s) were removed.</p>
+                  <div class="ui relaxed list build-confirm-list" v-if="builds_validated_names.length">
+                    <div class="item" v-for="name in builds_validated_names" :key="'validated-build-' + name">
+                      <i class="check circle outline icon green"></i>
+                      <div class="content">{{ name }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row ml-3 mb-3" v-if="builds_error">
+                <div class="error-messages" v-html="builds_error"></div>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <template v-for="build_group in mongo_builds">
+                <div class="build-config-header" :key="'mongo-build-group-header-' + build_group._id">
+                  <div class="ui checkbox checkbox-popup" title="Select all builds for this build config">
+                    <input type="checkbox" @change="toggleAllBuilds($event, build_group._id)">
+                    <label>
+                      <i class="folder icon"></i>
+                      <strong>Build Config: {{ build_group._id }}</strong>
+                      <span class="build-config-count">&mdash; {{ build_group.items.length }} build{{
+                        build_group.items.length === 1 ? '' : 's' }}</span>
+                    </label>
+                  </div>
+                </div>
+                <table class="ui celled table table-builds" :key="'mongo-build-group-table-' + build_group._id">
+                  <thead>
+                    <tr>
+                      <th class="w-1"></th>
+                      <th>Build Name</th>
+                      <th>Build Config</th>
+                      <th>Archived</th>
+                      <th class="min-width-9">Started At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="build_data in build_group.items" :key="'mongo-build-' + build_data._id">
+                      <td>
+                        <div class="ui checkbox">
+                          <input class="checkbox-build" type="checkbox" :data-build-config="build_group._id"
+                            :data-build-id="build_data._id">
+                          <label class="pl-0"></label>
+                        </div>
+                      </td>
+                      <td>{{ build_data._id }}</td>
+                      <td>{{ build_data.build_config && build_data.build_config._id ? build_data.build_config._id :
+                        'N/A' }}</td>
+                      <td>{{ build_data.archived ? 'Yes' : 'No' }}</td>
+                      <td class="min-width-9">{{ build_data.started_at | moment('MMM Do YYYY, h:mm:ss a') }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </template>
             </div>
           </div>
         </div>
@@ -160,6 +336,8 @@
     <div class="actions">
       <div class="ui cancel button">Close</div>
     </div>
+
+
   </div>
 </template>
 
@@ -180,6 +358,7 @@ export default {
       onShow: function () {
         self.resetMessages();
         self.loadData();
+        self.loadBuildsData();
       }
     });
 
@@ -196,6 +375,8 @@ export default {
 
     // Initialize checkboxes
     $('.ui.checkbox').checkbox();
+
+
   },
   data() {
     return {
@@ -211,6 +392,24 @@ export default {
       snapshots_validated: 0,
       show_snapshots_validated: false,
       ignoreErrors: false,
+      mongo_builds: [],
+      mongo_build_configs: [],
+      mongo_build_names: [],
+      mongo_build_config_filter: '',
+      mongo_build_filter: '',
+      mongo_year_filter: '',
+      available_years: [],
+      builds_error: null,
+      pending_build_delete_ids: [],
+      last_deleted_build_count: 0,
+      last_deleted_build_names: [],
+      show_build_confirm: false,
+      show_build_success: false,
+      show_build_validated: false,
+      builds_validated: 0,
+      builds_validated_names: [],
+      is_deleting_builds: false,
+      deleting_build_count: 0,
     }
   },
   methods: {
@@ -250,6 +449,11 @@ export default {
     loaderror: function (title, err) {
       const errorContent = this.extractError(err);
       this.snapshots_error = `<div class="text red"><b>${title}</b><br>${errorContent}</div>`;
+      this.loaded();
+    },
+    loadBuildError: function (title, err) {
+      const errorContent = this.extractError(err);
+      this.builds_error = `<div class="text red"><b>${title}</b><br>${errorContent}</div>`;
       this.loaded();
     },
     loadData(preserveMessages = false) {
@@ -311,14 +515,92 @@ export default {
       $(`.ui.${filter_type}_filter.dropdown`).dropdown('clear')
       this[filter_type + "_filter"] = "";
       this.resetMessages();
+      this.loadData();
+    },
+    clearBuildFilter(filter_type) {
+      $(`.ui.${filter_type}_filter.dropdown`).dropdown('clear')
+      this[filter_type + "_filter"] = "";
+      this.resetMessages();
+      this.loadBuildsData();
     },
     toggleAllSnapshots(event, build_config = null) {
-      const is_checked = event.target.checked;
       if (build_config) {
-        $(`.snapshot-wrapper [type=checkbox][data-build-config=${build_config}]`).prop("checked", is_checked);
+        const is_checked = event.target.checked;
+        $(`.snapshot-wrapper [type=checkbox][data-build-config="${build_config}"]`).prop("checked", is_checked);
       } else {
-        $(".snapshot-wrapper [type=checkbox]").prop("checked", is_checked);
+        const $all = $(".snapshot-wrapper .checkbox-snapshot");
+        const allChecked = $all.length > 0 && $all.filter(':checked').length === $all.length;
+        $(".snapshot-wrapper [type=checkbox]").prop("checked", !allChecked);
       }
+    },
+    toggleAllBuilds(event, build_config = null) {
+      if (build_config) {
+        const is_checked = event.target.checked;
+        $(`.builds-wrapper [type=checkbox][data-build-config="${build_config}"]`).prop("checked", is_checked);
+      } else {
+        const $all = $(".builds-wrapper .checkbox-build");
+        const allChecked = $all.length > 0 && $all.filter(':checked').length === $all.length;
+        $(".builds-wrapper [type=checkbox]").prop("checked", !allChecked);
+      }
+    },
+    loadBuildsData(showLoader = true) {
+      const self = this;
+      if (showLoader) {
+        self.loading();
+      }
+
+      $(".table-builds [type='checkbox']").prop("checked", false)
+
+      const build_filters = []
+      if (self.mongo_build_config_filter) {
+        build_filters.push(`build_config=${self.mongo_build_config_filter}`)
+      }
+      if (self.mongo_build_filter) {
+        build_filters.push(`build_name=${self.mongo_build_filter}`)
+      }
+      if (self.mongo_year_filter) {
+        build_filters.push(`year=${self.mongo_year_filter}`)
+      }
+
+      axios.get(axios.defaults.baseURL + '/mongo_builds?' + build_filters.join("&"))
+        .then(response => {
+          self.mongo_builds = response.data.result
+
+          self.mongo_build_configs = []
+          self.mongo_build_names = new Set()
+          const yearsSet = new Set()
+
+          self.mongo_builds.forEach(build_group => {
+            self.mongo_build_configs.push(build_group._id)
+            build_group.items.forEach(build => {
+              self.mongo_build_names.add(build._id)
+              if (build.started_at) {
+                const year = new Date(build.started_at).getFullYear()
+                if (!isNaN(year)) {
+                  yearsSet.add(year)
+                }
+              }
+            })
+          })
+
+          self.available_years = Array.from(yearsSet).sort((a, b) => a - b)
+
+          self.$nextTick(function () {
+            $('.ui.checkbox').checkbox();
+            $(".checkbox-popup").popup({
+              boundary: '.table-container',
+              scrollContext: '.table-container',
+            });
+          });
+
+          if (showLoader) {
+            self.loaded()
+          }
+        })
+        .catch(err => {
+          console.log('Error when getting mongo builds information: ' + err)
+          self.loadBuildError("Error when getting mongo builds", err)
+        })
     },
     delete_snapshots(event) {
       const self = this;
@@ -365,6 +647,100 @@ export default {
       };
 
       this.launchAsyncCommand(cmd, onSuccess, onError);
+    },
+    delete_builds() {
+      const self = this;
+      this.resetMessages();
+      const $checked_builds = $(".checkbox-build:checked");
+      if ($checked_builds.length == 0) {
+        return;
+      }
+
+      const build_ids = [];
+      $checked_builds.map((_, element) => {
+        build_ids.push($(element).data("buildId"));
+      });
+
+      self.pending_build_delete_ids = build_ids;
+      self.show_build_confirm = true;
+      self.show_build_success = false;
+    },
+    cancel_delete_builds() {
+      this.pending_build_delete_ids = [];
+      this.show_build_confirm = false;
+    },
+    confirmed_delete_builds() {
+      const self = this;
+      const build_ids = [...self.pending_build_delete_ids];
+      if (!build_ids.length) {
+        return;
+      }
+
+      self.show_build_confirm = false;
+      self.is_deleting_builds = true;
+      self.deleting_build_count = build_ids.length;
+
+      const cmd = function () {
+        return axios.put(axios.defaults.baseURL + '/mongo_builds/delete', { build_ids });
+      };
+
+      const onSuccess = function (response) {
+        const deletedCount = response?.data?.result?.results?.[0]?.deleted_count || 0;
+        self.last_deleted_build_count = deletedCount;
+        self.last_deleted_build_names = build_ids;
+        self.pending_build_delete_ids = [];
+        self.is_deleting_builds = false;
+        self.show_build_success = true;
+
+        self.loadBuildsData(false);
+
+        self.$nextTick(() => {
+          $('.ui.checkbox').checkbox();
+        });
+      };
+
+      const onError = function (err) {
+        self.pending_build_delete_ids = [];
+        self.is_deleting_builds = false;
+        self.loadBuildError("Error when deleting mongo builds", err);
+        console.error('Failed deleting mongo builds: ' + err);
+      };
+
+      this.launchAsyncCommand(cmd, onSuccess, onError);
+    },
+    validate_builds() {
+      const self = this;
+      self.resetMessages();
+      self.loading();
+
+      const cmd = function () {
+        return axios.post(axios.defaults.baseURL + '/mongo_builds/validate');
+      };
+
+      const onSuccess = function (response) {
+        if (response.data.result) {
+          self.handleBuildValidateResult(response.data.result);
+        }
+        self.loaded();
+      };
+
+      const onError = function (err) {
+        self.loadBuildError("Error when validating builds", err);
+        console.error('Failed to validate builds:', err);
+        self.loaded();
+      };
+
+      this.launchAsyncCommand(cmd, onSuccess, onError);
+    },
+    handleBuildValidateResult(result) {
+      const results = result.results ? result.results[0] : result;
+      const removedCount = results.builds_removed || 0;
+      const removedNames = results.builds_removed_names || [];
+      this.builds_validated = removedCount;
+      this.builds_validated_names = removedNames;
+      this.show_build_validated = true;
+      this.loadBuildsData(false);
+      this.loaded();
     },
     // Returns the S3 bucket path (bucket + base_path)
     getBucketName(snapshot_data) {
@@ -449,8 +825,7 @@ export default {
             throw new Error(`Couldn't launch async command ${cmd}`);
           }
           if (response.data.result.is_done) {
-            const result = response.data.result.results[0];
-            callback(result);
+            callback(response);
           } else {
             const cmd_id = response.data.result.id;
             self.running[cmd_id] = { cb: callback, eb: errback };
@@ -485,6 +860,14 @@ export default {
     resetMessages() {
       this.show_snapshots_validated = false;
       this.snapshots_error = null;
+      this.builds_error = null;
+      this.pending_build_delete_ids = [];
+      this.show_build_confirm = false;
+      this.show_build_success = false;
+      this.show_build_validated = false;
+      this.builds_validated = 0;
+      this.builds_validated_names = [];
+      this.is_deleting_builds = false;
     },
   }
 }
@@ -511,7 +894,8 @@ export default {
   padding-left: 0 !important;
 }
 
-[data-tab="snapshot"] {
+[data-tab="snapshot"],
+[data-tab="mongo-builds"] {
   margin-bottom: 0 !important;
 }
 
@@ -538,7 +922,8 @@ export default {
   width: 90% !important;
 }
 
-.table-snapshots thead th {
+.table-snapshots thead th,
+.table-builds thead th {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -556,5 +941,59 @@ export default {
 
 .button-spacing {
   margin-right: 10px !important;
+}
+
+.build-confirm-panel,
+.build-success-panel,
+.build-deleting-panel {
+  width: 100%;
+}
+
+.build-confirm-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 8px 0 !important;
+}
+
+.build-confirm-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.build-config-header {
+  background-color: #f0f4f8;
+  border-left: 3px solid #2185d0;
+  padding: 10px 14px;
+  margin-top: 12px;
+  border-radius: 4px 4px 0 0;
+}
+
+.build-config-header:first-child {
+  margin-top: 0;
+}
+
+.build-config-header label {
+  font-size: 1.05em;
+  color: #1a1a2e;
+}
+
+.build-config-header .folder.icon {
+  color: #2185d0;
+  margin-right: 4px;
+}
+
+.build-config-count {
+  font-weight: normal;
+  color: #666;
+  font-size: 0.95em;
+  margin-left: 2px;
+}
+
+.table-container .table-snapshots,
+.table-container .table-builds {
+  margin-top: 0 !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
 }
 </style>
