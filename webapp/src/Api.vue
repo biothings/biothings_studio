@@ -102,8 +102,8 @@
 
 
       <div class="ui icon buttons right floated mini">
-        <button class="ui button delete-btn" data-tooltip="Delete API">
-          <i class="trash icon" :data-api_id="api._id" @click="deleteAPI($event)"></i>
+        <button class="ui button delete-btn" data-tooltip="Delete API" :data-api_id="api._id" @click="deleteAPI($event)">
+          <i class="trash icon"></i>
         </button>
       </div>
     </div>
@@ -210,7 +210,7 @@ export default {
     },
     deleteAPI: function (event) {
       console.log(event)
-      var api_id = $(event.target).attr('data-api_id')
+      var api_id = $(event.currentTarget).attr('data-api_id')
       // filter Api component to open correct modal
       console.log(`${api_id} ${this.api._id}`)
       if (!api_id || api_id !== this.api._id) {

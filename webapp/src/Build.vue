@@ -74,13 +74,13 @@
                 </button>
             </div>
             <div class="ui icon buttons right floated mini">
-                <button class="ui button m-1 delete-btn" data-tooltip="Delete">
-                    <i class="trash icon" @click="deleteBuild()"></i>
+                <button class="ui button m-1 delete-btn" data-tooltip="Delete" @click="deleteBuild()">
+                    <i class="trash icon"></i>
                 </button>
             </div>
             <div class="ui icon buttons right floated mini" v-if="!build.archived">
-                <button class="ui button m-1" data-tooltip="Archive">
-                    <i :class="[build.archived ? 'archived' : '', 'archive icon']" @click="archiveBuild()"></i>
+                <button class="ui button m-1" data-tooltip="Archive" @click="archiveBuild()">
+                    <i :class="[build.archived ? 'archived' : '', 'archive icon']"></i>
                 </button>
             </div>
         </div>
@@ -211,6 +211,7 @@ export default {
             axios.delete(axios.defaults.baseURL + `/build/${self.build._id}`)
               .then(response => {
                 console.log(response.data.result)
+                bus.$emit('change_build')
                 return true
               })
               .catch(err => {
