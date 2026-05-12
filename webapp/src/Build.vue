@@ -211,6 +211,7 @@ export default {
             axios.delete(axios.defaults.baseURL + `/build/${self.build._id}`)
               .then(response => {
                 console.log(response.data.result)
+                bus.$emit('change_build')
                 return true
               })
               .catch(err => {
