@@ -106,10 +106,11 @@ export default {
       if (this.validate_error.length) { errs.push('Validate') }
       return errs.join(' - ') + ' error'
     },
-    dump: function (release = null, force = null) {
+    dump: function (release = null, force = null, path = null) {
       var data = {}
       if (release != null && release) { data.release = release }
       if (force != null) { data.force = force }
+      if (path != null && path.trim()) { data.path = path.trim() }
       axios.put(axios.defaults.baseURL + `/source/${this.source.name}/dump`, data)
         .then(response => {
           console.log(response.data.result)

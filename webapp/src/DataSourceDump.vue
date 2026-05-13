@@ -63,6 +63,9 @@
                     This plugin’s dumper has been disabled.
                 </div>
                 <div :class="['ui form dump', actionable, source._id]">
+                    <div class="field" v-if="isManualDumper">
+                        <input type="text" name="path" placeholder="Path to downloaded files">
+                    </div>
                     <div class="inline fields">
                         <div class="field">
                             <div class="ui button-wrapper"
@@ -152,15 +155,23 @@ export default {
             return Boolean(
                 this.source?.download?.dumper?.disabled
             )
+        },
+        isManualDumper() {
+            return Boolean(
+                this.source?.download?.dumper?.manual
+            )
         }
     },
     methods: {
         do_dump() {
-            var field = $(`.ui.dump.form.${this.source._id}`).form('get field', 'force')
+            var form = $(this.$el).find('.ui.dump.form')
+            var field = form.form('get field', 'force')
             var force = null
             if (field) { force = field.is(':checked') }
-            console.log(force)
-            return this.$parent.dump(null, force)
+            var pathField = form.form('get field', 'path')
+            var path = null
+            if (pathField) { path = pathField.val() }
+            return this.$parent.dump(null, force, path)
         },
         show_mark_dump_success_modal() {
             $('.modal.mark_dump_success').modal('show')
