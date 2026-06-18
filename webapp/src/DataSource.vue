@@ -1,5 +1,77 @@
 <template>
-    <div id="data-source" class="ui card">
+    <div id="data-source" :class="compact ? 'data-source-compact' : 'ui card'">
+        <template v-if="compact">
+            <div class="compact-source-main">
+                <div class="compact-source-title">
+                    <router-link :to="'/source/' + source._id" class="compact-source-name">
+                        {{ source.name }}
+                    </router-link>
+                    <span class="compact-source-error-badge" :data-tooltip="operationErrorSummary"
+                        data-position="top center" v-if="hasOperationError">
+                        <i class="exclamation circle icon"></i>{{ operationErrorSummary }}
+                    </span>
+                    <span class="compact-source-indicators">
+                        <i v-if="source.data_plugin && source.data_plugin.plugin.loader === 'advanced'"
+                            title="Advanced Plugin" class="plugin small gem outline icon advanced"></i>
+                        <i class="lock icon blue" data-tooltip="Locked" data-position="top center"
+                            v-if="source.locked"></i>
+                        <i class="database icon pulsing" data-tooltip="Uploading" data-position="top center"
+                            v-if="upload_status === 'uploading'"></i>
+                        <i class="cloud download icon pulsing" data-tooltip="Downloading" data-position="top center"
+                            v-if="download_status === 'downloading'"></i>
+                        <i class="unhide icon pulsing" data-tooltip="Inspecting" data-position="top center"
+                            v-if="inspect_status === 'inspecting'"></i>
+                        <i class="red alarm icon" :data-tooltip="source.data_plugin.error" data-position="top center"
+                            v-if="source.data_plugin && source.data_plugin.error"></i>
+                    </span>
+                </div>
+                <div class="compact-source-meta">
+                    <span class="compact-source-time" v-if="source.download && source.download.started_at">
+                        <i class="clock icon outline"></i>{{ source.download.started_at | moment('from', 'now') }}
+                    </span>
+                    <span class="compact-source-time" v-else>Never updated</span>
+                    <span class="compact-source-count">
+                        <i class="file outline icon"></i>{{ source.count | currency('', 0) }} docs
+                    </span>
+                    <span class="compact-source-release" :title="release">{{ release }}</span>
+                </div>
+            </div>
+
+            <div class="compact-source-actions" :class="actionable">
+                <template v-if="!(source.data_plugin && source.data_plugin.error)">
+                    <button class="ui icon mini button" :class="{
+                        yellow: download_status === 'downloading',
+                        disabled:
+                            source.download &&
+                            source.download.dumper &&
+                            source.download.dumper.disabled
+                    }" :disabled="download_status === 'downloading' ||
+                        (source.download &&
+                            source.download.dumper &&
+                            source.download.dumper.disabled)
+                        " v-if="source.download" @click="do_dump" :data-tooltip="source.download && source.download.dumper && source.download.dumper.disabled
+                            ? 'Dumper disabled'
+                            : 'Download Data'
+                            " data-position="top center">
+                        <i class="download cloud icon"></i>
+                    </button>
+                    <button class="ui icon mini button" data-tooltip="Upload Data" data-position="top center"
+                        @click="do_upload" :class="{ yellow: upload_status === 'uploading' }" v-if="source.upload">
+                        <i class="database icon"></i>
+                    </button>
+                    <button class="ui icon mini button" data-tooltip="Inspect Data" data-position="top center"
+                        @click="inspect" :class="{ yellow: inspect_status === 'inspecting' }">
+                        <i class="unhide icon"></i>
+                    </button>
+                </template>
+                <button class="ui icon mini button delete-btn" data-tooltip="Delete Source" data-position="top center"
+                    @click="unregister" v-if="source.data_plugin">
+                    <i class="trash icon"></i>
+                </button>
+            </div>
+        </template>
+
+        <template v-else>
         <div class="content">
 
             <!-- locked -->
@@ -24,9 +96,8 @@
                     </h3>
                 </router-link>
                 <!-- error -->
-                <div class="right floated" :data-tooltip="getAllErrors()" data-position="bottom left">
-                    <i class="red exclamation circle icon pulsing"
-                        v-if="[download_status, upload_status, inspect_status].indexOf('failed') !== -1"></i>
+                <div class="right floated" :data-tooltip="operationErrorSummary" data-position="bottom left">
+                    <i class="red exclamation circle icon pulsing" v-if="hasOperationError"></i>
 
                 </div>
             </div>
@@ -110,6 +181,7 @@
                 </button>
             </div>
         </div>
+        </template>
 
         <!-- Inspect form -->
         <inspect-form :_id="source._id" :select_data_provider="true"></inspect-form>
@@ -149,12 +221,20 @@ import Actionable from './Actionable.vue'
 
 export default {
     name: 'data-source',
-    props: ['psource'],
+    props: {
+        psource: {
+            type: Object,
+            required: true
+        },
+        compact: {
+            type: Boolean,
+            default: false
+        }
+    },
     components: { InspectForm },
     mixins: [BaseDataSource, Actionable],
     mounted() {
-        $('select.dropdown').dropdown()
-        $(this.$el).find('[data-tooltip]').popup();
+        this.initSemanticUi()
     },
     data() {
         return {
@@ -167,9 +247,32 @@ export default {
         source: function () {
             // select source from API call preferably
             return this.source_from_api || this.psource
+        },
+        operationErrorTypes: function () {
+            var errs = []
+            if (this.download_error || this.download_status === 'failed') { errs.push('Dump') }
+            if (this.upload_error.length || this.upload_status === 'failed') { errs.push('Upload') }
+            if (this.inspect_error.length || this.inspect_status === 'failed') { errs.push('Inspect') }
+            if (this.validate_error.length || this.validate_status === 'failed') { errs.push('Validate') }
+            return errs
+        },
+        operationErrorSummary: function () {
+            return this.operationErrorTypes.join(' - ') + ' error'
+        },
+        hasOperationError: function () {
+            return this.operationErrorTypes.length > 0
+        }
+    },
+    watch: {
+        compact: function () {
+            this.$nextTick(this.initSemanticUi)
         }
     },
     methods: {
+        initSemanticUi: function () {
+            $('select.dropdown').dropdown()
+            $(this.$el).find('[data-tooltip]').popup()
+        },
         do_dump: function () {
             // just "eat" mouse event to clean final call
             return this.dump()
@@ -211,5 +314,135 @@ a {
 .tooltip-wrapper {
     display: inline-block;
     /* keeps layout identical */
+}
+
+.data-source-compact {
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid rgba(34, 36, 38, .12);
+    border-radius: .28571429rem;
+    box-shadow: 0 1px 2px 0 rgba(34, 36, 38, .05);
+    display: grid;
+    gap: .6rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin: .25rem;
+    min-height: 3rem;
+    padding: .45rem .55rem;
+}
+
+.data-source-compact:hover {
+    box-shadow: 0 0 8px rgb(190, 190, 190);
+}
+
+.compact-source-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.compact-source-title {
+    align-items: center;
+    display: flex;
+    gap: .25rem;
+    min-width: 0;
+}
+
+.compact-source-name {
+    color: #e03997;
+    display: block;
+    flex: 0 1 auto;
+    font-weight: 700;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.compact-source-error-badge {
+    align-items: center;
+    background: #fff6f6;
+    border: 1px solid #e0b4b4;
+    border-radius: .28571429rem;
+    color: #db2828;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: .78rem;
+    font-weight: 700;
+    gap: .2rem;
+    line-height: 1;
+    max-width: 8.5rem;
+    overflow: hidden;
+    padding: .22rem .38rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.compact-source-error-badge .icon {
+    margin: 0 !important;
+}
+
+.compact-source-indicators {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    gap: .1rem;
+}
+
+.compact-source-indicators .icon {
+    margin: 0 !important;
+}
+
+.compact-source-indicators .plugin.icon {
+    padding-left: 0 !important;
+}
+
+.compact-source-meta {
+    align-items: center;
+    color: rgba(0, 0, 0, .55);
+    display: grid;
+    font-size: .78rem;
+    gap: .45rem;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.compact-source-time {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.compact-source-count {
+    font-weight: 600;
+}
+
+.compact-source-release {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+}
+
+.compact-source-actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: .2rem;
+    justify-self: end;
+}
+
+.compact-source-actions .ui.mini.button {
+    margin: 0 !important;
+    padding: .45rem .55rem;
+}
+
+@media only screen and (max-width: 767px) {
+    .data-source-compact {
+        align-items: flex-start;
+        grid-template-columns: 1fr;
+    }
+
+    .compact-source-actions {
+        justify-self: start;
+        width: 100%;
+    }
 }
 </style>

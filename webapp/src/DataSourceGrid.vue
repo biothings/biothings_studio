@@ -8,17 +8,33 @@
       </div>
       <div class="pusher main-background">
           <div class="ui main container">
-              <div class="ui big message flex-center clearMenu">
+              <div class="ui big message flex-center clearMenu source-header">
                 <h1 class="ui pink header">
                   (<small>{{orderedSources ? orderedSources.length : 0}}</small>) Sources
                 </h1>
-                <button id="sources_menu" style="margin-left:20px;" class="circular ui icon pink button"><i class="icon ellipsis horizontal"></i></button>
+                <div class="source-header-actions">
+                  <div class="ui small buttons source-view-toggle">
+                    <button
+                      class="ui button"
+                      :class="{ pink: sourceViewMode === 'cards', basic: sourceViewMode !== 'cards' }"
+                      @click="setSourceViewMode('cards')">
+                      Cards
+                    </button>
+                    <button
+                      class="ui button"
+                      :class="{ pink: sourceViewMode === 'compact', basic: sourceViewMode !== 'compact' }"
+                      @click="setSourceViewMode('compact')">
+                      Compact
+                    </button>
+                  </div>
+                  <button id="sources_menu" class="circular ui icon pink button"><i class="icon ellipsis horizontal"></i></button>
+                </div>
               </div>
               <div id="data-source-grid" class="justify-center" style="padding-bottom:100px;">
                   <!-- <div class="four wide column" v-for="(source, i) in orderedSources" :key="source+i">
                       <data-source v-bind:psource="source"></data-source>
                   </div> -->
-                  <PaginatedList :content="orderedSources" type="Sources" :perPageProp="50"></PaginatedList>
+                  <PaginatedList :content="orderedSources" type="Sources" :perPageProp="50" :viewMode="sourceViewMode"></PaginatedList>
               </div>
           </div>
       </div>
@@ -84,9 +100,18 @@ export default {
     $('.ui.basic.newdatasource.modal').remove()
   },
   data () {
+    var storedSourceViewMode = 'cards'
+    if (typeof window !== 'undefined' && window.localStorage) {
+      storedSourceViewMode = window.localStorage.getItem('sources.viewMode') || 'cards'
+    }
+    if (['cards', 'compact'].indexOf(storedSourceViewMode) === -1) {
+      storedSourceViewMode = 'cards'
+    }
+
     return {
       sources: [],
-      errors: []
+      errors: [],
+      sourceViewMode: storedSourceViewMode
     }
   },
   computed: {
@@ -147,7 +172,38 @@ export default {
       // (as we cannot know if a component for _id actually
       //  already exists when creating a data plugin)
       this.getSourcesStatus()
+    },
+    setSourceViewMode: function (mode) {
+      this.sourceViewMode = mode
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem('sources.viewMode', mode)
+      }
     }
   }
 }
 </script>
+
+<style scoped>
+.source-header {
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+.source-header-actions {
+  align-items: center;
+  display: flex;
+  gap: .75rem;
+  margin-left: auto;
+}
+
+.source-view-toggle .button {
+  min-width: 6.5rem;
+}
+
+@media only screen and (max-width: 767px) {
+  .source-header-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+</style>

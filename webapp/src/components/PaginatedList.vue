@@ -1,9 +1,9 @@
 <template>
     <div class="ui main container">
-        <div id="data-source-grid" class="ui flex justify-evenly flex-wrap" style="padding: 10px 5px 20px 5px;">
+        <div id="data-source-grid" class="ui" :class="isCompactSourceView ? 'compact-source-list' : 'flex justify-evenly flex-wrap'" style="padding: 10px 5px 20px 5px;">
             <!-- SOURCES -->
             <template v-if="type == 'Sources'">
-                <DataSource v-for="(source, index) in arrayResults" :key="index" :psource="source"></DataSource>
+                <DataSource v-for="(source, index) in arrayResults" :key="source._id || index" :psource="source" :compact="isCompactSourceView"></DataSource>
             </template>
             <!-- APIS -->
             <template v-if="type == 'APIs'">
@@ -15,7 +15,7 @@
             </template>
         </div>
         <!-- PAGINATION CONTROLS -->
-        <div class="ui container menu pagination" v-if="content && content.length">
+        <div class="ui container menu pagination" v-if="content && content.length && !isCompactSourceView">
             <ul class="item m-0">
                 <li>
                     <button class="ui button mini" :class="{'disabled' : page <= 1}"  @click.prevent="prevPage()">
@@ -63,7 +63,7 @@
                 </select>
             </div>
         </div>
-        <div v-else class="ui placeholder segment">
+        <div v-if="!content || !content.length" class="ui placeholder segment">
             <div class="ui grey header">
                 No {{type}} to list.
             </div>
@@ -113,6 +113,10 @@ export default {
         perPageProp: {
             type: Number,
             default: 10
+        },
+        viewMode: {
+            type: String,
+            default: 'cards'
         },
     },
     methods:{
@@ -220,7 +224,13 @@ export default {
         },
     },
     computed: {
+        isCompactSourceView: function () {
+            return this.type == 'Sources' && this.viewMode == 'compact'
+        },
         arrayResults: function () {
+            if (this.isCompactSourceView) {
+                return this.content
+            }
             var start = (this.page - 1) * this.perPage,
                 end = start + this.perPage;
             return this.content && this.content.slice(start, end);
@@ -255,5 +265,11 @@ export default {
         flex-basis: 300px;
         max-width: 300px !important;
         margin: 10px;
+    }
+    .compact-source-list{
+        display: grid;
+        gap: .35rem;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        width: 100%;
     }
 </style>
