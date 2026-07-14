@@ -22,7 +22,7 @@
             <i class="ui pulsing cube icon" v-else></i>
             <div class="content">
                 <div class="summary">
-                    {{job.step}}
+                    {{displayStep(job, i)}}
                     <div class="date">
                         {{job.time}}
                     </div>
@@ -43,5 +43,32 @@
 export default {
   name: 'build-logs',
   props: ['build'],
+  methods: {
+    indexModeForJob: function (job, index) {
+      if (job.mode) {
+        return job.mode
+      }
+      if (job.step != 'index' || !this.build.jobs) {
+        return null
+      }
+      for (var i = index - 1; i >= 0; i--) {
+        var previous = this.build.jobs[i]
+        if (previous.step == 'pre-index') {
+          return previous.mode || null
+        }
+        if (previous.step == 'index' || previous.step == 'post-index') {
+          break
+        }
+      }
+      return null
+    },
+    displayStep: function (job, index) {
+      var mode = this.indexModeForJob(job, index)
+      if (mode) {
+        return `${job.step} (${mode})`
+      }
+      return job.step
+    },
+  },
 }
 </script>

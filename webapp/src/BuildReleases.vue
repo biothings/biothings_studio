@@ -3,9 +3,11 @@
         <div v-if="error" class="ui error message">
             {{error}}
         </div>
-        <button class="ui small grey newrelease right floated  button" @click="newRelease" :class="actionable">
-            New release
-        </button>
+        <div class="release-toolbar" :class="actionable">
+            <button type="button" class="ui small grey newrelease button" @click="newRelease">
+                New release
+            </button>
+        </div>
         <div class="ui feed"  v-if="releases">
             <div class="event" v-for="rel in releases" :key="rel.index_name">
                 <!-- also pass main build object so we can access other related information to that release, such as release notes -->
@@ -62,17 +64,36 @@
                             </span>
                             <span v-if="release_type == 'full'">
                                 <div>
-                                    <label>Enter a name for the index (or leave it empty to have the same name as the build)</label>
-                                    <input type="text" name="index_name" placeholder="Index name" autofocus>
+                                    <label>Index name</label>
+                                    <input class="derived-index-name" type="text" name="index_name" placeholder="Index name" :value="derived_index_name" readonly>
                                     <br>
                                     <br>
                                 </div>
                                 <div>
                                     <label>Select an indexer environment to create the index on</label>
-                                    <select class="ui fluid indexenvs dropdown" name="index_env">
-                                        <option v-for="(info,env) in index_envs.env" :key="env" :data-env="env">{{env}} <i>({{info.host}})</i></option>
+                                    <select class="ui fluid indexenvs dropdown" name="index_env" v-model="selected_index_env" @change="onIndexEnvChange">
+                                        <option v-for="(info,env) in index_envs.env" :key="env" :value="env" :data-env="env">{{env}} <i>({{info.host}})</i></option>
                                     </select>
                                     <br>
+                                </div>
+                                <div class="index-mode-panel" v-if="matching_index">
+                                    <label>Existing index found</label>
+                                    <div class="ui compact two buttons index-mode-buttons">
+                                        <button type="button"
+                                                :class="['ui', selected_index_mode == 'resume' ? 'teal' : 'basic teal', 'button']"
+                                                data-tooltip="Indexes only missing documents. Best for partial failed runs."
+                                                data-position="bottom center"
+                                                @click.prevent="selectIndexMode('resume')">
+                                            Resume existing index
+                                        </button>
+                                        <button type="button"
+                                                :class="['ui', selected_index_mode == 'purge' ? 'red' : 'basic red', 'button']"
+                                                data-tooltip="Deletes the old index first. Best for a clean rebuild."
+                                                data-position="bottom center"
+                                                @click.prevent="selectIndexMode('purge')">
+                                            Purge and reindex
+                                        </button>
+                                    </div>
                                 </div>
                             </span>
 
@@ -85,6 +106,18 @@
                                 create a new document in a build (merged data). If a root source is declared, data from other sources will only be merged <b>if</b>
                                 documents previously exist with same IDs (documents coming from root sources). If not, data is discarded. Finally, if no root source
                                 is declared, any data sources can generate a new document in the merged data.
+                            </div>
+
+                            <div class="ui message index-mode-help" v-if="release_type == 'full' && matching_index">
+                                <b>Existing index options</b>
+                                <div class="ui relaxed list">
+                                    <div class="item">
+                                        <b>Resume</b> keeps the existing index and indexes only missing documents. Choose it when a previous index job failed or stopped partway through.
+                                    </div>
+                                    <div class="item">
+                                        <b>Purge and reindex</b> deletes the existing index first, then builds it from scratch. Choose it when the current index is stale, bad, corrupt, or you want a clean rebuild.
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -167,6 +200,10 @@ export default {
       diff_types: [],
       avail_builds: [],
       index_envs: [],
+      selected_index_env: null,
+      selected_index_mode: 'index',
+      matching_index: null,
+      index_lookup_id: null,
       logStages: [
         {name: "index", type: "index"},
         {name: "diff", type: "diff"},
@@ -199,19 +236,118 @@ export default {
     error: function () {
       var last = this.build.jobs[this.build.jobs.length - 1]
       if (last && last.err) { return last.err }
+    },
+    derived_index_name: function () {
+      return this.build && (this.build._id || this.build.target_name) || ''
+    }
+  },
+  watch: {
+    release_type: function () {
+      if (this.release_type == 'full') {
+        this.ensureSelectedIndexEnv()
+        this.$nextTick(this.checkIndexExists)
+      } else {
+        this.resetIndexMode()
+      }
+    },
+    selected_index_env: function () {
+      this.checkIndexExists()
+    },
+    derived_index_name: function () {
+      this.checkIndexExists()
     }
   },
   methods: {
     displayError: function () {
     },
+    ensureSelectedIndexEnv: function () {
+      var envs = this.index_envs && this.index_envs.env ? Object.keys(this.index_envs.env) : []
+      if (!this.selected_index_env && envs.length) {
+        this.selected_index_env = envs[0]
+      }
+    },
+    getSelectedIndexEnv: function () {
+      return this.selected_index_env || $('.ui.form select[name=index_env]').val() || $('.ui.form select[name=index_env] :selected').attr('data-env')
+    },
+    resetIndexMode: function () {
+      this.matching_index = null
+      this.selected_index_mode = 'index'
+      this.index_lookup_id = null
+    },
+    selectIndexMode: function (mode) {
+      this.selected_index_mode = mode
+    },
+    onIndexEnvChange: function (event) {
+      this.selected_index_env = event.target.value
+    },
+    refreshNewReleaseModal: function () {
+      this.$nextTick(function () {
+        $('.ui.basic.newrelease.modal').modal('refresh')
+      })
+    },
+    checkIndexExists: function () {
+      if (this.release_type != 'full') {
+        return
+      }
+
+      var index_name = this.derived_index_name
+      var index_env = this.getSelectedIndexEnv()
+      if (!index_name || !index_env) {
+        this.resetIndexMode()
+        return
+      }
+
+      var lookup_id = `${index_name}:${index_env}:${Date.now()}`
+      this.index_lookup_id = lookup_id
+      var params = new URLSearchParams()
+      params.set('index_name', index_name)
+      params.set('env_name', index_env)
+      params.set('limit', '1')
+
+      axios.get(axios.defaults.baseURL + `/indexes_by_name?${params.toString()}`)
+        .then(response => {
+          if (this.index_lookup_id != lookup_id) {
+            return
+          }
+          var indexes = response.data && response.data.result ? response.data.result : []
+          var matching_index = indexes.find(index => {
+            return index.index_name == index_name &&
+              (!index.environment || !index.environment.name || index.environment.name == index_env)
+          })
+          this.matching_index = matching_index || null
+          if (this.matching_index) {
+            if (this.selected_index_mode != 'resume' && this.selected_index_mode != 'purge') {
+              this.selected_index_mode = 'resume'
+            }
+          } else {
+            this.selected_index_mode = 'index'
+          }
+          this.refreshNewReleaseModal()
+        })
+        .catch(err => {
+          if (this.index_lookup_id != lookup_id) {
+            return
+          }
+          console.log(err)
+          this.resetIndexMode()
+          this.refreshNewReleaseModal()
+        })
+    },
+    getIndexModeForSubmit: function () {
+      if (this.matching_index && (this.selected_index_mode == 'resume' || this.selected_index_mode == 'purge')) {
+        return this.selected_index_mode
+      }
+      return 'index'
+    },
     newFullRelease: function () {
-      var index_name = $('.ui.form input[name=index_name]').val()
-      if (index_name == '') { index_name = null }
-      var index_env = $('.ui.form select[name=index_env] :selected').attr('data-env')
-      axios.put(axios.defaults.baseURL + '/index', { 
-          indexer_env: index_env, 
+      var index_name = null
+      var index_env = this.getSelectedIndexEnv()
+      var mode = this.getIndexModeForSubmit()
+      axios.put(axios.defaults.baseURL + '/index', {
+          indexer_env: index_env,
           build_name: this.build._id, // after biothings 8/20/2021
-          index_name: index_name })
+          index_name: index_name,
+          mode: mode })
         .then(response => {
           //console.log(response.data.result)
           return response.data.result
@@ -219,10 +355,11 @@ export default {
         .catch(err => {
           //console.log('Error creating index: ')
           console.log(err)
-          axios.put(axios.defaults.baseURL + '/index', { 
-            indexer_env: index_env, 
+          axios.put(axios.defaults.baseURL + '/index', {
+            indexer_env: index_env,
             target_name: this.build._id, // before then
-            index_name: index_name })
+            index_name: index_name,
+            mode: mode })
         })
     },
     newIncrementalRelease: function () {
@@ -248,6 +385,14 @@ export default {
       $('.ui.basic.newrelease.modal')
         .modal('setting', {
           detachable: false,
+          onShow: function () {
+            self.errors = []
+            self.ensureSelectedIndexEnv()
+            self.$nextTick(function () {
+              $('.ui.indexenvs.dropdown').dropdown('refresh')
+              self.checkIndexExists()
+            })
+          },
           onApprove: function () {
             self.errors = []
             var release_type = $('.ui.form select[name=release_type]').val()
@@ -278,6 +423,11 @@ export default {
       axios.get(axios.defaults.baseURL + '/index_manager')
         .then(response => {
           this.index_envs = response.data.result
+          this.ensureSelectedIndexEnv()
+          this.$nextTick(function () {
+            $('.ui.indexenvs.dropdown').dropdown()
+            this.checkIndexExists()
+          })
         })
         .catch(err => {
           console.log(err)
@@ -351,6 +501,13 @@ export default {
     color: white !important;
 }
 
+.release-toolbar {
+  margin-bottom: 1rem;
+  position: relative;
+  text-align: right;
+  z-index: 1;
+}
+
 .stageLogs .menu.hidden {
   display: none;
 }
@@ -363,5 +520,51 @@ export default {
   display: flex;
   align-items: flex-end;
   padding: 1rem 1rem 0 1rem;
+}
+
+.derived-index-name[readonly] {
+  background: #f9fafb;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.index-mode-panel {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.index-mode-buttons {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.index-mode-buttons .button {
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.index-mode-buttons .teal.button,
+.index-mode-buttons .red.button {
+  color: #fff !important;
+}
+
+.index-mode-buttons .basic.teal.button {
+  background: #fff !important;
+  box-shadow: 0 0 0 1px #00b5ad inset !important;
+  color: #00b5ad !important;
+}
+
+.index-mode-buttons .basic.red.button {
+  background: #fff !important;
+  box-shadow: 0 0 0 1px #db2828 inset !important;
+  color: #db2828 !important;
+}
+
+.index-mode-help {
+  margin-top: 0;
+  text-align: left;
+}
+
+.index-mode-help .list {
+  margin-top: 0.5rem;
 }
 </style>
