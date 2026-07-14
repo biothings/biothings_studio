@@ -39,7 +39,11 @@
                 <div v-else>
                     <small class="time">Never updated</small>
                 </div>
-                <div><small class="category">{{ release }}</small></div>
+                <div>
+                    <small class="category release-category" :title="release">
+                        {{ truncatedRelease }}
+                    </small>
+                </div>
 
 
             </div>
@@ -167,9 +171,24 @@ export default {
         source: function () {
             // select source from API call preferably
             return this.source_from_api || this.psource
+        },
+        truncatedRelease: function () {
+            return this.truncateRelease(this.release)
         }
     },
     methods: {
+        truncateRelease: function (release) {
+            var value = String(release || 'Unknown')
+            var dateMatch = value.match(/\d{4}-\d{2}-\d{2}/)
+            if (dateMatch) {
+                var dateEnd = dateMatch.index + dateMatch[0].length
+                var displayEnd = Math.min(dateEnd + 8, value.length)
+                var displayValue = value.slice(0, displayEnd).replace(/[-_.]+$/, '')
+                return value.length > displayEnd ? displayValue + '...' : value
+            }
+            var maxLength = 24
+            return value.length > maxLength ? value.slice(0, maxLength).replace(/[-_.]+$/, '') + '...' : value
+        },
         do_dump: function () {
             // just "eat" mouse event to clean final call
             return this.dump()
@@ -211,5 +230,12 @@ a {
 .tooltip-wrapper {
     display: inline-block;
     /* keeps layout identical */
+}
+
+.release-category {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 </style>

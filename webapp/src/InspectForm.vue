@@ -133,7 +133,6 @@ export default {
   },
   beforeDestroy () {
     bus.$off('do_inspect', this.inspect)
-    $(`#inspect-${this._id}.ui.basic.inspect.modal`).remove()
   },
   data () {
     return {
@@ -150,9 +149,13 @@ export default {
         // source collection, format ["src",id]
         var _id = data_provider[1]
       }
+      if (String(_id) !== String(this._id)) {
+        return
+      }
       var self = this
       $(`#inspect-${_id}.ui.basic.inspect.modal`)
         .modal('setting', {
+          detachable: false,
           onApprove: function () {
             var modes = $(`#inspect-${_id}`).find('#select-mode').val()
             var limit = $(`#inspect-${_id}`).find('.limit-input').val()
