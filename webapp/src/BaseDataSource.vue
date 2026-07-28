@@ -184,6 +184,7 @@ export default {
     unregister: function () {
       $(`.${this.source.name}.ui.basic.unregister.modal`)
         .modal('setting', {
+          detachable: false,
           onApprove: function () {
             var url = $(this).find('input.plugin_url').val()
             axios.delete(axios.defaults.baseURL + '/dataplugin/unregister_url', { data: { url: url } })
