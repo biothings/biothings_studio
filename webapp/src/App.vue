@@ -169,10 +169,8 @@
       </div>
     </div>
 
-    <div class="ui terminal popup top left transition hidden" style="width:50%;">
-      <div class="ui inverted segment" v-if="has_feature('terminal')">
-        <terminal></terminal>
-      </div>
+    <div class="ui flowing basic terminal popup top left transition hidden hub-terminal-popup">
+      <terminal v-if="has_feature('terminal')"></terminal>
     </div>
 
     <div class="ui logs popup top transition hidden" v-if="has_feature('ws')">
@@ -996,6 +994,7 @@ export default {
         on: 'click',
         // ready to type a command
         onVisible: function () {
+          bus.$emit('terminal_opened')
           $('#termcommand').focus()
         },
         closable: false,
@@ -1199,6 +1198,13 @@ body,
 
 .segment.jobs {
   margin: 0;
+}
+
+.ui.popup.hub-terminal-popup {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 
 @import url('https://fonts.cdnfonts.com/css/jetbrains-mono');

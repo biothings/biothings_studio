@@ -1,76 +1,152 @@
 <template>
-    <span>
-    <div class="term terminput"><span>hub&gt;&nbsp;</span>
-    <input id="termcommand" class="term terminput termcommand"
-               type="text"
-               placeholder="Type a command..."
-               v-on:keydown.enter="send"
-               autocomplete="off"
-               autofocus/>
+  <div class="term-prompt-area">
+    <div class="term-prompt-line">
+      <span class="term-prompt">hub&gt;&nbsp;</span>
+      <input id="termcommand" ref="input" v-model="line" class="term-command" type="text" autocomplete="off"
+        autocapitalize="off" spellcheck="false" placeholder="Type a command, or help..." @keydown="onKeydown" />
     </div>
-    </span>
+    <div v-if="suggestions.length" class="term-suggestions">{{ suggestions.join('   ') }}</div>
+  </div>
 </template>
 
 <script>
-import axios from 'axios'
+// longest prefix shared by all the given strings
+function commonPrefix (words) {
+  return words.reduce((prefix, word) => {
+    while (!word.startsWith(prefix)) {
+      prefix = prefix.slice(0, -1)
+    }
+    return prefix
+  })
+}
 
-export default {
+export default {
   name: 'terminal-prompt',
-  props: ['prompt'],
+  props: {
+    // command names, for Tab completion
+    completions: { type: Array, default: () => [] },
+    // previously typed command lines, oldest first
+    history: { type: Array, default: () => [] }
+  },
+  data () {
+    return {
+      line: '',
+      draft: '', // line being typed while browsing history
+      historyIndex: null,
+      suggestions: []
+    }
+  },
+  watch: {
+    line () {
+      this.suggestions = []
+    }
+  },
   methods: {
-    send (evt) {
-      var cmd = evt.target.value
-      this.$parent.error = null
-      var self = this
-      axios.put(axios.defaults.baseURL + '/shell', { cmd: cmd }, { validateStatus: false })
-        .then(response => {
-          // axios doesn't display error when response isn't 200, need to deal with that manually
-          // TODO: this would def benefit all api calls...
-          if (response.status >= 200 && response.status < 300) {
-            $('#termcommand').val('')
-          } else {
-            if (response.data.error) {
-              self.$parent.error = response.data.error
-            } else {
-              self.$parent.error = response.statusText
-            }
-          }
-          var d = $('#terminal')
-          d.scrollTop(d.prop('scrollHeight'))
-        })
-        .catch(err => {
-          if (err.message) {
-            self.$parent.error = err.message
-          } else {
-            self.$parent.error = 'Unknown error'
-          }
-        })
+    focus () {
+      this.$refs.input.focus()
+    },
+    onKeydown (evt) {
+      if (evt.key === 'Enter') {
+        var line = this.line
+        this.line = ''
+        this.historyIndex = null
+        this.$emit('run', line)
+      } else if (evt.key === 'ArrowUp' || evt.key === 'ArrowDown') {
+        evt.preventDefault()
+        this.browseHistory(evt.key === 'ArrowUp' ? -1 : 1)
+      } else if (evt.key === 'Tab') {
+        evt.preventDefault()
+        this.complete()
+      } else if (evt.ctrlKey && evt.key.toLowerCase() === 'l') {
+        evt.preventDefault()
+        this.$emit('clear')
+      } else if (evt.ctrlKey && evt.key.toLowerCase() === 'c' && !window.getSelection().toString()) {
+        this.line = ''
+        this.historyIndex = null
+      } else if (evt.key === 'Escape') {
+        this.suggestions = []
+      }
+    },
+    browseHistory (step) {
+      if (!this.history.length) {
+        return
+      }
+      if (this.historyIndex === null) {
+        if (step > 0) {
+          return
+        }
+        this.draft = this.line
+        this.historyIndex = this.history.length
+      }
+      var index = this.historyIndex + step
+      if (index < 0) {
+        return
+      }
+      if (index >= this.history.length) {
+        this.historyIndex = null
+        this.line = this.draft
+      } else {
+        this.historyIndex = index
+        this.line = this.history[index]
+      }
+      this.$nextTick(() => {
+        var input = this.$refs.input
+        input.selectionStart = input.selectionEnd = input.value.length
+      })
+    },
+    complete () {
+      // complete the command name (first word), accepting hyphens for underscores
+      var match = /^(\s*)(\S*)$/.exec(this.line)
+      if (!match) {
+        return
+      }
+      var typed = match[2].replace(/-/g, '_')
+      var candidates = this.completions.filter(name => name.startsWith(typed))
+      if (!candidates.length) {
+        return
+      }
+      var completed = candidates.length === 1 ? candidates[0] + ' ' : commonPrefix(candidates)
+      this.line = match[1] + completed
+      this.$nextTick(() => {
+        this.suggestions = candidates.length > 1 ? candidates : []
+      })
     }
   }
 }
 </script>
 
 <style scoped>
-.term {
-    font-family: monospace;
-    font-size: 1em;
-    padding:0;
-    margin:0;
-    letter-spacing:-1px;
-    line-height:1;
-    white-space: pre-wrap;
+.term-prompt-line {
+  display: flex;
+  align-items: baseline;
 }
-.terminput {
-    color: white;
-    font-weight: bold;
+
+.term-prompt {
+  color: #21ba45;
+  font-weight: bold;
+  white-space: pre;
 }
-.termcommand {
-    width: 90%;
-    background: transparent;
-    outline: none;
-    border: 0;
+
+.term-command {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: white;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: bold;
+  padding: 0;
 }
-.termprompt{
-    color: blue;
+
+.term-command::placeholder {
+  color: #666;
+  font-weight: normal;
+}
+
+.term-suggestions {
+  color: #8a8a8a;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 </style>
