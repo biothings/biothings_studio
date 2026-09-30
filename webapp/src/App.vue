@@ -546,10 +546,12 @@ export default {
       } else if (evt.obj) {
         // is it a structured event (jsonifiable) or a standard string event
         var invalid_json = false
-        if (evt.data && evt.data.msg.startsWith('{') && evt.data.msg.endsWith('}')) {
+        // hubs can also send data without message (eg. {_id: ...} only)
+        var msg = evt.data && typeof evt.data.msg == 'string' ? evt.data.msg : ''
+        if (msg.startsWith('{') && msg.endsWith('}')) {
           // try to avoid json process if not even a dict
           try {
-            var dmsg = JSON.parse(evt.data.msg)
+            var dmsg = JSON.parse(msg)
             // we only know this type for now...
             if (dmsg.type == 'alert') {
               bus.$emit('alert', dmsg)
@@ -938,7 +940,12 @@ export default {
             var newts = Date.now()
             self.latency_value = newts - self.msg_timestamp
             self.socket_msg = evt.data
-            self.dispatchEvent(evt.data)
+            try {
+              self.dispatchEvent(evt.data)
+            } catch (err) {
+              // don't let one event lose the next ones (sent in the same frame), or the pong
+              console.error('Error while dispatching hub event', evt.data, err)
+            }
             self.msg_timestamp = null
           }
           this.socket.onclose = function () {
