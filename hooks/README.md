@@ -9,6 +9,10 @@ from the Studio terminal, with `biothings-cli hub run ...`, or from the Hub cons
 - `async def` functions run in background, and are followed like other Hub jobs.
 - Names starting with `_` are private helpers, and imported names aren't commands.
   Define `__all__` to list exactly which names are commands.
+- What a command logs (`logger.info(...)`) is shown with its result in the terminal.
+- A command deleting or changing data can ask for a confirmation before running:
+  `purge.confirm = True` after `def purge(...)`, or `confirm = "dryrun"` to only ask
+  when its `dryrun` parameter is false.
 - The `hooks` command lists the hook files loaded, and why a hook failed to load.
 
 Example, `hooks/my_commands.py`:

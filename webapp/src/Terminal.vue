@@ -21,7 +21,8 @@
     <div ref="output" class="hub-terminal-output" @click="focusPrompt">
       <terminal-line v-for="entry in entries" :key="entry.key" :entry="entry"></terminal-line>
       <terminal-prompt ref="prompt" :completions="completions" :history="history" @run="runLine"
-        @clear="clear"></terminal-prompt>
+        @clear="clear" :placeholder="confirming === null ? undefined : 'y to confirm, anything else cancels'">
+      </terminal-prompt>
     </div>
   </div>
 </template>
@@ -93,7 +94,8 @@ export default {
       hooksFolder: null,
       running: {}, // command ID => job entry
       poller: null,
-      catalogUrl: null // hub the catalog was loaded from
+      catalogUrl: null, // hub the catalog was loaded from
+      confirming: null // command line waiting for a confirmation (the next line typed answers)
     }
   },
   computed: {
@@ -179,6 +181,7 @@ export default {
     },
     clear () {
       this.entries = []
+      this.confirming = null
     },
     loadHistory () {
       try {
@@ -198,6 +201,9 @@ export default {
       Vue.localStorage.set(HISTORY_KEY, JSON.stringify(this.history))
     },
     async runLine (line) {
+      if (this.confirming !== null) {
+        return this.answerConfirmation(line.trim())
+      }
       line = line.trim()
       if (!line) {
         return
@@ -220,14 +226,40 @@ export default {
       if (words[0] === 'help' && words.length <= 2 && this.mode === 'terminal') {
         return words.length === 1 ? this.showHelp() : this.showCommandHelp(words[1])
       }
+      return this.send(line, false)
+    },
+    async send (line, confirmed) {
       try {
-        var response = await axios.post(axios.defaults.baseURL + '/terminal/run', { cmd: line })
+        var body = confirmed ? { cmd: line, confirmed: true } : { cmd: line }
+        var response = await axios.post(axios.defaults.baseURL + '/terminal/run', body)
         this.showResponse(response.data.result)
       } catch (err) {
-        this.showRequestError(err)
+        var data = err.response && err.response.data
+        if (err.response && err.response.status === 428 && data && data.confirm) {
+          // commands deleting or changing data must be confirmed first
+          this.addEntry('warning', data.confirm.join('\n'))
+          this.addEntry('info', 'Run it? Type y to confirm, anything else cancels')
+          this.confirming = line
+        } else {
+          this.showRequestError(err)
+        }
       }
     },
+    answerConfirmation (answer) {
+      var line = this.confirming
+      this.confirming = null
+      this.addEntry('input', answer)
+      if (/^y(es)?$/i.test(answer)) {
+        return this.send(line, true)
+      }
+      this.addEntry('info', 'Cancelled')
+    },
     showResponse (response) {
+      // what the command logged while it was called (not sent by older hubs)
+      var logs = response.logs || []
+      if (logs.length) {
+        this.addEntry('log', logs.join('\n'))
+      }
       if (response.stdout) {
         this.addEntry('output', response.stdout.replace(/\n$/, ''))
       }
@@ -238,19 +270,29 @@ export default {
         var entry = this.addEntry('job', response.cmd, {
           id: response.id,
           status: 'running',
+          reason: null,
           duration: null,
           results: [],
           started_at: response.started_at
         })
-        Vue.set(this.running, String(response.id), entry)
-        this.startPolling()
+        if (/^(restart|stop)\(/.test(response.cmd)) {
+          // the hub process goes away: this job can't be followed
+          entry.status = 'unknown'
+          entry.reason = response.cmd.startsWith('stop') ? 'hub stopping' : 'hub restarting'
+          if (entry.reason === 'hub restarting') {
+            this.waitForRestart()
+          }
+        } else {
+          Vue.set(this.running, String(response.id), entry)
+          this.startPolling()
+        }
       } else if (response.failed) {
         this.addEntry('error', response.error, { details: response.traceback })
       } else {
         var text = render(response.result)
         if (text) {
           this.addEntry('output', text)
-        } else if (!response.stdout) {
+        } else if (!response.stdout && !logs.length) {
           this.addEntry('info', 'done')
         }
       }
@@ -307,8 +349,41 @@ export default {
           this.scrollToBottom()
         })
         .catch(err => {
-          console.log(`Can't get status of command ${id}: ${err}`)
+          var error = err.response && err.response.data && err.response.data.error
+          if (error && /No such command/.test(error) && this.running[id]) {
+            // the hub restarted meanwhile, it doesn't know this command anymore
+            this.running[id].status = 'unknown'
+            this.running[id].reason = 'hub restarted'
+            Vue.delete(this.running, id)
+          } else {
+            console.log(`Can't get status of command ${id}: ${err}`)
+          }
         })
+    },
+    // after "restart": wait for the hub to go down and come back, then reconnect Studio
+    // (websocket, commands catalog) so everything is live again, without reloading the page
+    async waitForRestart () {
+      var sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+      var url = axios.defaults.baseURL
+      var reachable = () => axios.get(url + '/', { timeout: 3000 }).then(() => true, () => false)
+      var info = this.addEntry('info', 'Hub restarting...')
+      var start = Date.now()
+      while (Date.now() - start < 60000 && await reachable()) {
+        await sleep(1000)
+      }
+      while (Date.now() - start < 300000 && !(await reachable())) {
+        await sleep(2000)
+      }
+      if (axios.defaults.baseURL !== url) {
+        return // connected to another hub meanwhile
+      }
+      if (!(await reachable())) {
+        info.text = 'Hub still unreachable after restart, check its logs'
+        return
+      }
+      info.text = `Hub restarted (${Math.round((Date.now() - start) / 1000)}s), reconnected`
+      bus.$emit('reconnect')
+      this.loadCatalog()
     },
     // help is built from the commands catalog provided by the hub
     showHelp () {
@@ -356,6 +431,9 @@ export default {
       lines.push('Usage:  ' + cmd.usage, 'Python: ' + cmd.signature)
       if (cmd.is_async) {
         lines.push('Runs in background (asynchronous command)')
+      }
+      if (cmd.confirm) { // not sent by older hubs
+        lines.push('Asks for a confirmation before running' + (cmd.confirm === true ? '' : ", unless it's a dry run"))
       }
       if (cmd.examples && cmd.examples.length) {
         lines.push('Examples:')

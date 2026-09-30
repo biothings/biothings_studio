@@ -166,7 +166,7 @@
                   </button>
                   <button class="ui labeled icon button validate-builds" @click="validate_builds($event)"
                     :class="{ disabled: show_build_confirm || is_deleting_builds }"
-                    data-tooltip="Remove build records whose target collections no longer exist">
+                    data-tooltip="Remove build records whose target collections no longer exist (archived builds are kept)">
                     <i class="sync icon"></i>Validate
                   </button>
                   <button class="ui labeled icon button" @click="toggleAllBuilds($event)"

@@ -43,7 +43,7 @@ export default {
         return 'running in background'
       }
       if (this.entry.status === 'unknown') {
-        return 'not followed anymore (connected to another hub)'
+        return `not followed anymore (${this.entry.reason || 'connected to another hub'})`
       }
       return this.entry.status + (this.entry.duration ? ` in ${this.entry.duration}` : '')
     }
@@ -83,6 +83,14 @@ export default {
 .term-info {
   color: #8a8a8a;
   font-style: italic;
+}
+
+.term-log {
+  color: #8a8a8a;
+}
+
+.term-warning {
+  color: #f2c037;
 }
 
 .term-job {

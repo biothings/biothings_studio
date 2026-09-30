@@ -3,7 +3,7 @@
     <div class="term-prompt-line">
       <span class="term-prompt">hub&gt;&nbsp;</span>
       <input id="termcommand" ref="input" v-model="line" class="term-command" type="text" autocomplete="off"
-        autocapitalize="off" spellcheck="false" placeholder="Type a command, or help..." @keydown="onKeydown" />
+        autocapitalize="off" spellcheck="false" :placeholder="placeholder" @keydown="onKeydown" />
     </div>
     <div v-if="suggestions.length" class="term-suggestions">{{ suggestions.join('   ') }}</div>
   </div>
@@ -26,7 +26,8 @@ export default {
     // command names, for Tab completion
     completions: { type: Array, default: () => [] },
     // previously typed command lines, oldest first
-    history: { type: Array, default: () => [] }
+    history: { type: Array, default: () => [] },
+    placeholder: { type: String, default: 'Type a command, or help...' }
   },
   data () {
     return {

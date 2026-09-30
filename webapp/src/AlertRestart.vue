@@ -24,6 +24,12 @@ import bus from './bus.js'
 export default {
   name: 'alert-restart',
   props: ['event'],
+  created () {
+    bus.$on('ws_connected', this.onWSConnected)
+  },
+  beforeDestroy () {
+    bus.$off('ws_connected', this.onWSConnected)
+  },
   mounted () {
     $('.mini.alert.modal')
       .modal({
@@ -38,5 +44,13 @@ export default {
     return {
     }
   },
+  methods: {
+    onWSConnected (connected) {
+      // reconnected meanwhile (eg. hub restarted from the terminal), nothing to ask anymore
+      if (connected) {
+        $(this.$el).modal('hide')
+      }
+    }
+  }
 }
 </script>
