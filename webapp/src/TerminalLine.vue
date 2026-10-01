@@ -6,6 +6,12 @@
       <span class="term-job-id">[#{{ entry.id }}]</span> {{ entry.text }}
       <span class="term-job-status">{{ statusText }}</span>
       <pre v-for="(result, i) in entry.results" :key="i" class="term-text">{{ result }}</pre>
+      <template v-if="entry.details">
+        <a class="term-details-toggle" @click.stop="showDetails = !showDetails">
+          {{ showDetails ? 'hide' : 'show' }} traceback
+        </a>
+        <pre v-if="showDetails" class="term-text term-details">{{ entry.details }}</pre>
+      </template>
     </div>
     <div v-else-if="entry.kind === 'error'">
       <pre class="term-text term-error">{{ entry.text }}</pre>
@@ -116,6 +122,10 @@ export default {
 
 .term-job-failed .term-text {
   color: #ff695e;
+}
+
+.term-job-failed .term-details {
+  color: #a0a0a0;
 }
 
 .term-details-toggle {

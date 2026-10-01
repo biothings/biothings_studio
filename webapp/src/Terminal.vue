@@ -273,6 +273,7 @@ export default {
           reason: null,
           duration: null,
           results: [],
+          details: null,
           started_at: response.started_at
         })
         if (/^(restart|stop)\(/.test(response.cmd)) {
@@ -346,6 +347,7 @@ export default {
           entry.status = info.failed ? 'failed' : 'done'
           entry.duration = info.duration
           entry.results = (info.results || []).map(render).filter(text => text)
+          entry.details = info.failed ? info.traceback || null : null // traceback: not sent by older hubs
           this.scrollToBottom()
         })
         .catch(err => {
