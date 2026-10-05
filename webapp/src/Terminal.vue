@@ -274,6 +274,7 @@ export default {
           duration: null,
           results: [],
           details: null,
+          progress: [],
           started_at: response.started_at
         })
         if (/^(restart|stop)\(/.test(response.cmd)) {
@@ -340,7 +341,16 @@ export default {
         .then(response => {
           var info = response.data.result
           var entry = this.running[id]
-          if (!entry || !info || !info.is_done) {
+          if (!entry || !info) {
+            return
+          }
+          if (!info.is_done) {
+            // eg. "dump all": which sources are done, or failed (not sent by older hubs)
+            var progress = info.progress || []
+            if (progress.length !== entry.progress.length) {
+              entry.progress = progress
+              this.scrollToBottom()
+            }
             return
           }
           Vue.delete(this.running, id)

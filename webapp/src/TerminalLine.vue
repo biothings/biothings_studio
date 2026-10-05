@@ -5,6 +5,7 @@
       <i :class="icon"></i>
       <span class="term-job-id">[#{{ entry.id }}]</span> {{ entry.text }}
       <span class="term-job-status">{{ statusText }}</span>
+      <pre v-if="entry.status === 'running' && entry.progress && entry.progress.length" class="term-text term-log">{{ entry.progress.join('\n') }}</pre>
       <pre v-for="(result, i) in entry.results" :key="i" class="term-text">{{ result }}</pre>
       <template v-if="entry.details">
         <a class="term-details-toggle" @click.stop="showDetails = !showDetails">
