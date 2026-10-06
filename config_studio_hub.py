@@ -57,6 +57,14 @@ HUB_API_PORT = 7080
 #- readonly -#
 HUB_PASSWD = {"guest":"9RKfd8gDuNf0Q"}
 
+# Users who can log in to the Hub API. When defined, running commands or changing data
+# from BioThings Studio requires a login. Otherwise anyone who can reach the Hub API can
+# run commands. The format is a dictionary of 'username': 'password hash'
+# Get the hash of a password with 'python -m biothings.utils.passwords'
+#- hide -#
+#- readonly -#
+HUB_API_USERS = {}
+
 # Webhook to publish notifications to a Slack channel
 SLACK_WEBHOOK = None
 
