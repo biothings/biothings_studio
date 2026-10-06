@@ -1,32 +1,40 @@
 <template>
   <!-- for hubs requiring a login to run commands or change data -->
   <span>
-    <span v-if="conn && conn.login_required">
-      <div class="ui middle aligned mini" data-position="bottom left"
-        :data-tooltip="username ? `Logged in as ${username}, click to log out` : 'Log in to run commands on this hub'">
-        <i class="clickicon icon" :class="username ? 'green user' : 'user outline'" @click="username ? logout() : open()"></i>
-      </div>
+    <!-- (wrapper: the modal below is moved out of this component when initialized) -->
+    <span>
+      <span v-if="conn && conn.login_required">
+        <div class="ui middle aligned mini" data-position="bottom left"
+          :data-tooltip="username ? `Logged in as ${username}, click to log out` : 'Log in to run commands on this hub'">
+          <i class="clickicon icon" :class="username ? 'green user' : 'user outline'" @click="username ? logout() : open()"></i>
+        </div>
+      </span>
     </span>
 
-    <div class="ui tiny hub-login modal">
-      <div class="header">Log in to {{ conn && conn.name }}</div>
+    <div ref="modal" class="ui tiny hub-login modal" role="dialog" aria-modal="true" aria-labelledby="hub-login-title">
+      <div class="header" id="hub-login-title">
+        <i class="user icon"></i>Log in to {{ conn && conn.name }}
+      </div>
       <div class="content">
-        <p>Running commands on this hub requires a login.</p>
-        <div class="ui form">
+        <p>{{ reason }}</p>
+        <form id="hub-login-form" class="ui form" @submit.prevent="login">
           <div class="field">
-            <label>Username</label>
-            <input type="text" v-model="form_username" autocomplete="username" @keyup.enter="login">
+            <label for="hub-login-username">Username</label>
+            <input ref="username" id="hub-login-username" name="username" type="text" autocomplete="username"
+              v-model.trim="form_username">
           </div>
           <div class="field">
-            <label>Password</label>
-            <input type="password" v-model="password" autocomplete="current-password" @keyup.enter="login">
+            <label for="hub-login-password">Password</label>
+            <input ref="password" id="hub-login-password" name="password" type="password" autocomplete="current-password"
+              v-model="password">
           </div>
-        </div>
-        <div v-if="error" class="ui red message">{{ error }}</div>
+        </form>
+        <div v-if="error" class="ui negative message">{{ error }}</div>
       </div>
       <div class="actions">
-        <div class="ui cancel button">Cancel</div>
-        <div class="ui green button" :class="{ loading: logging_in }" @click="login">Log in</div>
+        <button type="button" class="ui cancel button">Cancel</button>
+        <button type="submit" form="hub-login-form" class="ui green button" :class="{ loading: logging_in }"
+          :disabled="logging_in">Log in</button>
       </div>
     </div>
   </span>
@@ -44,6 +52,7 @@ export default {
       username: null, // logged user
       form_username: '',
       password: '',
+      reason: '',
       error: null,
       logging_in: false
     }
@@ -53,26 +62,49 @@ export default {
   },
   created () {
     bus.$on('logged_user', this.setUsername)
-    bus.$on('login_required', this.open)
+    bus.$on('login_required', this.commandRefused)
+  },
+  mounted () {
+    // not detached from the page, the modal would be positioned within the navbar
+    $(this.$refs.modal).modal({
+      autofocus: false,
+      onVisible: () => (this.form_username ? this.$refs.password : this.$refs.username).focus(),
+      onHidden: () => {
+        this.password = ''
+        this.error = null
+      }
+    })
   },
   beforeDestroy () {
     bus.$off('logged_user', this.setUsername)
-    bus.$off('login_required', this.open)
+    bus.$off('login_required', this.commandRefused)
+    $(this.$refs.modal).remove()
   },
   methods: {
     setUsername (username) {
       this.username = username
+      if (username) {
+        this.form_username = username // to log in again when the login expires
+      }
     },
-    open () {
-      if (!this.conn || !this.conn.login_required) {
+    commandRefused () {
+      this.open('This command requires a login. Log in, then run it again.')
+    },
+    open (reason) {
+      if (!this.conn || !this.conn.login_required || $(this.$refs.modal).modal('is active')) {
         return
       }
+      this.reason = reason || 'Running commands on this hub requires a login.'
       this.error = null
       this.password = ''
-      $('.ui.hub-login.modal').modal({ detachable: false, autofocus: true }).modal('show')
+      $(this.$refs.modal).modal('show')
     },
     login () {
       if (this.logging_in) {
+        return
+      }
+      if (!this.form_username || !this.password) {
+        this.error = 'Enter your username and password'
         return
       }
       this.logging_in = true
@@ -80,14 +112,14 @@ export default {
       hubapi.login(this.form_username, this.password)
         .then(() => {
           this.logging_in = false
-          this.password = ''
-          $('.ui.hub-login.modal').modal('hide')
+          $(this.$refs.modal).modal('hide')
         })
         .catch(err => {
           this.logging_in = false
           const error = err.response && err.response.data && err.response.data.error
           // eg. "HTTP 401: Invalid username or password"
-          this.error = error ? error.replace(/^HTTP \d+: /, '') : err.message
+          this.error = error ? error.replace(/^HTTP \d+: /, '') : `Can't reach the hub (${err.message})`
+          this.$nextTick(() => this.$refs.password.select())
         })
     },
     logout () {
@@ -96,10 +128,3 @@ export default {
   }
 }
 </script>
-
-<style>
-/* the modal stays in the navbar, whose text is white */
-.hub-login.modal .content {
-  color: rgba(0, 0, 0, 0.87);
-}
-</style>
