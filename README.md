@@ -33,7 +33,6 @@ A hub can require a login to run commands or change data: define its users in `H
 (in `config_studio_hub.py` for Studio's own hub), with password hashes made with
 `python -m biothings.utils.passwords`. Studio then asks for a username and password when a command
 needs them, or when clicking the user icon next to the hub's name, and keeps one login per hub.
-The hub's SSH console has its own users, in `HUB_PASSWD`.
 
 ## Build Images
 
