@@ -44,18 +44,17 @@ MAX_QUEUED_JOBS = os.cpu_count() * 4
 HUB_NAME = "Biothings Hub"
 HUB_ICON = None
 #STANDALONE_VERSION = "standalone_v2"
-# SSH port for hub console
-#- readonly -#
-HUB_SSH_PORT = 7022
 # API port
 #- readonly -#
 HUB_API_PORT = 7080
 
-# The format is a dictionary of 'username': 'cryptedpassword'
-# Generate crypted passwords with 'openssl passwd -crypt'
+# Users who can log in to the Hub API. When defined, running commands or changing data
+# from BioThings Studio requires a login. Otherwise anyone who can reach the Hub API can
+# run commands. The format is a dictionary of 'username': 'password hash'
+# Get the hash of a password with 'python -m biothings.utils.passwords'
 #- hide -#
 #- readonly -#
-HUB_PASSWD = {"guest":"9RKfd8gDuNf0Q"}
+HUB_API_USERS = {}
 
 # Webhook to publish notifications to a Slack channel
 SLACK_WEBHOOK = None

@@ -45,35 +45,6 @@
         </div>
       </div>
       <br>
-      <div class="ui inverted accordion advanced">
-        <div class="title">
-          <i class="dropdown icon"></i>
-          Advanced
-        </div>
-        <div class="content">
-          <div v-if="signin_error" class="ui red basic label signin-error" v-html="signin_error"></div>
-          <span v-if="logged_username">
-            <div>
-              <span>Currently logged as <b class="logged-user">{{ logged_username }}</b></span>
-              <a class="signout" @click="signOut">Sign out</a>
-            </div>
-            <br>
-          </span>
-          <form class="ui inverted form login" method="post" v-else onsubmit="return false">
-            <div class="field">
-              <label>Username</label>
-              <input type="text" name="username" placeholder="Email">
-            </div>
-            <div class="field">
-              <label>Password</label>
-              <input type="password" name="password" placeholder="Password">
-            </div>
-            <button class="ui button" type="submit" @click="signIn">Login</button>
-          </form>
-        </div>
-      </div>
-
-      <br>
 
       <div class="ui inverted">
         <div class="ui title py-half-em" v-if="Object.keys(existings).length">
@@ -102,7 +73,6 @@
 <script>
 import axios from 'axios'
 import bus from './bus.js'
-import auth from './auth.js'
 import hubapi from './hubapi.js'
 import Vue from 'vue'
 import HubsDashboard from './HubsDashboard.vue'
@@ -130,28 +100,18 @@ export default {
         }
       }
     })
-    $('.ui.accordion.advanced').accordion()
   },
   created() {
     bus.$on('connection_failed', this.failedConnection)
-    bus.$on('logged', this.logged)
-    bus.$on('logerror', this.logerror)
-    bus.$on('logged_user', this.setLoggedUser)
   },
   beforeDestroy() {
     $('.ui.basic.newhuburl.modal').remove()
     bus.$off('connection_failed', this.failedConnection)
-    bus.$off('logged', this.logged)
-    bus.$off('logerror', this.logerror)
-    bus.$off('logged_user', this.setLoggedUser)
   },
   data() {
     return {
       existings: {},
       connection_error: null,
-      signin_error: null,
-      logged_username: null,
-      tokens: {},
       base_path: window.location.pathname || '/'
     }
   },
@@ -209,8 +169,6 @@ export default {
       if (url) {
         $('.ui.newhuburl.form').form('get field', 'huburl').val(url)
       }
-      // reset errors
-      self.signin_error = null
 
       $('.ui.basic.newhuburl.modal')
         .modal('setting', {
@@ -234,41 +192,6 @@ export default {
 
       var url = conn.url.replace(/\/$/, '')
       this.refreshConnection(url)
-    },
-
-    signIn() {
-      this.signin_error = null
-      const username = $('.ui.form.login').form('get field', 'username').val()
-      const password = $('.ui.form.login').form('get field', 'password').val()
-      auth.signIn(username, password)
-      return false
-    },
-
-    logged: function (username, tokens) {
-      this.tokens = tokens
-      document.cookie = 'biothings-access-token=' + tokens.accessToken.jwtToken
-      document.cookie = 'biothings-id-token=' + tokens.idToken.jwtToken
-      document.cookie = 'biothings-refresh-token=' + tokens.refreshToken.token
-      document.cookie = 'biothings-current-user=' + username
-      this.setLoggedUser(username)
-      this.signin_error = null
-    },
-
-    logerror: function (user, error, reason) {
-      this.signin_error = error
-      if (reason) { this.signin_error += ': ' + reason }
-      this.logger_user = null
-      this.tokens = {}
-    },
-
-    setLoggedUser(username) {
-      this.logged_username = username
-    },
-
-    signOut: function () {
-      auth.refreshAccessToken()
-      auth.signOut()
-      hubapi.clearLoggedUser()
     },
 
     handleKeyPressOnHubURL: function (event) {
@@ -319,20 +242,6 @@ a {
 
 .largechoose {
   width: 30em;
-}
-
-.signout {
-  font-weight: bold;
-  cursor: pointer;
-  padding-left: 1em;
-}
-
-.logged-user {
-  color: lightgrey;
-}
-
-.signin-error {
-  margin-bottom: 1em;
 }
 
 .py-half-em {
