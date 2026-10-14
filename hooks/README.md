@@ -2,7 +2,7 @@
 
 Python files (`*.py`) in this folder are loaded by the Hub when it starts (`HOOKS_FOLDER`
 setting, `./hooks` by default). Functions they define become Hub commands, which can be run
-from the Studio terminal, with `biothings-cli hub run ...`, or from the Hub console (SSH).
+from the Studio terminal, or with `biothings-cli hub run ...`.
 
 - A hook can use any Hub command: `sources()`, `dump(...)`, `lsmerge(...)`, `schedule(...)`...
 - A function's docstring documents the command (`help`, `help <command>`).

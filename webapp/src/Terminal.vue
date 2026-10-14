@@ -301,6 +301,10 @@ export default {
     },
     showRequestError (err) {
       var data = err.response && err.response.data
+      if (err.response && err.response.status === 401) {
+        // the hub requires a login to run commands (Studio asks for it, see HubLogin)
+        return this.addEntry('error', 'Login required: log in, then run it again (Up recalls it)')
+      }
       if (data && data.error) {
         var error = this.addEntry('error', data.error)
         if (data.usage) {
