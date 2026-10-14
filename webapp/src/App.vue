@@ -926,7 +926,7 @@ export default {
         .then(response => {
           self.ws_connection = 'connecting'
           //console.log('WebSocket available')
-          this.socket = new SockJS(axios.defaults.baseURL + '/ws?token=' + hubapi.getAccessToken(), transports)
+          this.socket = new SockJS(axios.defaults.baseURL + '/ws', transports)
           this.socket.onopen = function () {
             self.ws_connection = 'connected'
             this.ping_interval = PING_INTERVAL_MS

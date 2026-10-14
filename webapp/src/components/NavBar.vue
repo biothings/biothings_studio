@@ -12,6 +12,7 @@
                     <i class="lock icon" :class="readonly_mode ? 'red': ''"></i>
                 </div>
             </span>
+            <HubLogin></HubLogin>
         </div>
         <div class="item">
             <Loader></Loader>
@@ -42,6 +43,7 @@ import JobSummary from '../JobSummary.vue'
 import EventMessages from '../EventMessages.vue'
 import Loader from '../Loader.vue'
 import ChooseHub from '../ChooseHub.vue'
+import HubLogin from '../HubLogin.vue'
 //store
 import {mapGetters} from 'vuex';
 //mixins
@@ -58,7 +60,8 @@ export default {
         JobSummary,
         EventMessages,
         Loader,
-        ChooseHub
+        ChooseHub,
+        HubLogin
     },
     mixins: [has_feature],
     props:[

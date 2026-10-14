@@ -27,6 +27,13 @@ Finally, BioThings Studio comes in different flavors, to facilitate contribution
 - *Studio for MyChem.info* : `docker pull biothings/studio4mychem:unstable`
 
 
+## Logging in to a hub
+
+A hub can require a login to run commands or change data: define its users in `HUB_API_USERS`
+(in `config_studio_hub.py` for Studio's own hub), with password hashes made with
+`python -m biothings.utils.passwords`. Studio then asks for a username and password when a command
+needs them, or when clicking the user icon next to the hub's name, and keeps one login per hub.
+
 ## Build Images
 
 Please see the README.md file in the 'docker' directory.
