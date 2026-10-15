@@ -38,6 +38,32 @@ needs them, or when clicking the user icon next to the hub's name, and keeps one
 
 Please see the README.md file in the 'docker' directory.
 
+## Releasing
+
+The webapp is hosted at https://studio.biothings.io. `/master/` runs the latest `master`, deployed on
+every push. Each release has its own folder, e.g. `/0.4a/`, deployed when its GitHub release is
+published, and `/` runs a copy of the current release's folder.
+
+To release, check https://studio.biothings.io/master/ against the hubs you care about, then publish a
+release from `master`. Use the next letter for fixes (`0.5b`) and the next minor version for new
+features (`0.6a`). A pre-release (`--prerelease`) is only deployed to its folder, leaving `/` alone.
+
+```
+gh release create 0.5a --target master --generate-notes
+```
+
+To roll back, or to make a pre-release live, run the *Release BioThings Studio Webapp* workflow from
+the Actions tab with the release's tag, which copies its folder to `/`:
+
+```
+gh workflow run release.yml -f tag=0.4a
+```
+
+`webapp/compat.root.json` becomes `/compat.json` whenever a release goes live. Studio reads it from the
+site root, whichever folder it runs from, to send hubs on older BioThings versions to a release that
+works with them. If a release needs a newer hub than some users run, add an entry there sending older
+hubs to the previous release. Edit this file, not the bucket's copy: the next release overwrites it.
+
 ## More information
 
 **Biothings Studio** is part of the *Biothings API* ecosystem, more information can be found here: https://github.com/biothings/biothings.api

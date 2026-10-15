@@ -1,0 +1,68 @@
+name: Release BioThings Studio Webapp
+
+# Publishing a GitHub release deploys its tag to the bucket folder of the same name, then copies
+# that folder to the site root; a pre-release stops at its folder. Running this workflow by hand
+# with a tag copies that release's folder to the root, to roll back or to make a pre-release live.
+
+on:
+  release:
+    types:
+    - published
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release to make live at the site root, e.g. 0.4a
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      BUCKET: ${{ secrets.STUDIO_S3_BUCKET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+    steps:
+    # The tag names a folder in the bucket, so it can't be empty, master, or contain a slash
+    - name: Check the tag
+      run: |
+        if [[ ! "$TAG" =~ ^[0-9][0-9A-Za-z._-]*$ ]]; then
+          echo "::error::Release tags look like 0.5a, not '$TAG'"
+          exit 1
+        fi
+    - uses: actions/checkout@v7
+    - uses: actions/setup-node@v7
+      if: github.event_name == 'release'
+      with:
+        node-version: '18'
+    - name: Deploy to the release's folder
+      if: github.event_name == 'release'
+      run: |
+        npm --prefix webapp/ install
+        npm --prefix webapp/ run build
+        aws s3 sync webapp/dist "s3://${BUCKET:?}/${TAG:?}/" --acl public-read --follow-symlinks --delete --no-progress
+    - name: Leave the site root alone
+      if: github.event.release.prerelease
+      run: echo "::notice::Pre-release $TAG is deployed to /$TAG/ only. Run this workflow with tag $TAG to make it live."
+    - name: Make the release live at the site root
+      if: github.event_name == 'workflow_dispatch' || !github.event.release.prerelease
+      run: |
+        if ! aws s3 ls "s3://${BUCKET:?}/${TAG:?}/index.html" > /dev/null; then
+          echo "::error::Nothing is deployed to /$TAG/"
+          exit 1
+        fi
+        # The root's compat.json isn't part of a build: it's webapp/compat.root.json as of master
+        git fetch --depth=1 origin master
+        git show FETCH_HEAD:webapp/compat.root.json > "$RUNNER_TEMP/compat.json"
+        # cp, not sync: sync skips same-size files whose source is older, so rolling back to an
+        # older release would keep the newer index.html. Never --delete here: it would remove
+        # master/ and every release folder.
+        aws s3 cp "s3://$BUCKET/$TAG/" "s3://$BUCKET/" --recursive --exclude compat.json --acl public-read --no-progress
+        aws s3 cp "$RUNNER_TEMP/compat.json" "s3://$BUCKET/compat.json" --acl public-read --no-progress

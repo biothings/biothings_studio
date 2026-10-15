@@ -1,0 +1,32 @@
+[
+  {
+    "when" : {
+      "biothings_version" : {"branch" : "0.2.3", "commit" : null, "date" : ">2019-03-21"}
+    },
+    "requires" : "0.1f"
+  },
+  {
+    "when" : {
+      "biothings_version" : {"branch" : "0.2.2", "commit" : null, "date" : null}
+    },
+    "requires" : "0.1e"
+  },
+  {
+    "when" : {
+      "biothings_version" : {"branch" : "0.7.x", "commit" : null, "date" : null}
+    },
+    "requires" : "this"
+  },
+  {
+    "when" : {
+      "biothings_version" : {"branch" : "0.6.0", "commit" : null, "date" : null}
+    },
+    "requires" : "0.2a"
+  },
+  {
+    "when" : {
+      "biothings_version" : {"branch" : "master"}
+    },
+    "requires" : "this"
+  }
+]
