@@ -1,0 +1,14 @@
+# Dependabot opens the webapp's security updates in one pull request, grouped, and no version
+# updates otherwise (open-pull-requests-limit: 0)
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: /webapp
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 0
+  groups:
+    security:
+      applies-to: security-updates
+      patterns:
+      - '*'
