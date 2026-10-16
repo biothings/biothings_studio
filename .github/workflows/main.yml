@@ -16,7 +16,7 @@ jobs:
     - uses: actions/setup-node@v7
       with:
         node-version: '18'
-    - run: npm --prefix webapp/ install
+    - run: npm --prefix webapp/ ci
     - run: npm --prefix webapp/ run build
     - run: aws s3 sync webapp/dist "s3://${BUCKET:?}/master/" --acl public-read --follow-symlinks --delete --no-progress
       env:

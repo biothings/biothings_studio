@@ -29,6 +29,7 @@
 <script>
 import axios from 'axios'
 import bus from './bus.js'
+import orderBy from 'lodash/orderBy'
 
 export default {
   name: 'commands-list',
@@ -56,7 +57,7 @@ export default {
   },
   computed: {
     orderedCommands: function () {
-      return _.orderBy(Object.values(this.commands), 'id', -1)
+      return orderBy(Object.values(this.commands), 'id', -1)
     }
   },
   watch: {

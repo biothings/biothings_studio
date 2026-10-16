@@ -3,32 +3,30 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service serve",
-    "build": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service build",
-    "dev": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service serve --hot"
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "dev": "vue-cli-service serve --hot"
   },
   "dependencies": {
     "@babel/preset-env": "^7.5.4",
-    "axios": "^0.21.1",
-    "core-js": "^2.6.5",
-    "file-loader": "^4.0.0",
+    "axios": "^0.34.0",
+    "core-js": "^3.50.0",
     "jquery-tablesort": "0.0.11",
-    "moment": "^2.24.0",
+    "lodash": "^4.18.1",
+    "moment": "^2.31.0",
     "numeral": "^2.0.6",
     "regenerator-runtime": "^0.13.2",
-    "urijs": "^1.19.1",
-    "vue": "^2.6.10",
+    "urijs": "^1.19.11",
+    "vue": "^2.7.16",
     "vue-localstorage": "^0.6.2",
     "vue-moment": "^4.0.0",
     "vue-router": "^3.0.7",
     "vue2-filters": "^0.7.0",
-    "vuex": "^2.0.0",
-    "webpack": "^4.36.1"
+    "vuex": "^2.0.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.9.0",
-    "@vue/cli-service": "^4.4.4",
-    "vue-template-compiler": "^2.6.10"
+    "@vue/cli-plugin-babel": "^5.0.9",
+    "@vue/cli-service": "^5.0.9"
   },
   "postcss": {
     "plugins": {

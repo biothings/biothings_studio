@@ -58,6 +58,7 @@
 
 <script>
 import axios from 'axios'
+import orderBy from 'lodash/orderBy'
 import DataSource from './DataSource.vue'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
@@ -91,7 +92,7 @@ export default {
   },
   computed: {
     orderedSources: function () {
-      return _.orderBy(this.sources, 'name')
+      return orderBy(this.sources, 'name')
     }
   },
   components: { DataSource, PaginatedList },

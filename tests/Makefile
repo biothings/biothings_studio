@@ -1,4 +1,4 @@
-all: api webapp studio4
+all: api
 
 info:
 	df -h
@@ -7,20 +7,6 @@ info:
 api_mvcgi: info
 	cd hubapi/mvcgi && make test
 
-webapp_tutorial: info
-	cd webapp/tutorial && make test
-
-studio4mygene: info
-	cd webapp/studio4mygene && make test
-
-studio4myvariant: info
-	cd webapp/studio4myvariant && make test
-
-studio4mychem: info
-	cd webapp/studio4mychem && make test
-
 
 api: api_mvcgi
-webapp: webapp_tutorial
-studio4: studio4mygene studio4myvariant
 
