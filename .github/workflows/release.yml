@@ -45,7 +45,7 @@ jobs:
     - name: Deploy to the release's folder
       if: github.event_name == 'release'
       run: |
-        npm --prefix webapp/ install
+        npm --prefix webapp/ ci
         npm --prefix webapp/ run build
         aws s3 sync webapp/dist "s3://${BUCKET:?}/${TAG:?}/" --acl public-read --follow-symlinks --delete --no-progress
     - name: Leave the site root alone
