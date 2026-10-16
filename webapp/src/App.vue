@@ -201,8 +201,6 @@ import VueRouter from 'vue-router'
 import bus from './bus.js'
 import hubapi from './hubapi.js'
 
-import _ from 'lodash'
-
 import JobSummary from './JobSummary.vue'
 import Status from './views/Status.vue'
 import DataSourceGrid from './DataSourceGrid.vue'
