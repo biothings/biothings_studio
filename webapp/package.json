@@ -17,7 +17,7 @@
     "numeral": "^2.0.6",
     "regenerator-runtime": "^0.13.2",
     "urijs": "^1.19.11",
-    "vue": "^2.7.16",
+    "vue": "^3.5.44",
     "vue-localstorage": "^0.6.2",
     "vue-moment": "^4.0.0",
     "vue-router": "^3.0.7",
