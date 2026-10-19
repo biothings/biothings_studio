@@ -35,7 +35,7 @@
                     <td v-if="process.job">{{process.job.duration}}</td>
                     <td class="center aligned" v-else colspan="4"><i>ready</i></td>
                     <!--td class="right aligned">{{process.cpu.percent}}%</td-->
-                    <td class="right aligned">{{process.memory.size | pretty_size }}</td>
+                    <td class="right aligned">{{$filters.pretty_size(process.memory.size) }}</td>
                 </tr>
             </table>
         </div>

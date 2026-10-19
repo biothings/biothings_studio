@@ -192,7 +192,6 @@
 <script>
 import axios from 'axios'
 import bus from './bus.js'
-import Vue from 'vue'
 import Utils from './Utils.vue'
 import Actionable from './Actionable.vue'
 
@@ -206,16 +205,13 @@ export default {
     this.$forceUpdate()
     this.buildIndexDropdown()
   },
-  filters: {
-    log: (value) => { console.log(`in log ${value}`); return value }
-  },
   // TODO: those events are mostly due because of bad page design, with actions on a mapping separated from
   // the actual component (see DataSourceMapping.vue and the relation)
   created () {
     bus.$on('reload_mapping_map', this.$forceUpdate)
     bus.$on(`mapping_test_${this.map_id}-${this.name}`, this.displayMappingTestResult)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('reload_mapping_map', this.$forceUpdate)
     bus.$off(`mapping_test_${this.map_id}-${this.name}`, this.displayMappingTestResult)
   },
@@ -255,7 +251,6 @@ export default {
       }
     },
     indexed: {
-      cache: false,
       get: function () {
         if ('index' in this.submap && this.submap.index === false) {
           return false
@@ -269,7 +264,6 @@ export default {
       }
     },
     copied_to_all: {
-      cache: false,
       get: function () {
         if ('copy_to' in this.submap &&
                     // && typeof this.submap["copy_to"] == "array"
@@ -284,7 +278,6 @@ export default {
       }
     },
     current_type: {
-      cache: false,
       get: function () {
         return this.submap.type
       },
@@ -343,14 +336,14 @@ export default {
         throw new Error("Only 'leaf' keys can be modified")
       }
       // copy to all ?
-      if (copy_to_all) { Vue.set(this.submap, 'copy_to', ['all']) } else { Vue.delete(this.submap, 'copy_to') }
+      if (copy_to_all) { this.submap.copy_to = ['all'] } else { delete this.submap.copy_to }
       // index or not
-      if (index) { Vue.delete(this.submap, 'index') } else {
-        Vue.set(this.submap, 'index', false)
+      if (index) { delete this.submap.index } else {
+        this.submap.index = false
         // make sure to delete this one even if selected, makes no senses when index is false
-        Vue.delete(this.submap, 'copy_to')
+        delete this.submap.copy_to
       }
-      Vue.set(this.submap, 'type', this.selected_type)
+      this.submap.type = this.selected_type
     },
     modifyMapKey: function (event) {
       var key = event.currentTarget.innerText

@@ -6,7 +6,7 @@
                 <div class="summary">
                     Build starts
                     <div class="date">
-                        {{build.started_at | moment('MMM Do YYYY, h:mm:ss a')}}
+                        {{$filters.moment(build.started_at, 'MMM Do YYYY, h:mm:ss a')}}
                     </div>
                 </div>
             </div>

@@ -8,14 +8,14 @@
                     Old version: <b v-if="release.old.version">{{release.old.version}}</b><i v-else>None</i>, current version: <b>{{release.new.version}}</b>
                     <div class="date">
                         Created
-                        {{release.created_at | moment("from", "now")}}
+                        {{$filters.moment(release.created_at, "from", "now")}}
                         (<i>on {{moment(release.created_at).format('MMMM Do YYYY, h:mm:ss a') }}</i>)
 
                     </div>
                 </div>
                 <div class="meta">
                     <div :class="actionable">
-                        <i class="file alternate icon"></i>{{release.diff.files.length}} diff file(s) created ({{ total_diff_size | pretty_size(precision=0) }})
+                        <i class="file alternate icon"></i>{{release.diff.files.length}} diff file(s) created ({{ $filters.pretty_size(total_diff_size, 0) }})
                         <button class="ui tinytiny grey labeled icon button" @click="applyDiff(release)">
                             <i class="external link square alternate icon"></i>Apply
                         </button>
@@ -25,9 +25,9 @@
                             Publish
                         </button>
                     </div>
-                    <i class="chart line icon"></i>{{release.diff.stats.update | formatInteger }} updated,
-                    {{release.diff.stats.add | formatInteger }} added,
-                    {{release.diff.stats.delete | formatInteger }} deleted.
+                    <i class="chart line icon"></i>{{$filters.formatInteger(release.diff.stats.update) }} updated,
+                    {{$filters.formatInteger(release.diff.stats.add) }} added,
+                    {{$filters.formatInteger(release.diff.stats.delete) }} deleted.
                     <b v-if="release.diff.stats.mapping_changed">Mapping has changed.</b>
                     <div>
                     <publish-summary v-if="build.publish && build.publish.incremental && build.publish.incremental.hasOwnProperty(release_id)" :publish="build.publish.incremental[release_id]" :type="type"></publish-summary>
@@ -205,7 +205,7 @@ export default {
 
     self.fetchESServers()
   },
-  beforeDestroy () {
+  beforeUnmount () {
     $(`.ui.basic.applydiff.modal.${this.release.old.backend}`).remove()
   },
   components: { ReleaseNoteSummary, PublishSummary },

@@ -27,12 +27,12 @@
                                         </a> can be rebuilt, it contains <a>{{Object.keys(newd.sources).length}} updated datasource(s)</a>.
                                         <br>
                                         <div class="date">
-                                            Previous build was <i>{{ newd.old_build.name }}</i>, built on {{ newd.old_build.built_at | moment('lll') }}
+                                            Previous build was <i>{{ newd.old_build.name }}</i>, built on {{ $filters.moment(newd.old_build.built_at, 'lll') }}
                                         </div>
                                     </div>
                                     <div class="mymeta" v-for="(srcd,src) in newd.sources" :key="srcd.old.version">
                                         <i class="database icon"></i><b>{{src}}</b>: {{srcd.old.version}} <i class="small arrow right icon"></i> {{srcd.new.version}}
-                                        <i>({{srcd.new.downloaded_at | moment("from","now")}})</i>
+                                        <i>({{$filters.moment(srcd.new.downloaded_at, "from", "now")}})</i>
                                     </div>
                                 </div>
                             </div>

@@ -1,14 +1,13 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 import axios from 'axios'
-import Vuex from 'vuex'
-// setup store
-Vue.use(Vuex)
-
 import moment from 'moment'
-Vue.prototype.moment = moment
+import filters from './filters.js'
+import router from './router.js'
+import storage from './storage.js'
+import store from './store/store.js'
 
-var last = Vue.localStorage.get('last_conn')
+var last = storage.get('last_conn')
 if (last) {
   var conn = JSON.parse(last)
   axios.defaults.baseURL = conn.url
@@ -18,12 +17,11 @@ if (last) {
 }
 
 console.log(`%c axios default URl: ${axios.defaults.baseURL}`, 'color:limegreen')
-// create store and use it
-import store from './store/store.js'
 
-new Vue({
-  el: '#app',
-  store,
-  render: h => h(App),
-  router: App.router
-})
+const app = createApp(App)
+app.config.globalProperties.moment = moment
+app.config.globalProperties.$filters = filters
+app.use(store)
+app.use(router)
+// Vue 3 renders into #studio rather than replacing it, App's own root being #app
+app.mount('#studio')

@@ -34,7 +34,7 @@
                                         </td>
                                         <td>
                                             <a v-if="info.data_folder"
-                                                :href="info.data_folder | replace('/data/biothings_studio', '')">{{
+                                                :href="$filters.replace(info.data_folder, '/data/biothings_studio', '')">{{
                                                     info.data_folder }}</a>
                                         </td>
                                     </tr>
@@ -52,8 +52,7 @@
                                     </tr>
                                     <tr>
                                         <td>Last Upload</td>
-                                        <td>{{ info.started_at }} <i v-if="info.started_at">({{ info.started_at |
-                                            moment("from", "now") }})</i></td>
+                                        <td>{{ info.started_at }} <i v-if="info.started_at">({{ $filters.moment(info.started_at, "from", "now") }})</i></td>
                                     </tr>
                                     <tr>
                                         <td>Duration</td>
@@ -61,7 +60,7 @@
                                     </tr>
                                     <tr>
                                         <td>Documents uploaded</td>
-                                        <td>{{ info.count | currency('', 0) }}</td>
+                                        <td>{{ $filters.currency(info.count, '', 0) }}</td>
                                     </tr>
                                     <tr>
                                         <td class="ui grey">Uploader</td>
@@ -179,7 +178,6 @@ import Actionable from './Actionable.vue'
 import TracebackViewer from './components/TracebackViewer.vue'
 import AsyncCommandLauncher from './AsyncCommandLauncher.vue'
 import LogViewer from './components/LogViewer.vue'
-import Vue from 'vue'
 
 export default {
     name: 'data-source-upload',

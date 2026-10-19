@@ -39,7 +39,6 @@
                             <div class="param-legend" v-if="!param.diff">This is the default value</div>
                         </span>
                     </span>
-                </span>
                 <div class="ui red basic label" v-if="json_error">Error parsing JSON: {{ json_error }}</div>
                 </div>
             </form>

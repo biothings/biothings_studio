@@ -22,7 +22,7 @@
                           {{rel.index_name}}
                       </b> was created on <b>{{rel.environment.name}}</b> environment (<b>{{rel.environment.host}}</b>)
                       <div class="date">
-                          {{rel.creation_date | moment("from", "now")}}
+                          {{$filters.moment(rel.creation_date, "from", "now")}}
                           (<i>on {{moment(rel.creation_date).format('MMMM Do YYYY, h:mm:ss a') }}</i>)
 
                       </div>

@@ -37,7 +37,7 @@ export default {
         bus.$on('log', this.onLog)
         bus.$on('ws_connected', this.onWSConnected)
     },
-    beforeDestroy() {
+    beforeUnmount() {
         bus.$off('clearApiLogs', () => this.records = [])
         bus.$off('log', this.onLog)
         bus.$off('ws_connected', this.onWSConnected)

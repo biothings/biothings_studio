@@ -38,8 +38,7 @@
                                         <tr>
                                             <td>Data folder</td>
                                             <td>
-                                                <a v-if="source.validate.sources[subsrc].data_folder" :href="source.validate.sources[subsrc].data_folder
-                                                    | replace('/data/biothings_studio', '')
+                                                <a v-if="source.validate.sources[subsrc].data_folder" :href="$filters.replace(source.validate.sources[subsrc].data_folder, '/data/biothings_studio', '')
                                                     ">
                                                     {{ source.validate.sources[subsrc].data_folder }}
                                                 </a>
@@ -70,8 +69,7 @@
                                             <td>
                                                 {{ source.validate.sources[subsrc].started_at }}
                                                 <i v-if="source.validate.sources[subsrc].started_at">
-                                                    ({{ source.validate.sources[subsrc].started_at |
-                                                        moment('from', 'now') }})
+                                                    ({{ $filters.moment(source.validate.sources[subsrc].started_at, 'from', 'now') }})
                                                 </i>
                                             </td>
                                         </tr>
@@ -298,6 +296,18 @@ export default {
             });
         }
     },
+    updated() {
+        // The validated and not-yet-validated layouts each have a model dropdown. Vue 3 recreates
+        // it when a validation switches layouts (Vue 2 patched it in place), so set up the new one
+        // with the model selected in the old one
+        for (const subsrc in this.selectedModels) {
+            for (const dropdown of this.$refs['dropdown_' + subsrc] || []) {
+                if (this.selectedModels[subsrc] && !$(dropdown).data('moduleDropdown')) {
+                    $(dropdown).dropdown('set selected', this.selectedModels[subsrc])
+                }
+            }
+        }
+    },
     components: {
         TracebackViewer,
         LogViewer,
@@ -314,7 +324,7 @@ export default {
             $('.menu .item').tab()
         },
         setSelectedModel(subsrc, modelFile) {
-            this.$set(this.selectedModels, subsrc, modelFile)
+            this.selectedModels[subsrc] = modelFile
         },
         do_generate_model: function (subsrc = null) {
             return this.$parent.createValidation(subsrc = subsrc)
@@ -324,7 +334,7 @@ export default {
             return this.$parent.validate(subsrc, model)
         },
         onClickGenerateModel(subsrc) {
-            this.$set(this.isGeneratingModel, subsrc, true)
+            this.isGeneratingModel[subsrc] = true
             this.$parent.createValidation(subsrc)
                 .then(modelList => {
                     // modelList = this.$parent.validations[subsrc] array
@@ -340,7 +350,7 @@ export default {
                     console.error('Model generation error:', err)
                 })
                 .finally(() => {
-                    this.$set(this.isGeneratingModel, subsrc, false)
+                    this.isGeneratingModel[subsrc] = false
                 })
 
         },

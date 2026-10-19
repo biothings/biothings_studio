@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import Vue from 'vue'
+import storage from './storage.js'
 
 export default {
   props: ['existings'],
@@ -52,7 +52,7 @@ export default {
       console.log(event)
       console.log(`Delete connection named "${conn.name}"`)
       delete this.$parent.existings[conn.name]
-      Vue.localStorage.set('hub_connections', JSON.stringify(this.$parent.existings))
+      storage.set('hub_connections', JSON.stringify(this.$parent.existings))
       console.log(this.existings)
       this.$parent.getExistings()
     },

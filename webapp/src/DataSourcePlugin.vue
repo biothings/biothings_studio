@@ -48,7 +48,7 @@
             <tr>
               <td >Source folder</td>
               <td>
-                <a v-if="source.data_plugin.download.data_folder" :href="source.data_plugin.download.data_folder | replace('/data/biothings_studio','')">{{  source.data_plugin.download.data_folder}}</a>
+                <a v-if="source.data_plugin.download.data_folder" :href="$filters.replace(source.data_plugin.download.data_folder, '/data/biothings_studio', '')">{{  source.data_plugin.download.data_folder}}</a>
               </td>
             </tr>
             <tr v-if="source.data_plugin.download.error">
@@ -59,7 +59,7 @@
             </tr>
             <tr>
               <td >Last download</td>
-              <td>{{source.data_plugin.download.started_at}} <i v-if="source.data_plugin.download.started_at">({{source.data_plugin.download.started_at | moment("from", "now")}})</i></td>
+              <td>{{source.data_plugin.download.started_at}} <i v-if="source.data_plugin.download.started_at">({{$filters.moment(source.data_plugin.download.started_at, "from", "now")}})</i></td>
             </tr>
             <tr>
               <td >Duration</td>
@@ -119,7 +119,6 @@
                     <label class="white">Dumper</label>
                   </div>
                   <plugin-part-export v-if="export_results" v-bind:part="export_results.dumper" v-bind:ptype="'dumper'"></plugin-part-export>
-                  </span>
                 </div>
                 <div class="field">
                   <div class="ui checkbox">
@@ -178,7 +177,6 @@
       </div>
     </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -193,7 +191,7 @@ export default {
   props: ['source'],
   mounted () {
   },
-  beforeDestroy () {
+  beforeUnmount () {
     $('.ui.basic.exportplugin.modal').remove()
   },
   components: { PluginPartExport },

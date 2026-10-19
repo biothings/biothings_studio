@@ -28,19 +28,19 @@
 
             <div class="left aligned header" v-if="build">
                 <small>
-                    <router-link :to="{name:'build', params: {_id: build._id, color:color}}"><a>{{ build.target_name }}</a></router-link>
+                    <router-link :to="{path: '/build/' + build._id, state: {color:color}}"><a>{{ build.target_name }}</a></router-link>
                 </small>
             </div>
             <div class="left aligned description">
                 <div>
                     <i class="file outline icon"></i>
-                    {{ build.count | currency('',0) }} document{{ build.count &gt; 1 ? "s" : "" }}
+                    {{ $filters.currency(build.count, '', 0) }} document{{ build.count &gt; 1 ? "s" : "" }}
                     <span class="right floated category" v-if="build && build._meta">{{ build._meta.build_version }}</span>
                 </div>
             </div>
             <div class="meta">
-                <span class="left floated category" v-if="build && build.jobs">Build time: {{ build.jobs | build_time | timesofar }}</span>
-                <span class="right floated time" v-if="build">Built {{ build.started_at | moment("from","now") }}</span>
+                <span class="left floated category" v-if="build && build.jobs">Build time: {{ $filters.timesofar(build_time(build.jobs)) }}</span>
+                <span class="right floated time" v-if="build">Built {{ $filters.moment(build.started_at, "from", "now") }}</span>
             </div>
 
             <div class="ui clearing divider"></div>
@@ -143,7 +143,6 @@
 <script>
 import axios from 'axios'
 import bus from './bus.js'
-import Vue from 'vue'
 import BaseBuild from './BaseBuild.vue'
 import InspectForm from './InspectForm.vue'
 import BuildLogs from './BuildLogs.vue'
@@ -157,8 +156,7 @@ function build_time (jobs) {
     function (total, q) {
       return total + q
     }, 0)
-};
-Vue.filter('build_time', build_time)
+}
 
 export default {
   name: 'build',
@@ -170,7 +168,7 @@ export default {
   created () {
     bus.$on('build_updated', this.onBuildChanged)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('build_updated', this.onBuildChanged)
     $(`#${this.build._id}.ui.basic.deletebuild.modal`).remove()
     $(`#${this.build._id}.ui.basic.archivebuild.modal`).remove()
@@ -191,6 +189,7 @@ export default {
     }
   },
   methods: {
+    build_time,
     displayError: function () {
       var errs = []
       if (this.build.jobs) {

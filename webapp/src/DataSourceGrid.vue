@@ -80,7 +80,7 @@ export default {
   created () {
     bus.$on('change_data_plugin', this.onDataPluginChanged)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('change_data_plugin', this.onDataPluginChanged)
     $('.ui.basic.newdatasource.modal').remove()
   },

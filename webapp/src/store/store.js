@@ -1,13 +1,10 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import { createStore } from 'vuex';
 import { getVersionAsString } from '../utils/utils.js'
 
 //modules
 import {logs} from './modules/logs'
 
-Vue.use(Vuex);
-
-export default new Vuex.Store({
+export default createStore({
     modules: {
         logs
     },
@@ -51,7 +48,7 @@ export default new Vuex.Store({
             }
         },
         icon: state =>{
-            return state.conn && state.conn.icon ? state.conn.icon : false
+            return state.conn && state.conn.icon ? state.conn.icon : null
         },
     }
 });

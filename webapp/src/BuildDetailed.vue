@@ -7,8 +7,8 @@
             <div class="content">
                 <div class="left aligned header" v-if="build.target_name">{{ build.target_name }}</div>
                 <div class="meta">
-                    <span class="right floated time" v-if="build.started_at">Built {{ build.started_at | moment("from", "now") }}
-                        <div class="time" v-if="build.archived">Archived {{ build.archived | moment("from", "now") }}</div>
+                    <span class="right floated time" v-if="build.started_at">Built {{ $filters.moment(build.started_at, "from", "now") }}
+                        <div class="time" v-if="build.archived">Archived {{ $filters.moment(build.archived, "from", "now") }}</div>
                     </span>
                     <div :class="['ui',color ? color : 'grey tiny', 'left floated', 'label conftag']">{{build.build_config.name}}</div>
                 </div>
@@ -17,12 +17,12 @@
                         <div class="ui clearing divider"></div>
                         <div>
                             <i class="file outline icon"></i>
-                            {{ build.count | currency('',0) }} document{{ build.count &gt; 1 ? "s" : "" }}
+                            {{ $filters.currency(build.count, '', 0) }} document{{ build.count &gt; 1 ? "s" : "" }}
                         </div>
                         <br>
                     </div>
 
-                    <p>
+                    <div style="margin-top: 1em">
                         <div class="ui top attached pointing menu">
                             <a class="red item active" data-tab="info">Information</a>
                             <a class="red item" data-tab="mapping">Mapping</a>
@@ -55,7 +55,7 @@
                         <div class="ui bottom attached tab segment" data-tab="releases">
                             <build-releases v-bind:build="build"></build-releases>
                         </div>
-                    </p>
+                    </div>
 
                 </div>
             </div>
@@ -109,7 +109,7 @@ export default {
   created () {
     bus.$on('change_build', this.loadData)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('change_build', this.loadData)
   },
   data () {

@@ -12,7 +12,7 @@ export default {
   created() {
     bus.$on('change_source', this.onSourceChanged)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     bus.$off('change_source', this.onSourceChanged)
   },
   data() {
@@ -172,7 +172,7 @@ export default {
       }
       return axios.get(axios.defaults.baseURL + `/source/${srcname}/validations`)
         .then(response => {
-          this.$set(this.validations, subsrc, response.data.result)
+          this.validations[subsrc] = response.data.result
           // console.log(response.data.result)
           return response.data.result
         })

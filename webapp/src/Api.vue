@@ -178,7 +178,7 @@ export default {
   created() {
     bus.$on('apiLogAdded', this.scrollToBottom);
   },
-  beforeDestroy() {
+  beforeUnmount() {
     $(`#${this.api._id}.ui.basic.deleteapi.modal`).remove();
     bus.$on('testFinished', this.handleTestFinished);
     bus.$off('apiLogAdded', this.scrollToBottom);

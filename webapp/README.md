@@ -1,7 +1,8 @@
 # webapp
-This folder contains the BioThings Studio webapp built with Vue.js and Semantic UI.
+This folder contains the BioThings Studio webapp built with Vue 3, Vite and Fomantic UI.
 
 ## Project setup
+It needs Node.js 20.19+ or 22.12+. CI uses Node 24, like `.nvmrc`.
 ```
 npm install
 ```
@@ -35,23 +36,16 @@ npx gulp build
 
 ### Compiles and hot-reloads for development
 ```
-npm run serve
+npm run dev
 ```
+The app is then served at http://localhost:5173. It connects to the hub at http://localhost:7080, or to
+the last hub it connected to.
 
 ### Compiles and minifies for production
 ```
 npm run build
 ```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
+The build goes to `dist/`, which `npm run preview` serves locally.
 
 ### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+See [Vite's configuration reference](https://vite.dev/config/).

@@ -1,6 +1,6 @@
 import axios from 'axios'
-import Vue from 'vue'
 import bus from './bus.js'
+import storage from './storage.js'
 
 // hubs requiring a login (users defined in their HUB_API_USERS) give a token on POST /login,
 // to send in this header with the requests running commands or changing data
@@ -44,7 +44,7 @@ class ApiService {
 
   getLogins () {
     // logins by hub URL
-    return JSON.parse(Vue.localStorage.get('hub_logins') || '{}')
+    return JSON.parse(storage.get('hub_logins') || '{}')
   }
 
   saveLogin (login) {
@@ -54,7 +54,7 @@ class ApiService {
     } else {
       delete logins[axios.defaults.baseURL]
     }
-    Vue.localStorage.set('hub_logins', JSON.stringify(logins))
+    storage.set('hub_logins', JSON.stringify(logins))
     this.base(axios.defaults.baseURL)
   }
 }

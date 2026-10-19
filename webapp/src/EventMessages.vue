@@ -46,7 +46,7 @@ export default {
     bus.$on('change_event', this.onEventChanged)
     bus.$on('event_deleted', this.eventDeleted)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     // hacky to remove modal from div outside of app, preventing having more than one
     // modal displayed when getting back to that page. https://github.com/Semantic-Org/Semantic-UI/issues/4049
     bus.$off('change_event', this.onEventChanged)

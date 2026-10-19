@@ -11,7 +11,7 @@ export default {
   name: 'base-release-event',
   mixins: [Loader, Actionable],
   props: ['release', 'build', 'type'],
-  beforeDestroy () {
+  beforeUnmount () {
     $(`.ui.basic.publishrelease.modal.${this.release_id}`).remove()
   },
   components: { },

@@ -2,7 +2,7 @@
     <div :class="['ui', color, 'statistic']">
         <div class="value">
             <i :class="[ icon, 'icon']"></i> 
-            <template v-if="type == 'documents' ">{{ value | formatNumber }}</template>
+            <template v-if="type == 'documents' ">{{ $filters.formatNumber(value) }}</template>
             <template v-else>{{ value }}</template>
         </div>
         <div class="label p-1 m-1">
