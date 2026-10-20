@@ -7,9 +7,9 @@ import router from './router.js'
 import storage from './storage.js'
 import store from './store/store.js'
 
-var last = storage.get('last_conn')
+const last = storage.get('last_conn')
 if (last) {
-  var conn = JSON.parse(last)
+  const conn = JSON.parse(last)
   axios.defaults.baseURL = conn.url
 } else {
   // default to same host as the webapp's one, standard hub api port

@@ -12,7 +12,7 @@ export default {
   created() {
     bus.$on('change_source', this.onSourceChanged)
   },
-  beforeUnmount() {
+  beforeUnmount () {
     bus.$off('change_source', this.onSourceChanged)
   },
   data() {

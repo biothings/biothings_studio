@@ -104,7 +104,7 @@ export default {
   created() {
     bus.$on('connection_failed', this.failedConnection)
   },
-  beforeUnmount() {
+  beforeUnmount () {
     $('.ui.basic.newhuburl.modal').remove()
     bus.$off('connection_failed', this.failedConnection)
   },
@@ -119,7 +119,7 @@ export default {
     buildConnections: function () {
     },
     getExistings: function () {
-      var previous = storage.get('hub_connections')
+      let previous = storage.get('hub_connections')
       if (!previous) {
         previous = {}
       } else {

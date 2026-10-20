@@ -192,7 +192,7 @@ export default {
       hoverable: true,
     })
   },
-  beforeUnmount() {
+  beforeUnmount () {
     bus.$on('change_source', this.loadData)
     bus.$off('change_master', this.loadData)
     bus.$on('change_data_plugin', this.loadData)

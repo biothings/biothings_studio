@@ -2,32 +2,28 @@
 // Vue 2 instance it was, keeping its methods: a handler throwing is logged without stopping the
 // other handlers or the code emitting the event, and handlers added or removed during an
 // event only apply to the next ones
-class EventBus {
-  constructor () {
-    this.handlers = {}
-  }
+const handlers = {}
 
-  $on (event, handler) {
-    (this.handlers[event] = this.handlers[event] || []).push(handler)
-  }
+function $on (event, handler) {
+  (handlers[event] = handlers[event] || []).push(handler)
+}
 
-  $off (event, handler) {
-    const handlers = this.handlers[event] || []
-    const i = handlers.lastIndexOf(handler)
-    if (i >= 0) {
-      handlers.splice(i, 1)
-    }
+function $off (event, handler) {
+  const eventHandlers = handlers[event] || []
+  const i = eventHandlers.lastIndexOf(handler)
+  if (i >= 0) {
+    eventHandlers.splice(i, 1)
   }
+}
 
-  $emit (event, ...args) {
-    for (const handler of [...(this.handlers[event] || [])]) {
-      try {
-        handler(...args)
-      } catch (err) {
-        console.error(`Error in event handler for "${event}":`, err)
-      }
+function $emit (event, ...args) {
+  for (const handler of [...(handlers[event] || [])]) {
+    try {
+      handler(...args)
+    } catch (err) {
+      console.error(`Error in event handler for "${event}":`, err)
     }
   }
 }
 
-export default new EventBus()
+export default { $on, $off, $emit }

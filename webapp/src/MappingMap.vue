@@ -328,7 +328,7 @@ export default {
     },
     updateSubMap: function () {
       var index = $(`#modal_${this.name}-${this.map_id} #index_checkbox`).is(':checked')
-      var copy_to_all = $(`#modal_${this.name}-${this.map_id} #copy_to_all_checkbox`).is(':checked')
+      const copyToAll = $(`#modal_${this.name}-${this.map_id} #copy_to_all_checkbox`).is(':checked')
       var path = $(`#modal_${this.name}-${this.map_id} input.path`).val()
       // TODO: for now we only support outter keys to be modified
       if ('properties' in this.submap) {
@@ -336,7 +336,7 @@ export default {
         throw new Error("Only 'leaf' keys can be modified")
       }
       // copy to all ?
-      if (copy_to_all) { this.submap.copy_to = ['all'] } else { delete this.submap.copy_to }
+      if (copyToAll) { this.submap.copy_to = ['all'] } else { delete this.submap.copy_to }
       // index or not
       if (index) { delete this.submap.index } else {
         this.submap.index = false

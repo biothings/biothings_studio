@@ -16,7 +16,7 @@ export default {
   },
   data () {
     return {
-      readonly: storage.get('readonly') == 'true'
+      readonly: storage.get('readonly') === 'true'
     }
   },
   computed: {

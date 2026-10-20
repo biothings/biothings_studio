@@ -39,7 +39,7 @@
                 </div>
             </div>
             <div class="meta">
-                <span class="left floated category" v-if="build && build.jobs">Build time: {{ $filters.timesofar(build_time(build.jobs)) }}</span>
+                <span class="left floated category" v-if="build && build.jobs">Build time: {{ $filters.timesofar(buildTime(build.jobs)) }}</span>
                 <span class="right floated time" v-if="build">Built {{ $filters.moment(build.started_at, "from", "now") }}</span>
             </div>
 
@@ -151,7 +151,7 @@ import BuildSources from './BuildSources.vue'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 
-function build_time (jobs) {
+function buildTime (jobs) {
   return jobs.filter(q => q.status === 'success').map((q) => q.time_in_s).reduce(
     function (total, q) {
       return total + q
@@ -189,7 +189,7 @@ export default {
     }
   },
   methods: {
-    build_time,
+    buildTime,
     displayError: function () {
       var errs = []
       if (this.build.jobs) {

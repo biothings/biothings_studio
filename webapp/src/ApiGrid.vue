@@ -172,7 +172,7 @@ export default {
     this.getApis()
     bus.$on('change_api', this.onApiChanged)
   },
-  beforeUnmount() {
+  beforeUnmount () {
     // hacky to remove modal from div outside of app, preventing having more than one
     // modal displayed when getting back to that page. https://github.com/Semantic-Org/Semantic-UI/issues/4049
     $('.ui.basic.createapi.modal').remove()

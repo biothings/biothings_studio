@@ -247,7 +247,7 @@ export default {
       .sticky({
         context: '#app'
       })
-    var last = storage.get('last_conn')
+    const last = storage.get('last_conn')
     this.conn = this.default_conn
     this.$store.dispatch('resetDefaultConnection')
     if (last) {
@@ -289,7 +289,7 @@ export default {
     // connect to default one to start
     this.conn = this.default_conn
   },
-  beforeUnmount() {
+  beforeUnmount () {
     bus.$off('reconnect', this.setupConnection)
     bus.$off('connect', this.setupConnection)
     bus.$off('feature_terminal', this.setupTerminal)
@@ -378,7 +378,7 @@ export default {
     setupUIByFeatures() {
       var self = this
       //console.log('Setup UI according to listed features')
-      //console.log(hub.features)
+      // console.log(hub.features)
       const routes = []
       this.menu = []
       if (this.has_feature('readonly')) {
@@ -389,11 +389,11 @@ export default {
         this.readonly_mode = false
         //console.log('Hub is read/write, activate readonly switch')
         // restore from localstorage
-        var stored_switch = storage.get('readonly_switch')
-        if (stored_switch !== null) {
+        const storedSwitch = storage.get('readonly_switch')
+        if (storedSwitch !== null) {
           // something previously stored, restore switch state, and sync
           // readonly mode accordingly
-          this.readonly_switch = JSON.parse(stored_switch)
+          this.readonly_switch = JSON.parse(storedSwitch)
           this.readonly_mode = this.readonly_switch
         } else {
           // nothing stored previously, so sync switch state to default mode
@@ -419,13 +419,13 @@ export default {
         // the builds list sends the build's color in the history state: vue-router 4 drops the
         // params that aren't in the path
         const props = route => ({ _id: route.params._id, color: history.state && history.state.color })
-        routes.push({ path: '/build/:_id', component: BuildDetailed, props: props, name: 'build' })
+        routes.push({ path: '/build/:_id', component: BuildDetailed, props, name: 'build' })
         this.menu.push({ path: '/builds', name: 'Builds', icon: 'cubes' })
       }
       if (this.has_feature('autohub')) {
         //console.log('Setup autohub tab')
         var path = '/standalone'
-        routes.push({ path: path, component: StandaloneReleases })
+        routes.push({ path, component: StandaloneReleases })
         var wizard = path + 'wizard'
         routes.push({ path: wizard, component: StandaloneWizard, name: 'wizard' })
         this.menu.push({ path: path, name: 'Releases', icon: 'globe' })
@@ -552,16 +552,16 @@ export default {
     },
     getStudioWebappRoots: function () {
       // where should we look for compatible studio webapp
-      var current_host_port = new URI(location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : ''))
-      var studio_roots = [current_host_port.toString() + '/']
-      var remote_webapps = ['https://studio.biothings.io'] // default remote root if none configured
+      const currentHostPort = new URI(location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : ''))
+      let studioRoots = [currentHostPort.toString() + '/']
+      const remoteWebapps = ['https://studio.biothings.io'] // default remote root if none configured
       if (storage.get('remote_webapps')) {
-        studio_roots = storage.get('remote_webapps')
-        if (typeof studio_roots !== Array) { studio_roots = [studio_roots] }
+        studioRoots = storage.get('remote_webapps')
+        if (!Array.isArray(studioRoots)) { studioRoots = [studioRoots] }
       }
-      Array.prototype.push.apply(studio_roots, remote_webapps)
-      //console.log(`Studio webapp roots: ${studio_roots}`)
-      return studio_roots
+      Array.prototype.push.apply(studioRoots, remoteWebapps)
+      // console.log(`Studio webapp roots: ${studioRoots}`)
+      return studioRoots
     },
     selectStudio: function (studio_version) {
       var studio_roots = this.getStudioWebappRoots()
@@ -673,7 +673,7 @@ export default {
     },
     checkCompat: function (data) {
       // user asked to skip compat checks ?
-      if (storage.get('skip_studio_compat') == 'true') {
+      if (storage.get('skip_studio_compat') === 'true') {
         //console.log('Skip Studio version compatibility, as instructed in local storage')
         return
       }
@@ -691,23 +691,24 @@ export default {
         }
         var jsd = new Date(d)
         var jsrefd = new Date(refd)
-        //console.log(`compare: ${jsd} ${op} ${jsrefd}`)
-        // compat.json's operator, applied without eval()
-        var compare = {
+        // console.log(`compare: ${jsd} ${op} ${jsrefd}`)
+        // compat.json's operator, applied without eval(). On the numbers compared here, == and != are
+        // the same as === and !==
+        const compare = {
           '<': (a, b) => a < b,
           '<=': (a, b) => a <= b,
           '>': (a, b) => a > b,
           '>=': (a, b) => a >= b,
-          '==': (a, b) => a == b,
+          '==': (a, b) => a === b,
           '===': (a, b) => a === b,
-          '!=': (a, b) => a != b,
+          '!=': (a, b) => a !== b,
           '!==': (a, b) => a !== b
         }[op.trim()]
         if (!compare) {
           throw new Error(`Invalid date comparison in compat.json: ${op}`)
         }
         // "+" to compare timestamps, also with "=". https://stackoverflow.com/questions/492994/compare-two-dates-with-javascript
-        var isok = compare(+jsd, +jsrefd)
+        const isok = compare(+jsd, +jsrefd)
         return isok
       }
 

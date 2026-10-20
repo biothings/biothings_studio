@@ -296,7 +296,7 @@ export default {
             });
         }
     },
-    updated() {
+    updated () {
         // The validated and not-yet-validated layouts each have a model dropdown. Vue 3 recreates
         // it when a validation switches layouts (Vue 2 patched it in place), so set up the new one
         // with the model selected in the old one

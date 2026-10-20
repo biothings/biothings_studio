@@ -20,15 +20,15 @@ numeral.locale('mine')
 
 export default {
   timesofar (value) {
-    const hours = parseInt(Math.floor(value / 3600))
-    const minutes = parseInt(Math.floor((value - (hours * 3600)) / 60))
-    const seconds = parseInt((value - ((hours * 3600) + (minutes * 60))) % 60)
+    const hours = parseInt(Math.floor(value / 3600), 10)
+    const minutes = parseInt(Math.floor((value - (hours * 3600)) / 60), 10)
+    const seconds = parseInt((value - ((hours * 3600) + (minutes * 60))) % 60, 10)
 
     const dHours = (hours > 9 ? hours : '0' + hours)
     const dMins = (minutes > 9 ? minutes : '0' + minutes)
     const dSecs = (seconds > 9 ? seconds : '0' + seconds)
 
-    var res = ''
+    let res = ''
     if (hours) res += dHours + 'h'
     if (minutes) res += dMins + 'm'
     if (seconds) res += dSecs + 's'
@@ -37,7 +37,7 @@ export default {
   },
 
   pretty_size (bytes, precision = 2) {
-    var units = [
+    const units = [
       'bytes',
       'KB',
       'MB',
@@ -50,7 +50,7 @@ export default {
       return '?'
     }
 
-    var unit = 0
+    let unit = 0
 
     while (bytes >= 1024) {
       bytes /= 1024

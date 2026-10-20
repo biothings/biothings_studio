@@ -10,7 +10,7 @@ export default {
   methods: {
     has_feature (name) {
       if (hub.features) {
-        var hasit = hub.features.includes(name)
+        const hasit = hub.features.includes(name)
         if (hasit) {
           bus.$emit(`feature_${name}`)
         }
