@@ -41,7 +41,7 @@ jobs:
     - uses: actions/setup-node@v7
       if: github.event_name == 'release'
       with:
-        node-version: '18'
+        node-version: '24'
     - name: Deploy to the release's folder
       if: github.event_name == 'release'
       run: |

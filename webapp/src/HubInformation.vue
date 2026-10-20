@@ -49,12 +49,12 @@
                                 </a> can be rebuilt, it contains <a>{{Object.keys(newd.sources).length}} updated datasource(s)</a>.
                                 <br>
                                 <div class="date">
-                                    Previous build was <i>{{ newd.old_build.name }}</i>, built on {{ newd.old_build.built_at | moment('lll') }}
+                                    Previous build was <i>{{ newd.old_build.name }}</i>, built on {{ $filters.moment(newd.old_build.built_at, 'lll') }}
                                 </div>
                             </div>
                             <div class="mymeta" v-for="(srcd,src) in newd.sources" :key="srcd.old.version">
                                 <i class="database icon"></i><b>{{src}}</b>: {{srcd.old.version}} <i class="small arrow right icon"></i> {{srcd.new.version}}
-                                <i>({{srcd.new.downloaded_at | moment("from","now")}})</i>
+                                <i>({{$filters.moment(srcd.new.downloaded_at, "from", "now")}})</i>
                             </div>
                         </div>
                     </div>
@@ -75,23 +75,23 @@
           <tbody>
             <tr>
               <td># of sources</td>
-              <td>{{ hub_info.source.total | formatInteger }}</td>
+              <td>{{ $filters.formatInteger(hub_info.source.total) }}</td>
             </tr>
             <tr>
               <td># of documents</td>
-              <td>{{ hub_info.source.documents | formatNumber }}</td>
+              <td>{{ $filters.formatNumber(hub_info.source.documents) }}</td>
             </tr>
             <tr>
               <td># of builts</td>
-              <td>{{ hub_info.build.total | formatInteger }}</td>
+              <td>{{ $filters.formatInteger(hub_info.build.total) }}</td>
             </tr>
             <tr>
               <td># of active proceses</td>
-              <td>{{ hub_info.running_processes | formatInteger }}</td>
+              <td>{{ $filters.formatInteger(hub_info.running_processes) }}</td>
             </tr>
             <tr>
               <td># of active threads</td>
-              <td>{{ hub_info.running_threads | formatInteger }}</td>
+              <td>{{ $filters.formatInteger(hub_info.running_threads) }}</td>
             </tr>
           </tbody>
         </table>

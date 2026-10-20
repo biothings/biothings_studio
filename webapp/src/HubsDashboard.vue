@@ -61,7 +61,7 @@
 
 
 <script>
-import Vue from 'vue'
+import storage from './storage.js'
 import HubInformation from './HubInformation.vue'
 
 export default {
@@ -71,7 +71,7 @@ export default {
   data () {
     let settings = {
       allHubs: {},
-      ...JSON.parse(Vue.localStorage.get('HubsDashboardSettings'))
+      ...JSON.parse(storage.get('HubsDashboardSettings'))
     }
     return {
       settings: settings,
@@ -96,7 +96,7 @@ export default {
       this.ticker++
     },
     store_settings: function () {
-      Vue.localStorage.set('HubsDashboardSettings', JSON.stringify(this.settings))
+      storage.set('HubsDashboardSettings', JSON.stringify(this.settings))
     },
     getHubComponent: function (hub_name) {
       if (this.$refs && hub_name in this.$refs && this.$refs[hub_name].length > 0) {

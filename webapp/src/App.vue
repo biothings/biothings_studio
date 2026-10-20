@@ -36,7 +36,7 @@
           </button>
         </div>
         <span v-if="has_feature('ws')">
-          <div v-if="socket && socket.readyState == 1" :data-tooltip="'Connection: ' + socket.transport"
+          <div v-if="ws_connection == 'connected'" :data-tooltip="'Connection: ' + socket.transport"
             data-position="bottom center">
             <button class="mini circular ui icon button" @click="closeConnection">
               <i class="green power off icon"></i>
@@ -180,26 +180,22 @@
     </div>
 
   </div>
-
-  </div>
 </template>
 
 <script>
 
-import Vue from 'vue'
+import { markRaw } from 'vue'
 import axios from 'axios'
 import URI from 'urijs'
-import regeneratorRuntime from 'regenerator-runtime' // await/async support
 
-import VueLocalStorage from 'vue-localstorage'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 
-import Vue2Filters from 'vue2-filters'
-import VueRouter from 'vue-router'
-
 import bus from './bus.js'
+import hub from './hub.js'
 import hubapi from './hubapi.js'
+import router from './router.js'
+import storage from './storage.js'
 
 import JobSummary from './JobSummary.vue'
 import Status from './views/Status.vue'
@@ -222,104 +218,11 @@ import QuickSearch from './QuickSearch.vue'
 import Cleanup from './Cleanup.vue'
 
 const STUDIO_VERSION = '0.2b'
-Vue.use(VueLocalStorage)
-Vue.use(Vue2Filters)
-Vue.use(require('vue-moment'))
-Vue.use(VueRouter)
-
-function timesofar(value) {
-  const hours = parseInt(Math.floor(value / 3600))
-  const minutes = parseInt(Math.floor((value - (hours * 3600)) / 60))
-  const seconds = parseInt((value - ((hours * 3600) + (minutes * 60))) % 60)
-
-  const dHours = (hours > 9 ? hours : '0' + hours)
-  const dMins = (minutes > 9 ? minutes : '0' + minutes)
-  const dSecs = (seconds > 9 ? seconds : '0' + seconds)
-
-  var res = ''
-  if (hours) res += dHours + 'h'
-  if (minutes) res += dMins + 'm'
-  if (seconds) res += dSecs + 's'
-
-  return res
-};
-Vue.filter('timesofar', timesofar)
-
-var UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-var STEP = 1024
-
-function pretty_size(bytes, precision = 2) {
-  var units = [
-    'bytes',
-    'KB',
-    'MB',
-    'GB',
-    'TB',
-    'PB'
-  ]
-
-  if (isNaN(parseFloat(bytes)) || !isFinite(bytes)) {
-    return '?'
-  }
-
-  var unit = 0
-
-  while (bytes >= 1024) {
-    bytes /= 1024
-    unit++
-  }
-
-  return bytes.toFixed(+precision) + ' ' + units[unit]
-};
-Vue.filter('pretty_size', pretty_size)
-
-function split_and_join(str, sep = '_', glue = ' ') {
-  return str.split(sep).join(' ')
-}
-Vue.filter('splitjoin', split_and_join)
-function jsonstr(value) {
-  return JSON.stringify(value)
-}
-Vue.filter('json', jsonstr)
-
-var numeral = require('numeral')
-numeral.register('locale', 'mine', {
-  delimiters: {
-    thousands: ',',
-    decimal: '.'
-  },
-  abbreviations: {
-    thousand: 'thousand',
-    million: 'million',
-    billion: 'billion',
-    trillion: 'trillion'
-  }
-})
-numeral.locale('mine')
-
-Vue.filter('formatNumeric', function (value, fmt) {
-  return numeral(value).format(fmt)
-})
-
-Vue.filter('formatNumber', function (value) {
-  return numeral(value).format('0.00 a')
-})
-
-Vue.filter('formatInteger', function (value) {
-  return numeral(value).format('0 a')
-})
-
-Vue.filter('replace', function (value, what, repl) {
-  return value.replace(what, repl)
-})
-
-const router = new VueRouter({ linkActiveClass: 'active' })
 
 const PING_INTERVAL_MS = 10000
 
 export default {
   name: 'app',
-  router: router,
   mixins: [FeatureChecker, Loader, Actionable],
   components: {
     JobSummary,
@@ -344,7 +247,7 @@ export default {
       .sticky({
         context: '#app'
       })
-    var last = Vue.localStorage.get('last_conn')
+    const last = storage.get('last_conn')
     this.conn = this.default_conn
     this.$store.dispatch('resetDefaultConnection')
     if (last) {
@@ -352,7 +255,7 @@ export default {
       this.$store.commit('saveConnection', { new_conn: JSON.parse(last) })
     }
     this.setupConnection()
-    this.skip_studio_compat = Vue.localStorage.get('skip_studio_compat')
+    this.skip_studio_compat = storage.get('skip_studio_compat')
 
     window.addEventListener("keydown", event => {  // shortcuts for windows/linux
       const open_quick_search = (
@@ -386,7 +289,7 @@ export default {
     // connect to default one to start
     this.conn = this.default_conn
   },
-  beforeDestroy() {
+  beforeUnmount () {
     bus.$off('reconnect', this.setupConnection)
     bus.$off('connect', this.setupConnection)
     bus.$off('feature_terminal', this.setupTerminal)
@@ -395,7 +298,6 @@ export default {
   },
   data() {
     return {
-      routes: [],
       menu: [],
       ws_connection: 'disconnected',
       socket_msg: '',
@@ -462,7 +364,7 @@ export default {
       // are allowed to be considered and synced
       if (newv !== null) {
         this.readonly_mode = newv
-        Vue.localStorage.set('readonly_switch', JSON.stringify(this.readonly_switch))
+        storage.set('readonly_switch', JSON.stringify(this.readonly_switch))
       }
     },
     required_studio_version: function (newv, oldv) {
@@ -476,8 +378,8 @@ export default {
     setupUIByFeatures() {
       var self = this
       //console.log('Setup UI according to listed features')
-      //console.log(Vue.config.hub_features)
-      this.routes = []
+      // console.log(hub.features)
+      const routes = []
       this.menu = []
       if (this.has_feature('readonly')) {
         this.readonly_mode = true
@@ -487,11 +389,11 @@ export default {
         this.readonly_mode = false
         //console.log('Hub is read/write, activate readonly switch')
         // restore from localstorage
-        var stored_switch = Vue.localStorage.get('readonly_switch')
-        if (stored_switch !== null) {
+        const storedSwitch = storage.get('readonly_switch')
+        if (storedSwitch !== null) {
           // something previously stored, restore switch state, and sync
           // readonly mode accordingly
-          this.readonly_switch = JSON.parse(stored_switch)
+          this.readonly_switch = JSON.parse(storedSwitch)
           this.readonly_mode = this.readonly_switch
         } else {
           // nothing stored previously, so sync switch state to default mode
@@ -502,41 +404,48 @@ export default {
       this.actionable = this.readonly_mode
       if (this.has_feature('source') && this.has_feature('build')) {
         //console.log('Setup Home tab')
-        this.routes.push({ path: '/', component: Status })
+        routes.push({ path: '/', component: Status })
         this.menu.push({ path: '/', name: 'Home', icon: 'home' })
       }
       if (this.has_feature('source')) {
         //console.log('Setup Sources tab')
-        this.routes.push({ path: '/sources', component: DataSourceGrid })
-        this.routes.push({ path: '/source/:_id', component: DataSourceDetailed, props: true })
+        routes.push({ path: '/sources', component: DataSourceGrid })
+        routes.push({ path: '/source/:_id', component: DataSourceDetailed, props: true })
         this.menu.push({ path: '/sources', name: 'Sources', icon: 'database' })
       }
       if (this.has_feature('build')) {
         //console.log('Setup Builds tab')
-        this.routes.push({ path: '/builds', component: BuildGrid })
-        this.routes.push({ path: '/build/:_id', component: BuildDetailed, props: true, name: 'build' })
+        routes.push({ path: '/builds', component: BuildGrid })
+        // the builds list sends the build's color in the history state: vue-router 4 drops the
+        // params that aren't in the path
+        const props = route => ({ _id: route.params._id, color: history.state && history.state.color })
+        routes.push({ path: '/build/:_id', component: BuildDetailed, props, name: 'build' })
         this.menu.push({ path: '/builds', name: 'Builds', icon: 'cubes' })
       }
       if (this.has_feature('autohub')) {
         //console.log('Setup autohub tab')
         var path = '/standalone'
-        this.routes.push({ path: path, component: StandaloneReleases })
+        routes.push({ path, component: StandaloneReleases })
         var wizard = path + 'wizard'
-        this.routes.push({ path: wizard, component: StandaloneWizard, name: 'wizard' })
+        routes.push({ path: wizard, component: StandaloneWizard, name: 'wizard' })
         this.menu.push({ path: path, name: 'Releases', icon: 'globe' })
       }
       if (this.has_feature('api')) {
         //console.log('Setup API tab')
-        this.routes.push({ path: '/apis', component: ApiGrid })
+        routes.push({ path: '/apis', component: ApiGrid })
         this.menu.push({ path: '/apis', name: 'API', icon: 'shield alternate' })
       }
       // adjust home link, if none defined
       if (this.menu.length && this.menu[0].path != '/') {
         this.menu[0].path = '/'
         this.menu[0].name = 'Home'
-        this.routes[0].path = '/'
+        routes[0].path = '/'
       }
-      this.routes.forEach(route => router.addRoute(route))
+      // these routes replace the previous hub's, then the current URL is resolved again, as its
+      // route may only exist now (vue-router 3 did this on its own when routes were added)
+      router.clearRoutes()
+      routes.forEach(route => router.addRoute(route))
+      router.replace(router.currentRoute.value.fullPath)
     },
     dispatchEvent(evt) {
       if (evt.op == 'log') {
@@ -631,28 +540,28 @@ export default {
       if (/\/connect=/.test(window.location.hash)) {
         var url = window.location.hash.replace(/.*\/connect=/, '')
         //console.log(`Connect from anchor hash: ${url}`)
-        router.push({ name: '/' })
+        router.push('/')
       } else {
         var url = this.conn.url.replace(/\/$/, '')
         //console.log(`Connecting to ${this.conn.name} (${url})`)
       }
       hubapi.base(url)
       this.refreshConnection(url)
-      Vue.localStorage.set('last_conn', JSON.stringify(this.conn))
+      storage.set('last_conn', JSON.stringify(this.conn))
       this.setupSocket(redirect)
     },
     getStudioWebappRoots: function () {
       // where should we look for compatible studio webapp
-      var current_host_port = new URI(location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : ''))
-      var studio_roots = [current_host_port.toString() + '/']
-      var remote_webapps = ['https://studio.biothings.io'] // default remote root if none configured
-      if (Vue.localStorage.get('remote_webapps')) {
-        studio_roots = Vue.localStorage.get('remote_webapps')
-        if (typeof studio_roots !== Array) { studio_roots = [studio_roots] }
+      const currentHostPort = new URI(location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : ''))
+      let studioRoots = [currentHostPort.toString() + '/']
+      const remoteWebapps = ['https://studio.biothings.io'] // default remote root if none configured
+      if (storage.get('remote_webapps')) {
+        studioRoots = storage.get('remote_webapps')
+        if (!Array.isArray(studioRoots)) { studioRoots = [studioRoots] }
       }
-      Array.prototype.push.apply(studio_roots, remote_webapps)
-      //console.log(`Studio webapp roots: ${studio_roots}`)
-      return studio_roots
+      Array.prototype.push.apply(studioRoots, remoteWebapps)
+      // console.log(`Studio webapp roots: ${studioRoots}`)
+      return studioRoots
     },
     selectStudio: function (studio_version) {
       var studio_roots = this.getStudioWebappRoots()
@@ -764,7 +673,7 @@ export default {
     },
     checkCompat: function (data) {
       // user asked to skip compat checks ?
-      if (Vue.localStorage.get('skip_studio_compat') == 'true') {
+      if (storage.get('skip_studio_compat') === 'true') {
         //console.log('Skip Studio version compatibility, as instructed in local storage')
         return
       }
@@ -782,10 +691,24 @@ export default {
         }
         var jsd = new Date(d)
         var jsrefd = new Date(refd)
-        // "+" in front to allow comparison involving "=". https://stackoverflow.com/questions/492994/compare-two-dates-with-javascript
-        //console.log(`eval: ${jsd} ${op} ${jsrefd}`)
-        var exp = String.prototype.concat('+jsd ', op, ' +jsrefd')
-        var isok = eval(String.prototype.concat('+jsd ', op, ' +jsrefd'))
+        // console.log(`compare: ${jsd} ${op} ${jsrefd}`)
+        // compat.json's operator, applied without eval(). On the numbers compared here, == and != are
+        // the same as === and !==
+        const compare = {
+          '<': (a, b) => a < b,
+          '<=': (a, b) => a <= b,
+          '>': (a, b) => a > b,
+          '>=': (a, b) => a >= b,
+          '==': (a, b) => a === b,
+          '===': (a, b) => a === b,
+          '!=': (a, b) => a !== b,
+          '!==': (a, b) => a !== b
+        }[op.trim()]
+        if (!compare) {
+          throw new Error(`Invalid date comparison in compat.json: ${op}`)
+        }
+        // "+" to compare timestamps, also with "=". https://stackoverflow.com/questions/492994/compare-two-dates-with-javascript
+        const isok = compare(+jsd, +jsrefd)
         return isok
       }
 
@@ -903,7 +826,7 @@ export default {
           this.conn = response.data.result
           this.$store.commit('saveConnection', { new_conn: response.data.result })
           this.conn.url = url
-          Vue.config.hub_features = response.data.result.features
+          hub.features = response.data.result.features
           self.setupUIByFeatures()
           self.loaded()
         })
@@ -924,7 +847,9 @@ export default {
         .then(response => {
           self.ws_connection = 'connecting'
           //console.log('WebSocket available')
-          this.socket = new SockJS(axios.defaults.baseURL + '/ws', transports)
+          // raw: a reactive proxy would stand between SockJS and its own internals, and Vue 3 can't
+          // see SockJS change them anyway (so the template reads ws_connection, not readyState)
+          this.socket = markRaw(new SockJS(axios.defaults.baseURL + '/ws', transports))
           this.socket.onopen = function () {
             self.ws_connection = 'connected'
             this.ping_interval = PING_INTERVAL_MS
@@ -982,7 +907,7 @@ export default {
     },
     toggleCheckCompat(event) {
       var skip = $('#skip_compat').prop('checked')
-      Vue.localStorage.set('skip_studio_compat', skip.toString())
+      storage.set('skip_studio_compat', skip.toString())
       this.skip_studio_compat = skip
     },
     switchReadOnly() {
@@ -1044,6 +969,8 @@ $.fn.modal.settings.useFlex = true;
 </script>
 
 <style>
+@import url('https://fonts.cdnfonts.com/css/jetbrains-mono');
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -1198,8 +1125,6 @@ body,
 .segment.jobs {
   margin: 0;
 }
-
-@import url('https://fonts.cdnfonts.com/css/jetbrains-mono');
 
 .font-jetbrains-mono {
   font-family: 'JetBrains Mono', sans-serif;

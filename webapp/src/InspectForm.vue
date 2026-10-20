@@ -1,6 +1,6 @@
 <template>
-    <!-- Inspect -->
     <div class="ui basic inspect modal" v-bind:id="'inspect-' + _id">
+        <!-- Inspect -->
         <div class="ui icon">
             <i class="large unhide icon"></i>
             <h3>Inspect data: {{_id}}</h3>
@@ -131,7 +131,7 @@ export default {
   created () {
     bus.$on('do_inspect', this.inspect)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('do_inspect', this.inspect)
   },
   data () {

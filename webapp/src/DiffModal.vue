@@ -26,7 +26,7 @@ export default {
   created () {
     bus.$on('show_diffed', this.showDiffed)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('show_diffed', this.showDiffed)
     $('.ui.diff.modal').remove()
   },

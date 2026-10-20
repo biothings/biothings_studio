@@ -58,7 +58,7 @@
                         </td>
 
                         <td>
-                          {{ backend.count | formatNumeric(fmt="0,0") }}
+                          {{ $filters.formatNumeric(backend.count, "0,0") }}
                         </td>
                       </tr>
                     </tbody>
@@ -137,7 +137,7 @@ export default {
 
     self.refresh()
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$emit(
       'store_source_environments_data',
       {

@@ -91,8 +91,8 @@
                             <a class="field flex-center">
                                 <select class="ui filterbuilds dropdown" v-model="conf_filter">
                                     <option value="">Source Filter</option>
-                                    <template v-for="(conf,name) in build_configs">
-                                        <option :value="name" :key="name+'filter'">
+                                    <template v-for="(conf,name) in build_configs" :key="name+'filter'">
+                                        <option :value="name">
                                           <div :class="['ui', build_colors[name], 'empty circular label']"></div>
                                         {{name}}
                                         </option>
@@ -370,7 +370,7 @@ export default {
     bus.$on('change_build', this.onBuildChanged)
     bus.$on('change_build_config', this.onBuildConfigChanged)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     clearInterval(this.interval)
     // hacky to remove modal from div outside of app, preventing having more than one
     // modal displayed when getting back to that page. https://github.com/Semantic-Org/Semantic-UI/issues/4049

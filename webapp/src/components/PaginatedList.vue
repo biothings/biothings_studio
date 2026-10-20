@@ -101,7 +101,7 @@
                                 <td class="source-muted source-release-cell" :title="sourceRelease(source)">
                                     {{ truncateRelease(sourceRelease(source)) }}
                                 </td>
-                                <td class="right aligned source-docs">{{ source.count | currency('', 0) }}</td>
+                                <td class="right aligned source-docs">{{ $filters.currency(source.count, '', 0) }}</td>
                                 <td class="center aligned">
                                     <span :class="statusLabelClass(sourceDownloadStatus(source))">
                                         {{ sourceDownloadStatus(source) }}
@@ -119,7 +119,7 @@
                                 </td>
                                 <td class="source-muted">
                                     <span v-if="source.download && source.download.started_at">
-                                        {{ source.download.started_at | moment('from', 'now') }}
+                                        {{ $filters.moment(source.download.started_at, 'from', 'now') }}
                                     </span>
                                     <span v-else>Never</span>
                                 </td>
@@ -273,14 +273,18 @@
 import axios from 'axios'
 import bus from '../bus.js'
 import Actionable from '../Actionable.vue'
+import DataSource from '../DataSource.vue'
+import API from '../Api.vue'
+import Build from '../Build.vue'
+import InspectForm from '../InspectForm.vue'
 
 export default {
     name: 'PaginatedList',
     components:{
-        'DataSource': () => import('../DataSource.vue'),
-        'API': () => import('../Api.vue'),
-        'Build': () => import('../Build.vue'),
-        InspectForm: () => import('../InspectForm.vue')
+        DataSource,
+        API,
+        Build,
+        InspectForm
     },
     mixins: [Actionable],
     data: function(){
@@ -693,7 +697,7 @@ export default {
         this.calculatePages();
         //  console.log('SEL', this.perPage)
     },
-    beforeDestroy: function () {
+    beforeUnmount: function () {
         $('.paginated-source-unregister.modal').remove()
     },
     watch:{

@@ -70,9 +70,9 @@
 </template>
 
 <script>
-import Vue from 'vue'
 import axios from 'axios'
 import bus from './bus.js'
+import hub from './hub.js'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 import HubConfigTab from './HubConfigTab.vue'
@@ -93,7 +93,7 @@ export default {
   updated () {
     $('.menu .item').tab()
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('change_source', this.onConfigChanged)
     bus.$off('restart_hub', this.restartHub)
     bus.$off('save_config_param', this.onSaveParameter)
@@ -137,7 +137,7 @@ export default {
             }
             this.config = bysections
             // make this config avail globally
-            Vue.config.hub_config = response.data.result.scope.config
+            hub.config = response.data.result.scope.config
             bus.$emit('current_config', response.data.result)
             this.loaded()
           } catch (err) {

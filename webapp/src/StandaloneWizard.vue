@@ -145,15 +145,14 @@
                 </div>
             </div>
         </div>
-    </div>
 </span>
 </template>
 
 <script>
-import Vue from 'vue'
 import Loader from './Loader.vue'
 import Actionable from './Actionable.vue'
 import bus from './bus.js'
+import hub from './hub.js'
 
 export default {
   name: 'standalone-wizard',
@@ -167,7 +166,7 @@ export default {
   created () {
     bus.$on('current_config', this.onConfig)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('current_config', this.onConfig)
   },
   watch: {
@@ -191,11 +190,11 @@ export default {
   methods: {
     setup: function () {
       // make sure we have access to current config
-      if (!Vue.config.hub_config) {
+      if (!hub.config) {
         // force a reload of config to get it there
         bus.$emit('change_config')
       } else {
-        this.config = Vue.config.hub_config
+        this.config = hub.config
       }
 
       // wizard steps

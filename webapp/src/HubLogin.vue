@@ -1,6 +1,6 @@
 <template>
-  <!-- for hubs requiring a login to run commands or change data -->
   <span>
+    <!-- for hubs requiring a login to run commands or change data -->
     <!-- (wrapper: the modal below is moved out of this component when initialized) -->
     <span>
       <span v-if="conn && conn.login_required">
@@ -75,7 +75,7 @@ export default {
       }
     })
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('logged_user', this.setUsername)
     bus.$off('login_required', this.commandRefused)
     $(this.$refs.modal).remove()

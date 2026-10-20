@@ -14,7 +14,7 @@
 
         <div class="meta">
           <span class="right floated time" v-if="source.download && source.download.started_at">
-            Updated {{ source.download.started_at | moment("from", "now") }}
+            Updated {{ $filters.moment(source.download.started_at, "from", "now") }}
           </span>
           <span class="right floated time" v-else>Never updated</span>
           <span class="left floated category">{{ release }}</span>
@@ -24,7 +24,7 @@
             <div class="ui clearing divider"></div>
             <div class="left floated">
               <i class="file outline icon"></i>
-              {{ source.count | currency('', 0) }} document{{ source.count > 1 ? "s" : "" }}
+              {{ $filters.currency(source.count, '', 0) }} document{{ source.count > 1 ? "s" : "" }}
             </div>
             <div
               :class="['right floated', (license !== null && typeof license === 'object') ? 'source-meta-links' : '']">
@@ -192,7 +192,7 @@ export default {
       hoverable: true,
     })
   },
-  beforeDestroy() {
+  beforeUnmount () {
     bus.$on('change_source', this.loadData)
     bus.$off('change_master', this.loadData)
     bus.$on('change_data_plugin', this.loadData)

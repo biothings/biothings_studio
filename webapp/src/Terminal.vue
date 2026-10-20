@@ -22,7 +22,7 @@ export default {
   created () {
     bus.$on('shell', this.onData)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('shell', this.onData)
   },
   data () {

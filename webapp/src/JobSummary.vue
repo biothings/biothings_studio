@@ -42,7 +42,7 @@
       data-position="bottom left"
       v-if="job_manager.queue">
       <i class="right microchip icon"></i>
-      {{ job_manager.memory | pretty_size}}
+      {{ $filters.pretty_size(job_manager.memory)}}
     </button>
   </div>
 </template>
@@ -83,7 +83,7 @@ export default {
   created () {
     bus.$on('num_commands', this.updateNumCommands)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('num_commands', this.updateNumCommands)
   },
   data () {
