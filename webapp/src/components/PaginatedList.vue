@@ -5,7 +5,7 @@
                 <small>
                     Showing <b>{{ filteredCount }}</b>
                     <span v-if="filteredCount !== totalCount">&nbsp;of <b>{{ totalCount }}</b></span>
-                    &nbsp;{{ type }}
+                    {{ type }}
                 </small>
             </div>
             <div class="right menu">
@@ -255,9 +255,9 @@
             </div>
             <div class="item">
                 <select class="ui select dropdown m-0" v-model="sortBy" @change="handleSorting" id="SortBy">
-                    <option value="" disabled>Sort</option>
-                    <option value="A-Z">A-Z</option>
-                    <option value="Z-A">Z-A</option>
+                    <option value="" disabled :selected="sortBy == ''">Sort</option>
+                    <option value="A-Z" :selected="sortBy == 'A-Z'">A-Z</option>
+                    <option value="Z-A" :selected="sortBy == 'Z-A'">Z-A</option>
                 </select>
             </div>
         </div>

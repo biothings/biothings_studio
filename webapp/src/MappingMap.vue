@@ -68,19 +68,19 @@
                             Field: <span class="key"></span><br>
                             Path: <span class="path"></span>
                         </h5>
-                        <p>
+                        <div style="margin-bottom: 1em">
                             <div class="index ui checkbox">
                                 <input type="checkbox" name="index" id="index_checkbox" v-model="indexed">
                                 <label>Index this field</label>
                             </div>
-                        </p>
-                        <p>
+                        </div>
+                        <div style="margin-bottom: 1em">
                             <div :class="['copy_to_all ui checkbox', indexed ? '' : 'disabled']">
                                 <input type="checkbox" name="copy_to_all" id="copy_to_all_checkbox" v-model="copied_to_all">
                                 <label>Search this field by default</label>
                             </div>
-                        </p>
-                        <p>
+                        </div>
+                        <div style="margin-bottom: 1em">
                             <div class="index ui">
                                 <label>Change type</label>
                                 <div class="ui selection estype dropdown" id="estype">
@@ -88,19 +88,19 @@
                                   <i class="dropdown icon"></i>
                                 </div>
                             </div>
-                        </p>
-                        <p>
+                        </div>
+                        <div>
                           <div class="six wide field">
                             <textarea class="json" rows="5" id="submap" v-model="strsubmap"></textarea>
                             <div class="ui mini negative message" v-if="json_err">
                                 <p>Invalid JSON format</p>
                             </div>
                           </div>
-                        </p>
+                        </div>
                     </div>
                     <div class="ten wide column">
-                        <div class="ui list">
-                            <a class="item">
+                        <div class="ui list indexing-help">
+                            <div class="item">
                                 <i class="right triangle icon"></i>
                                 <div class="content">
                                     <div class="description">
@@ -110,8 +110,8 @@
                                         impact performances, only index fields which make sense to query.
                                     </div>
                                 </div>
-                            </a>
-                            <a class="item">
+                            </div>
+                            <div class="item">
                                 <i class="right triangle icon"></i>
                                 <div class="content">
                                     <div class="description">
@@ -128,8 +128,8 @@
                                         </ul>
                                     </div>
                                 </div>
-                            </a>
-                            <a class="item">
+                            </div>
+                            <div class="item">
                                 <i class="right triangle icon"></i>
                                 <div class="content">
                                     <div class="description">
@@ -140,15 +140,15 @@
                                       <i>Note: only core datatypes are available in this list </i>
                                     </div>
                                 </div>
-                            </a>
-                            <a class="item">
+                            </div>
+                            <div class="item">
                                 <i class="right triangle icon"></i>
                                 <div class="content">
                                     <div class="description">
                                         Field definition can also be manually specificed in the text box, using JSON notation, for more advanced usage.
                                     </div>
                                 </div>
-                            </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -513,5 +513,10 @@ export default {
 .leaf {
   font-weight: bold;
   background-color: #ececec;
+}
+/* the indexing help's items aren't links (an <a> can't hold the one to the datatypes): their icons
+   in the grey Fomantic gives link items' */
+.indexing-help > .item > i.icon {
+  color: rgba(0, 0, 0, .4);
 }
 </style>

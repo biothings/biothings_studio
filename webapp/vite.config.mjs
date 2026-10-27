@@ -7,6 +7,10 @@ export default defineConfig({
   plugins: [vue()],
   build: {
     sourcemap: true,
+    // Lightning CSS, Vite's CSS minifier, merges rules with the same selector as if !important
+    // didn't count: .m-1 { margin: .15rem !important } lost to a later .m-1 { margin: .25rem }.
+    // Unminified, the CSS gzips to 7.5 kB instead of 5.7
+    cssMinify: false,
     rolldownOptions: {
       output: {
         // dependencies in their own chunk, which deploys changing only the app leave cached

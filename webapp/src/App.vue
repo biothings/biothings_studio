@@ -77,12 +77,12 @@
         <p>
           For your information, required version is: <code><b>{{ required_studio_version }}</b></code><br />
           Tested URLs were:
-        <div class="ui inverted segment">
+        </p>
+        <div class="ui inverted segment" style="margin-bottom: 1rem">
           <div class="ui ordered inverted list">
             <div class="item" v-for="(url, i) in compat_urls" :key="url + i"><a :href="url">{{ url }}</a></div>
           </div>
         </div>
-        </p>
       </div>
       <div class="content">
         <div class="ui form">
@@ -1100,6 +1100,12 @@ body,
 #app {
   min-height: 100%;
   /* height: 100%; */
+}
+
+/* the element App is mounted into: laid out as if #app were in its place, as #app replaced it in
+   Vue 2, so that #app's height still follows body's */
+#studio {
+  display: contents;
 }
 
 .red {
