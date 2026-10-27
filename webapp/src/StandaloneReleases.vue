@@ -21,7 +21,7 @@
                       :key="i+'e'" 
                       @click="changeTab(src.name); selected = src"
                       :data-tooltip="src.name.length > 20 ? src.name : null" data-position="top right">
-                        <i v-if="selected && selected.name === src.name" class="olive circle icon"></i>&nbsp;{{src.name.length > 20 ? src.name.slice(0,20)+'...' : src.name}}
+                        <i v-if="selected && selected.name === src.name" class="olive circle icon"></i> {{src.name.length > 20 ? src.name.slice(0,20)+'...' : src.name}}
                     </a>
                 </div>
                 </div>

@@ -85,15 +85,15 @@
                             a Biothings Studio. You can enter multiple URLs, one per line<br>
                             <br>
                             Ex: drag & drop one the following <i>versions.json</i>.
-                            <div class="ui bulleted list">
-                                <div class="item">
-                                    <b>MyGene (demo data)</b> (no auth.): <a href="http://biothings-releases.s3-website-us-west-2.amazonaws.com/mygene.info-demo/versions.json">versions.json</a>
-                                </div>
-                                <div class="item">
-                                    <b>MyGene (production data)</b> (auth. required): <a href="https://biothings-releases.s3-us-west-2.amazonaws.com/mygene.info/versions.json">versions.json</a>
-                                </div>
-                            </div>
                         </p>
+                        <div class="ui bulleted list">
+                            <div class="item">
+                                <b>MyGene (demo data)</b> (no auth.): <a href="http://biothings-releases.s3-website-us-west-2.amazonaws.com/mygene.info-demo/versions.json">versions.json</a>
+                            </div>
+                            <div class="item">
+                                <b>MyGene (production data)</b> (auth. required): <a href="https://biothings-releases.s3-us-west-2.amazonaws.com/mygene.info/versions.json">versions.json</a>
+                            </div>
+                        </div>
                         <br>
                         <div class="ui form">
                             <div class="field">
@@ -134,8 +134,8 @@
                     <div class="ui hide attached restarthub segment">
                         <p>
                             Once configured, Hub needs to be restarted so the new configuration becomes active.
-                            <div class="ui yellow compact message right floated" v-if="dirty_conf">Configuration has changed, Hub needs to restart</div>
                         </p>
+                        <div class="ui yellow compact message right floated" v-if="dirty_conf">Configuration has changed, Hub needs to restart</div>
                         <br>
                         <button class="ui red ok labeled icon button" @click="restartHub()" :class="actionable">
                             <i class="sync alternate icon"></i>
