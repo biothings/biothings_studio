@@ -48,7 +48,7 @@ export default {
     },
     onKeydown (evt) {
       if (evt.key === 'Enter') {
-        var line = this.line
+        const line = this.line
         this.line = ''
         this.historyIndex = null
         this.$emit('run', line)
@@ -79,7 +79,7 @@ export default {
         this.draft = this.line
         this.historyIndex = this.history.length
       }
-      var index = this.historyIndex + step
+      const index = this.historyIndex + step
       if (index < 0) {
         return
       }
@@ -91,22 +91,22 @@ export default {
         this.line = this.history[index]
       }
       this.$nextTick(() => {
-        var input = this.$refs.input
+        const input = this.$refs.input
         input.selectionStart = input.selectionEnd = input.value.length
       })
     },
     complete () {
       // complete the command name (first word), accepting hyphens for underscores
-      var match = /^(\s*)(\S*)$/.exec(this.line)
+      const match = /^(\s*)(\S*)$/.exec(this.line)
       if (!match) {
         return
       }
-      var typed = match[2].replace(/-/g, '_')
-      var candidates = this.completions.filter(name => name.startsWith(typed))
+      const typed = match[2].replace(/-/g, '_')
+      const candidates = this.completions.filter(name => name.startsWith(typed))
       if (!candidates.length) {
         return
       }
-      var completed = candidates.length === 1 ? candidates[0] + ' ' : commonPrefix(candidates)
+      const completed = candidates.length === 1 ? candidates[0] + ' ' : commonPrefix(candidates)
       this.line = match[1] + completed
       this.$nextTick(() => {
         this.suggestions = candidates.length > 1 ? candidates : []

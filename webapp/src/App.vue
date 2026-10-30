@@ -454,11 +454,11 @@ export default {
         // is it a structured event (jsonifiable) or a standard string event
         var invalid_json = false
         // hubs can also send data without message (eg. {_id: ...} only)
-        var msg = evt.data && typeof evt.data.msg == 'string' ? evt.data.msg : ''
+        const msg = evt.data && typeof evt.data.msg === 'string' ? evt.data.msg : ''
         if (msg.startsWith('{') && msg.endsWith('}')) {
           // try to avoid json process if not even a dict
           try {
-            var dmsg = JSON.parse(msg)
+            const dmsg = JSON.parse(msg)
             // we only know this type for now...
             if (dmsg.type == 'alert') {
               bus.$emit('alert', dmsg)

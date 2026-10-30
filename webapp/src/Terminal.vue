@@ -100,7 +100,7 @@ export default {
   },
   computed: {
     commandsByName () {
-      var byName = {}
+      const byName = {}
       this.commands.forEach(cmd => { byName[cmd.name] = cmd })
       return byName
     },
@@ -116,7 +116,7 @@ export default {
   },
   methods: {
     loadCatalog () {
-      var url = axios.defaults.baseURL
+      const url = axios.defaults.baseURL
       if (url !== this.catalogUrl) {
         // connected to another hub
         if (this.catalogUrl && this.entries.length) {
@@ -133,7 +133,7 @@ export default {
       }
       return axios.get(url + '/terminal/commands')
         .then(response => {
-          var catalog = response.data.result
+          const catalog = response.data.result
           this.mode = 'terminal'
           this.commands = catalog.commands
           this.hooks = catalog.hooks
@@ -163,7 +163,7 @@ export default {
       }
     },
     addEntry (kind, text, extra) {
-      var entry = Object.assign({ key: this.counter++, kind: kind, text: text }, extra || {})
+      const entry = Object.assign({ key: this.counter++, kind, text }, extra || {})
       this.entries.push(entry)
       if (this.entries.length > MAX_ENTRIES) {
         this.entries.splice(0, this.entries.length - MAX_ENTRIES)
@@ -174,7 +174,7 @@ export default {
     },
     scrollToBottom () {
       this.$nextTick(() => {
-        var output = this.$refs.output
+        const output = this.$refs.output
         if (output) {
           output.scrollTop = output.scrollHeight
         }
@@ -186,7 +186,7 @@ export default {
     },
     loadHistory () {
       try {
-        var history = JSON.parse(storage.get(HISTORY_KEY) || '[]')
+        const history = JSON.parse(storage.get(HISTORY_KEY) || '[]')
         return Array.isArray(history) ? history : []
       } catch (e) {
         return []
@@ -217,7 +217,7 @@ export default {
         return this.runLegacy(line)
       }
       this.addEntry('input', line)
-      var words = line.split(/\s+/)
+      const words = line.split(/\s+/)
       if (line === 'clear') {
         return this.clear()
       }
@@ -231,11 +231,11 @@ export default {
     },
     async send (line, confirmed) {
       try {
-        var body = confirmed ? { cmd: line, confirmed: true } : { cmd: line }
-        var response = await axios.post(axios.defaults.baseURL + '/terminal/run', body)
+        const body = confirmed ? { cmd: line, confirmed: true } : { cmd: line }
+        const response = await axios.post(axios.defaults.baseURL + '/terminal/run', body)
         this.showResponse(response.data.result)
       } catch (err) {
-        var data = err.response && err.response.data
+        const data = err.response && err.response.data
         if (err.response && err.response.status === 428 && data && data.confirm) {
           // commands deleting or changing data must be confirmed first
           this.addEntry('warning', data.confirm.join('\n'))
@@ -247,7 +247,7 @@ export default {
       }
     },
     answerConfirmation (answer) {
-      var line = this.confirming
+      const line = this.confirming
       this.confirming = null
       this.addEntry('input', answer)
       if (/^y(es)?$/i.test(answer)) {
@@ -257,7 +257,7 @@ export default {
     },
     showResponse (response) {
       // what the command logged while it was called (not sent by older hubs)
-      var logs = response.logs || []
+      const logs = response.logs || []
       if (logs.length) {
         this.addEntry('log', logs.join('\n'))
       }
@@ -268,7 +268,7 @@ export default {
         this.addEntry('error', response.stderr.replace(/\n$/, ''))
       }
       if (!response.is_done) {
-        var entry = this.addEntry('job', response.cmd, {
+        const entry = this.addEntry('job', response.cmd, {
           id: response.id,
           status: 'running',
           reason: null,
@@ -292,7 +292,7 @@ export default {
       } else if (response.failed) {
         this.addEntry('error', response.error, { details: response.traceback })
       } else {
-        var text = render(response.result)
+        const text = render(response.result)
         if (text) {
           this.addEntry('output', text)
         } else if (!response.stdout && !logs.length) {
@@ -301,13 +301,13 @@ export default {
       }
     },
     showRequestError (err) {
-      var data = err.response && err.response.data
+      const data = err.response && err.response.data
       if (err.response && err.response.status === 401) {
         // the hub requires a login to run commands (Studio asks for it, see HubLogin)
         return this.addEntry('error', 'Login required: log in, then run it again (Up recalls it)')
       }
       if (data && data.error) {
-        var error = this.addEntry('error', data.error)
+        const error = this.addEntry('error', data.error)
         if (data.usage) {
           this.addEntry('info', 'Usage: ' + data.usage)
         }
@@ -344,14 +344,14 @@ export default {
     fetchCommand (id) {
       return axios.get(axios.defaults.baseURL + '/command/' + id)
         .then(response => {
-          var info = response.data.result
-          var entry = this.running[id]
+          const info = response.data.result
+          const entry = this.running[id]
           if (!entry || !info) {
             return
           }
           if (!info.is_done) {
             // eg. "dump all": which sources are done, or failed (not sent by older hubs)
-            var progress = info.progress || []
+            const progress = info.progress || []
             if (progress.length !== entry.progress.length) {
               entry.progress = progress
               this.scrollToBottom()
@@ -366,7 +366,7 @@ export default {
           this.scrollToBottom()
         })
         .catch(err => {
-          var error = err.response && err.response.data && err.response.data.error
+          const error = err.response && err.response.data && err.response.data.error
           if (error && /No such command/.test(error) && this.running[id]) {
             // the hub restarted meanwhile, it doesn't know this command anymore
             this.running[id].status = 'unknown'
@@ -380,11 +380,11 @@ export default {
     // after "restart": wait for the hub to go down and come back, then reconnect Studio
     // (websocket, commands catalog) so everything is live again, without reloading the page
     async waitForRestart () {
-      var sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
-      var url = axios.defaults.baseURL
-      var reachable = () => axios.get(url + '/', { timeout: 3000 }).then(() => true, () => false)
-      var info = this.addEntry('info', 'Hub restarting...')
-      var start = Date.now()
+      const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+      const url = axios.defaults.baseURL
+      const reachable = () => axios.get(url + '/', { timeout: 3000 }).then(() => true, () => false)
+      const info = this.addEntry('info', 'Hub restarting...')
+      const start = Date.now()
       while (Date.now() - start < 60000 && await reachable()) {
         await sleep(1000)
       }
@@ -404,12 +404,12 @@ export default {
     },
     // help is built from the commands catalog provided by the hub
     showHelp () {
-      var visible = this.commands.filter(cmd => !cmd.hidden)
-      var size = Math.min(26, Math.max(...visible.map(cmd => cmd.name.length)) + 2)
-      var lines = ['Built-in commands:']
+      const visible = this.commands.filter(cmd => !cmd.hidden)
+      const size = Math.min(26, Math.max(...visible.map(cmd => cmd.name.length)) + 2)
+      const lines = ['Built-in commands:']
       visible.filter(cmd => cmd.origin === 'builtin').sort((a, b) => a.name.localeCompare(b.name))
         .forEach(cmd => lines.push('  ' + padEnd(cmd.name, size) + cmd.summary))
-      var hooks = visible.filter(cmd => cmd.origin === 'hook')
+      const hooks = visible.filter(cmd => cmd.origin === 'hook')
       lines.push('')
       if (hooks.length) {
         lines.push(`Hook commands (from ${this.hooksFolder}):`)
@@ -420,7 +420,7 @@ export default {
       if (this.failedHooks.length) {
         lines.push('  Failed to load: ' + this.failedHooks.map(hook => hook.name).join(', ') + ' (type hooks for details)')
       }
-      var advanced = this.commands.filter(cmd => cmd.hidden).map(cmd => cmd.name).sort()
+      const advanced = this.commands.filter(cmd => cmd.hidden).map(cmd => cmd.name).sort()
       if (advanced.length) {
         lines.push('', 'Advanced commands: ' + advanced.join(', '))
       }
@@ -435,13 +435,13 @@ export default {
       this.addEntry('output', lines.join('\n'))
     },
     showCommandHelp (name) {
-      var cmd = this.commandsByName[name.replace(/-/g, '_')]
+      const cmd = this.commandsByName[name.replace(/-/g, '_')]
       if (!cmd) {
-        var similar = this.commands.map(cmd => cmd.name).filter(other => other.includes(name) || name.includes(other))
+        const similar = this.commands.map(cmd => cmd.name).filter(other => other.includes(name) || name.includes(other))
         return this.addEntry('error', `Unknown command '${name}'` + (similar.length ? `, similar: ${similar.slice(0, 5).join(', ')}` : ''))
       }
-      var origin = cmd.origin === 'hook' ? `hook file ${cmd.hook}` : 'built-in command'
-      var lines = [`${cmd.name} (${origin})`]
+      const origin = cmd.origin === 'hook' ? `hook file ${cmd.hook}` : 'built-in command'
+      const lines = [`${cmd.name} (${origin})`]
       if (cmd.summary && !(cmd.doc || '').startsWith(cmd.summary)) {
         lines.push(cmd.summary)
       }
