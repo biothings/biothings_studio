@@ -9,7 +9,7 @@
                         {{release.index_name}}
                     </b> was created on <b>{{release.environment}}</b> environment (<b>{{release.host}}</b>)
                     <div class="date">
-                        {{release.created_at | moment("from", "now")}}
+                        {{$filters.moment(release.created_at, "from", "now")}}
                         (<i>on {{moment(release.created_at).format('MMMM Do YYYY, h:mm:ss a') }}</i>)
 
                     </div>
@@ -17,7 +17,7 @@
                 </div>
                 <div class="meta">
                   <div :class="actionable">
-                    <i class="file alternate icon"></i> {{ num_indexed | formatNumber }} documents indexed
+                    <i class="file alternate icon"></i> {{ $filters.formatNumber(num_indexed) }} documents indexed
                       <button :class="[release.snapshot ? 'disabled' : '','ui tinytiny grey labeled icon button']" @click="snapshot(release)">
                           <i class="bookmark icon"></i>Snapshot
                       </button>
@@ -203,7 +203,7 @@ export default {
   props: ['release', 'build', 'type'],
   mounted () {
   },
-  beforeDestroy () {
+  beforeUnmount () {
     $(`.ui.basic.createsnapshot.modal.${this.release.index_name}`).remove()
   },
   components: { ReleaseNoteSummary, PublishSummary },

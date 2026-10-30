@@ -3,20 +3,20 @@
 
 <script>
 
-import Vue from 'vue'
 import bus from './bus.js'
+import storage from './storage.js'
 
 export default {
   name: 'actionable',
   mounted () {
     bus.$on('readonly_mode', this.switchMode)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('readonly_mode', this.switchMode)
   },
   data () {
     return {
-      readonly: Vue.localStorage.get('readonly') == 'true'
+      readonly: storage.get('readonly') === 'true'
     }
   },
   computed: {
@@ -36,7 +36,7 @@ export default {
       // will print "readonly", *not* "true".
       set: function (mode) {
         this.readonly = mode
-        Vue.localStorage.set('readonly', JSON.stringify(this.readonly))
+        storage.set('readonly', JSON.stringify(this.readonly))
       }
     }
   },

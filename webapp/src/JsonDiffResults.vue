@@ -32,7 +32,7 @@ export default {
   created () {
     bus.$on('diffed', this.setOps)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('diffed', this.setOps)
   },
   data () {

@@ -34,7 +34,7 @@
             <div class="meta" style="overflow:hidden">
                 <div v-if="source.download && source.download.started_at">
                     <small class="time"><i class="clock icon outline"></i> Updated
-                        {{ source.download.started_at | moment('from', 'now') }}</small>
+                        {{ $filters.moment(source.download.started_at, 'from', 'now') }}</small>
                 </div>
                 <div v-else>
                     <small class="time">Never updated</small>
@@ -53,7 +53,7 @@
                     <div class="ui clearing divider"></div>
                     <div class="green text">
                         <i class="file outline icon"></i>
-                        {{ source.count | currency('', 0) }} documents
+                        {{ $filters.currency(source.count, '', 0) }} documents
                     </div>
                 </div>
             </div>

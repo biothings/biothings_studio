@@ -9,7 +9,7 @@
         <tbody v-if="build._meta">
             <tr v-for="(count,stat) in build._meta.stats" :key="count+stat">
                 <td >{{stat}}</td>
-                <td v-if="typeof(count) == 'number'">{{count | currency("",0)}}</td>
+                <td v-if="typeof(count) == 'number'">{{$filters.currency(count, "", 0)}}</td>
                 <td v-else>
                     <a v-on:click="showStatsInModal" :data-stats="JSON.stringify(count)" >View</a>
                 </td>

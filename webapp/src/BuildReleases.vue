@@ -185,7 +185,7 @@ export default {
   created () {
     this.loadData()
   },
-  beforeDestroy () {
+  beforeUnmount () {
     $('.ui.basic.newrelease.modal').remove()
   },
   components: {

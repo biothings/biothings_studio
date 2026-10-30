@@ -16,9 +16,9 @@
                       <i v-else class="notched circle loading icon"></i>
                   </td>
                   <td class="right aligned">{{command.id}}</td>
-                  <td>{{command.cmd | truncate(60)}}</td>
+                  <td>{{$filters.truncate(command.cmd, 60)}}</td>
                   <td v-if="command.is_done">{{command.duration}}</td>
-                  <td v-else>{{new Date(0).setUTCSeconds(command.started_at) | moment("from", "now")}}</td>
+                  <td v-else>{{$filters.moment(new Date(0).setUTCSeconds(command.started_at), "from", "now")}}</td>
               </tr>
           </table>
         </div>
@@ -29,6 +29,7 @@
 <script>
 import axios from 'axios'
 import bus from './bus.js'
+import orderBy from 'lodash/orderBy'
 
 export default {
   name: 'commands-list',
@@ -42,7 +43,7 @@ export default {
   created () {
     bus.$on('change_command', this.onCommandChanged)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('change_command', this.onCommandChanged)
   },
   ready () {
@@ -56,7 +57,7 @@ export default {
   },
   computed: {
     orderedCommands: function () {
-      return _.orderBy(Object.values(this.commands), 'id', -1)
+      return orderBy(Object.values(this.commands), 'id', -1)
     }
   },
   watch: {

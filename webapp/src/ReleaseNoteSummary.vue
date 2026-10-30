@@ -125,7 +125,7 @@ export default {
   mounted () {
     this.normalizeReleaseNotes()
   },
-  beforeDestroy () {
+  beforeUnmount () {
     $('.ui.basic.genrelnote.modal').remove()
     $('.ui.basic.disprelnote.modal').remove()
   },

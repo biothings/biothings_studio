@@ -26,7 +26,7 @@
             '</table></div>'
             " data-position="bottom center">
         </div>
-        <router-link :to="mitem['path']" class="item" style="padding: .5rem 1rem;" v-for="mitem in menu" v-bind:key="mitem.name" exact>
+        <router-link :to="mitem['path']" class="item" style="padding: .5rem 1rem;" v-for="mitem in menu" v-bind:key="mitem.name">
             {{ mitem['name'] }}
         </router-link>
         <div class="item p-1">

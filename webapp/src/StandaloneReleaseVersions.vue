@@ -176,7 +176,7 @@ export default {
   created () {
     bus.$on('refresh_standalone', this.onRefresh)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('refresh_standalone', this.onRefresh)
     bus.$emit(
       'store_environment_data',

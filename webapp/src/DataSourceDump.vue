@@ -24,7 +24,7 @@
                             </td>
                             <td>
                                 <a v-if="source.download.data_folder"
-                                    :href="source.download.data_folder | replace('/data/biothings_studio', '')">{{
+                                    :href="$filters.replace(source.download.data_folder, '/data/biothings_studio', '')">{{
                                         source.download.data_folder }}</a>
                             </td>
                         </tr>
@@ -38,8 +38,7 @@
                         <tr>
                             <td>Last download</td>
                             <td>{{ source.download.started_at }} <i v-if="source.download.started_at">({{
-                                source.download.started_at | moment("from",
-                                    "now") }})</i></td>
+                                $filters.moment(source.download.started_at, "from", "now") }})</i></td>
                         </tr>
                         <tr>
                             <td>Duration</td>
@@ -112,7 +111,7 @@
 
                 <div class="dry-run-result-wrapper" v-if="dry_run_result">
                     This is the data will be stored when mark success.
-                    <pre class="dry-run-result">{{ JSON.stringify(dry_run_result, null, space = 2) }}</pre>
+                    <pre class="dry-run-result">{{ JSON.stringify(dry_run_result, null, 2) }}</pre>
                 </div>
             </div>
             <div class="actions">

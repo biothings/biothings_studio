@@ -74,7 +74,7 @@
 import axios from 'axios'
 import bus from './bus.js'
 import hubapi from './hubapi.js'
-import Vue from 'vue'
+import storage from './storage.js'
 import HubsDashboard from './HubsDashboard.vue'
 import ExistingConnections from './ExistingConnections.vue'
 import Loader from './Loader.vue'
@@ -104,7 +104,7 @@ export default {
   created() {
     bus.$on('connection_failed', this.failedConnection)
   },
-  beforeDestroy() {
+  beforeUnmount () {
     $('.ui.basic.newhuburl.modal').remove()
     bus.$off('connection_failed', this.failedConnection)
   },
@@ -119,7 +119,7 @@ export default {
     buildConnections: function () {
     },
     getExistings: function () {
-      var previous = Vue.localStorage.get('hub_connections')
+      let previous = storage.get('hub_connections')
       if (!previous) {
         previous = {}
       } else {
@@ -146,7 +146,7 @@ export default {
           hubapi.base(data.url)
 
           self.existings[data.name] = data
-          Vue.localStorage.set('hub_connections', JSON.stringify(self.existings))
+          storage.set('hub_connections', JSON.stringify(self.existings))
 
           bus.$emit('connect', data, self.base_path)
           self.connection_error = null

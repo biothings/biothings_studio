@@ -3,32 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service serve",
-    "build": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service build",
-    "dev": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service serve --hot"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@babel/preset-env": "^7.5.4",
-    "axios": "^0.21.1",
-    "core-js": "^2.6.5",
-    "file-loader": "^4.0.0",
-    "jquery-tablesort": "0.0.11",
-    "moment": "^2.24.0",
+    "axios": "^0.34.0",
+    "lodash": "^4.18.1",
+    "moment": "^2.31.0",
     "numeral": "^2.0.6",
-    "regenerator-runtime": "^0.13.2",
-    "urijs": "^1.19.1",
-    "vue": "^2.6.10",
-    "vue-localstorage": "^0.6.2",
-    "vue-moment": "^4.0.0",
-    "vue-router": "^3.0.7",
-    "vue2-filters": "^0.7.0",
-    "vuex": "^2.0.0",
-    "webpack": "^4.36.1"
+    "urijs": "^1.19.11",
+    "vue": "^3.5.44",
+    "vue-router": "^5.4.0",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.9.0",
-    "@vue/cli-service": "^4.4.4",
-    "vue-template-compiler": "^2.6.10"
+    "@vitejs/plugin-vue": "^6.0.10",
+    "autoprefixer": "^10.6.1",
+    "vite": "^8.3.4"
   },
   "postcss": {
     "plugins": {

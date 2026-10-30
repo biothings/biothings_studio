@@ -18,7 +18,7 @@ export default {
   created () {
     bus.$on('change_command', this.onCommandChanged)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('change_command', this.onCommandChanged)
     if (this.interval_ref) {
       clearInterval(this.interval_ref)

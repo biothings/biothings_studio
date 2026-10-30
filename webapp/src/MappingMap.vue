@@ -68,19 +68,19 @@
                             Field: <span class="key"></span><br>
                             Path: <span class="path"></span>
                         </h5>
-                        <p>
+                        <div style="margin-bottom: 1em">
                             <div class="index ui checkbox">
                                 <input type="checkbox" name="index" id="index_checkbox" v-model="indexed">
                                 <label>Index this field</label>
                             </div>
-                        </p>
-                        <p>
+                        </div>
+                        <div style="margin-bottom: 1em">
                             <div :class="['copy_to_all ui checkbox', indexed ? '' : 'disabled']">
                                 <input type="checkbox" name="copy_to_all" id="copy_to_all_checkbox" v-model="copied_to_all">
                                 <label>Search this field by default</label>
                             </div>
-                        </p>
-                        <p>
+                        </div>
+                        <div style="margin-bottom: 1em">
                             <div class="index ui">
                                 <label>Change type</label>
                                 <div class="ui selection estype dropdown" id="estype">
@@ -88,19 +88,19 @@
                                   <i class="dropdown icon"></i>
                                 </div>
                             </div>
-                        </p>
-                        <p>
+                        </div>
+                        <div>
                           <div class="six wide field">
                             <textarea class="json" rows="5" id="submap" v-model="strsubmap"></textarea>
                             <div class="ui mini negative message" v-if="json_err">
                                 <p>Invalid JSON format</p>
                             </div>
                           </div>
-                        </p>
+                        </div>
                     </div>
                     <div class="ten wide column">
-                        <div class="ui list">
-                            <a class="item">
+                        <div class="ui list indexing-help">
+                            <div class="item">
                                 <i class="right triangle icon"></i>
                                 <div class="content">
                                     <div class="description">
@@ -110,8 +110,8 @@
                                         impact performances, only index fields which make sense to query.
                                     </div>
                                 </div>
-                            </a>
-                            <a class="item">
+                            </div>
+                            <div class="item">
                                 <i class="right triangle icon"></i>
                                 <div class="content">
                                     <div class="description">
@@ -128,8 +128,8 @@
                                         </ul>
                                     </div>
                                 </div>
-                            </a>
-                            <a class="item">
+                            </div>
+                            <div class="item">
                                 <i class="right triangle icon"></i>
                                 <div class="content">
                                     <div class="description">
@@ -140,15 +140,15 @@
                                       <i>Note: only core datatypes are available in this list </i>
                                     </div>
                                 </div>
-                            </a>
-                            <a class="item">
+                            </div>
+                            <div class="item">
                                 <i class="right triangle icon"></i>
                                 <div class="content">
                                     <div class="description">
                                         Field definition can also be manually specificed in the text box, using JSON notation, for more advanced usage.
                                     </div>
                                 </div>
-                            </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -192,7 +192,6 @@
 <script>
 import axios from 'axios'
 import bus from './bus.js'
-import Vue from 'vue'
 import Utils from './Utils.vue'
 import Actionable from './Actionable.vue'
 
@@ -206,16 +205,13 @@ export default {
     this.$forceUpdate()
     this.buildIndexDropdown()
   },
-  filters: {
-    log: (value) => { console.log(`in log ${value}`); return value }
-  },
   // TODO: those events are mostly due because of bad page design, with actions on a mapping separated from
   // the actual component (see DataSourceMapping.vue and the relation)
   created () {
     bus.$on('reload_mapping_map', this.$forceUpdate)
     bus.$on(`mapping_test_${this.map_id}-${this.name}`, this.displayMappingTestResult)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('reload_mapping_map', this.$forceUpdate)
     bus.$off(`mapping_test_${this.map_id}-${this.name}`, this.displayMappingTestResult)
   },
@@ -255,7 +251,6 @@ export default {
       }
     },
     indexed: {
-      cache: false,
       get: function () {
         if ('index' in this.submap && this.submap.index === false) {
           return false
@@ -269,7 +264,6 @@ export default {
       }
     },
     copied_to_all: {
-      cache: false,
       get: function () {
         if ('copy_to' in this.submap &&
                     // && typeof this.submap["copy_to"] == "array"
@@ -284,7 +278,6 @@ export default {
       }
     },
     current_type: {
-      cache: false,
       get: function () {
         return this.submap.type
       },
@@ -335,7 +328,7 @@ export default {
     },
     updateSubMap: function () {
       var index = $(`#modal_${this.name}-${this.map_id} #index_checkbox`).is(':checked')
-      var copy_to_all = $(`#modal_${this.name}-${this.map_id} #copy_to_all_checkbox`).is(':checked')
+      const copyToAll = $(`#modal_${this.name}-${this.map_id} #copy_to_all_checkbox`).is(':checked')
       var path = $(`#modal_${this.name}-${this.map_id} input.path`).val()
       // TODO: for now we only support outter keys to be modified
       if ('properties' in this.submap) {
@@ -343,14 +336,14 @@ export default {
         throw new Error("Only 'leaf' keys can be modified")
       }
       // copy to all ?
-      if (copy_to_all) { Vue.set(this.submap, 'copy_to', ['all']) } else { Vue.delete(this.submap, 'copy_to') }
+      if (copyToAll) { this.submap.copy_to = ['all'] } else { delete this.submap.copy_to }
       // index or not
-      if (index) { Vue.delete(this.submap, 'index') } else {
-        Vue.set(this.submap, 'index', false)
+      if (index) { delete this.submap.index } else {
+        this.submap.index = false
         // make sure to delete this one even if selected, makes no senses when index is false
-        Vue.delete(this.submap, 'copy_to')
+        delete this.submap.copy_to
       }
-      Vue.set(this.submap, 'type', this.selected_type)
+      this.submap.type = this.selected_type
     },
     modifyMapKey: function (event) {
       var key = event.currentTarget.innerText
@@ -520,5 +513,10 @@ export default {
 .leaf {
   font-weight: bold;
   background-color: #ececec;
+}
+/* the indexing help's items aren't links (an <a> can't hold the one to the datatypes): their icons
+   in the grey Fomantic gives link items' */
+.indexing-help > .item > i.icon {
+  color: rgba(0, 0, 0, .4);
 }
 </style>

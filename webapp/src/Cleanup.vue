@@ -56,8 +56,8 @@
                       <select class="ui dropdown build_config_filter" v-model="build_config_filter"
                         @change="loadData()">
                         <option value="">Build configuration filter</option>
-                        <template v-for="name in build_configs">
-                          <option :value="name" :key="name + 'filter'">{{ name }}</option>
+                        <template v-for="name in build_configs" :key="name + 'filter'">
+                          <option :value="name">{{ name }}</option>
                         </template>
                       </select>
                       <button class="ui red button white text" v-if="build_config_filter"
@@ -68,8 +68,8 @@
                     <div class="column w-auto">
                       <select class="ui dropdown build_filter" v-model="build_filter" @change="loadData()">
                         <option value="">Build filter</option>
-                        <template v-for="name in build_names">
-                          <option :value="name" :key="name + 'filter'">{{ name }}</option>
+                        <template v-for="name in build_names" :key="name + 'filter'">
+                          <option :value="name">{{ name }}</option>
                         </template>
                       </select>
                       <button class="ui red button white text" v-if="build_filter" @click="clearFilter('build')">
@@ -79,8 +79,8 @@
                     <div class="column w-auto">
                       <select class="ui dropdown env_filter" v-model="env_filter" @change="loadData()">
                         <option value="">Environment filter</option>
-                        <template v-for="env in environments">
-                          <option :value="env" :key="env + 'filter'">{{ env }}</option>
+                        <template v-for="env in environments" :key="env + 'filter'">
+                          <option :value="env">{{ env }}</option>
                         </template>
                       </select>
                       <button class="ui red button white text" v-if="env_filter" @click="clearFilter('env')">
@@ -103,8 +103,8 @@
 
             <!-- Snapshots Table Container -->
             <div class="table-container">
-              <template v-for="build_config_snapshots in snapshots">
-                <div class="build-config-header" :key="'build-config-header-' + build_config_snapshots._id">
+              <template v-for="build_config_snapshots in snapshots" :key="build_config_snapshots._id">
+                <div class="build-config-header">
                   <div class="ui checkbox checkbox-popup" title="Select all snapshots for this build config">
                     <input type="checkbox" @change="toggleAllSnapshots($event, build_config_snapshots._id)">
                     <label>
@@ -115,8 +115,7 @@
                     </label>
                   </div>
                 </div>
-                <table class="ui celled table table-snapshots"
-                  :key="'build-config-table-' + build_config_snapshots._id">
+                <table class="ui celled table table-snapshots">
                   <thead>
                     <tr>
                       <th class="w-1"></th>
@@ -148,7 +147,7 @@
                       </td>
                       <td>{{ snapshot_data.environment }}</td>
                       <td>{{ snapshot_data.indexer_env || snapshot_data.conf.indexer.env }}</td>
-                      <td class="min-width-9">{{ snapshot_data.created_at | moment('MMM Do YYYY, h:mm:ss a') }}</td>
+                      <td class="min-width-9">{{ $filters.moment(snapshot_data.created_at, 'MMM Do YYYY, h:mm:ss a') }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -181,8 +180,8 @@
                       <select class="ui dropdown mongo_build_config_filter" v-model="mongo_build_config_filter"
                         :disabled="show_build_confirm || is_deleting_builds" @change="loadBuildsData()">
                         <option value="">Build configuration filter</option>
-                        <template v-for="name in mongo_build_configs">
-                          <option :value="name" :key="name + 'mongo-build-config-filter'">{{ name }}</option>
+                        <template v-for="name in mongo_build_configs" :key="name + 'mongo-build-config-filter'">
+                          <option :value="name">{{ name }}</option>
                         </template>
                       </select>
                       <button class="ui red button white text" v-if="mongo_build_config_filter"
@@ -194,8 +193,8 @@
                       <select class="ui dropdown mongo_build_filter" v-model="mongo_build_filter"
                         :disabled="show_build_confirm || is_deleting_builds" @change="loadBuildsData()">
                         <option value="">Build filter</option>
-                        <template v-for="name in mongo_build_names">
-                          <option :value="name" :key="name + 'mongo-build-filter'">{{ name }}</option>
+                        <template v-for="name in mongo_build_names" :key="name + 'mongo-build-filter'">
+                          <option :value="name">{{ name }}</option>
                         </template>
                       </select>
                       <button class="ui red button white text" v-if="mongo_build_filter"
@@ -207,8 +206,8 @@
                       <select class="ui dropdown mongo_year_filter" v-model="mongo_year_filter"
                         :disabled="show_build_confirm || is_deleting_builds" @change="loadBuildsData()">
                         <option value="">Year filter</option>
-                        <template v-for="year in available_years">
-                          <option :value="year" :key="year + 'mongo-year-filter'">{{ year }}</option>
+                        <template v-for="year in available_years" :key="year + 'mongo-year-filter'">
+                          <option :value="year">{{ year }}</option>
                         </template>
                       </select>
                       <button class="ui red button white text" v-if="mongo_year_filter"
@@ -287,8 +286,8 @@
             </div>
 
             <div class="table-container">
-              <template v-for="build_group in mongo_builds">
-                <div class="build-config-header" :key="'mongo-build-group-header-' + build_group._id">
+              <template v-for="build_group in mongo_builds" :key="build_group._id">
+                <div class="build-config-header">
                   <div class="ui checkbox checkbox-popup" title="Select all builds for this build config">
                     <input type="checkbox" @change="toggleAllBuilds($event, build_group._id)">
                     <label>
@@ -299,7 +298,7 @@
                     </label>
                   </div>
                 </div>
-                <table class="ui celled table table-builds" :key="'mongo-build-group-table-' + build_group._id">
+                <table class="ui celled table table-builds">
                   <thead>
                     <tr>
                       <th class="w-1"></th>
@@ -322,7 +321,7 @@
                       <td>{{ build_data.build_config && build_data.build_config._id ? build_data.build_config._id :
                         'N/A' }}</td>
                       <td>{{ build_data.archived ? 'Yes' : 'No' }}</td>
-                      <td class="min-width-9">{{ build_data.started_at | moment('MMM Do YYYY, h:mm:ss a') }}</td>
+                      <td class="min-width-9">{{ $filters.moment(build_data.started_at, 'MMM Do YYYY, h:mm:ss a') }}</td>
                     </tr>
                   </tbody>
                 </table>

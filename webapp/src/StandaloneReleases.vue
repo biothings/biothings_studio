@@ -20,8 +20,8 @@
                       :class="['item', selected && selected.name === src.name ? 'active' : '']" 
                       :key="i+'e'" 
                       @click="changeTab(src.name); selected = src"
-                      :data-tooltip="src.name.length > 20 ? src.name : false" data-position="top right">
-                        <i v-if="selected && selected.name === src.name" class="olive circle icon"></i>&nbsp;{{src.name.length > 20 ? src.name.slice(0,20)+'...' : src.name}}
+                      :data-tooltip="src.name.length > 20 ? src.name : null" data-position="top right">
+                        <i v-if="selected && selected.name === src.name" class="olive circle icon"></i> {{src.name.length > 20 ? src.name.slice(0,20)+'...' : src.name}}
                     </a>
                 </div>
                 </div>
@@ -75,7 +75,7 @@ export default {
 
     bus.$on('store_source_environments_data', this.store_source_environments_data)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     this.version_urls = []
     $('.ui.wizard.modal').remove()
   },

@@ -76,7 +76,7 @@ export default {
   mounted () {
     this.loadCatalog()
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('shell', this.onLegacyShell)
     bus.$off('change_command', this.onCommandChanged)
     bus.$off('terminal_opened', this.onOpened)

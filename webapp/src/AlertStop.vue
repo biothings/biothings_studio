@@ -26,7 +26,7 @@ export default {
       .modal('setting', 'closable', false)
       .modal('show')
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$on('alert', this.onAlert)
   },
 }
