@@ -29,8 +29,8 @@
 
 <script>
 import axios from 'axios'
-import Vue from 'vue'
 import bus from './bus.js'
+import storage from './storage.js'
 import TerminalLine from './TerminalLine.vue'
 import TerminalPrompt from './TerminalPrompt.vue'
 
@@ -169,7 +169,8 @@ export default {
         this.entries.splice(0, this.entries.length - MAX_ENTRIES)
       }
       this.scrollToBottom()
-      return entry
+      // the reactive entry, changes to it update the terminal (not the object pushed)
+      return this.entries[this.entries.length - 1]
     },
     scrollToBottom () {
       this.$nextTick(() => {
@@ -185,7 +186,7 @@ export default {
     },
     loadHistory () {
       try {
-        var history = JSON.parse(Vue.localStorage.get(HISTORY_KEY) || '[]')
+        var history = JSON.parse(storage.get(HISTORY_KEY) || '[]')
         return Array.isArray(history) ? history : []
       } catch (e) {
         return []
@@ -198,7 +199,7 @@ export default {
       if (this.history.length > MAX_HISTORY) {
         this.history.splice(0, this.history.length - MAX_HISTORY)
       }
-      Vue.localStorage.set(HISTORY_KEY, JSON.stringify(this.history))
+      storage.set(HISTORY_KEY, JSON.stringify(this.history))
     },
     async runLine (line) {
       if (this.confirming !== null) {
@@ -285,7 +286,7 @@ export default {
             this.waitForRestart()
           }
         } else {
-          Vue.set(this.running, String(response.id), entry)
+          this.running[String(response.id)] = entry
           this.startPolling()
         }
       } else if (response.failed) {
@@ -357,7 +358,7 @@ export default {
             }
             return
           }
-          Vue.delete(this.running, id)
+          delete this.running[id]
           entry.status = info.failed ? 'failed' : 'done'
           entry.duration = info.duration
           entry.results = (info.results || []).map(render).filter(text => text)
@@ -370,7 +371,7 @@ export default {
             // the hub restarted meanwhile, it doesn't know this command anymore
             this.running[id].status = 'unknown'
             this.running[id].reason = 'hub restarted'
-            Vue.delete(this.running, id)
+            delete this.running[id]
           } else {
             console.log(`Can't get status of command ${id}: ${err}`)
           }

@@ -27,7 +27,7 @@ export default {
   created () {
     bus.$on('ws_connected', this.onWSConnected)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     bus.$off('ws_connected', this.onWSConnected)
   },
   mounted () {
