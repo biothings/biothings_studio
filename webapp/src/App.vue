@@ -169,10 +169,8 @@
       </div>
     </div>
 
-    <div class="ui terminal popup top left transition hidden" style="width:50%;">
-      <div class="ui inverted segment" v-if="has_feature('terminal')">
-        <terminal></terminal>
-      </div>
+    <div class="ui flowing basic terminal popup top left transition hidden hub-terminal-popup">
+      <terminal v-if="has_feature('terminal')"></terminal>
     </div>
 
     <div class="ui logs popup top transition hidden" v-if="has_feature('ws')">
@@ -455,10 +453,12 @@ export default {
       } else if (evt.obj) {
         // is it a structured event (jsonifiable) or a standard string event
         var invalid_json = false
-        if (evt.data && evt.data.msg.startsWith('{') && evt.data.msg.endsWith('}')) {
+        // hubs can also send data without message (eg. {_id: ...} only)
+        const msg = evt.data && typeof evt.data.msg === 'string' ? evt.data.msg : ''
+        if (msg.startsWith('{') && msg.endsWith('}')) {
           // try to avoid json process if not even a dict
           try {
-            var dmsg = JSON.parse(evt.data.msg)
+            const dmsg = JSON.parse(msg)
             // we only know this type for now...
             if (dmsg.type == 'alert') {
               bus.$emit('alert', dmsg)
@@ -863,7 +863,12 @@ export default {
             var newts = Date.now()
             self.latency_value = newts - self.msg_timestamp
             self.socket_msg = evt.data
-            self.dispatchEvent(evt.data)
+            try {
+              self.dispatchEvent(evt.data)
+            } catch (err) {
+              // don't let one event lose the next ones (sent in the same frame), or the pong
+              console.error('Error while dispatching hub event', evt.data, err)
+            }
             self.msg_timestamp = null
           }
           this.socket.onclose = function () {
@@ -919,6 +924,7 @@ export default {
         on: 'click',
         // ready to type a command
         onVisible: function () {
+          bus.$emit('terminal_opened')
           $('#termcommand').focus()
         },
         closable: false,
@@ -1130,6 +1136,13 @@ body,
 
 .segment.jobs {
   margin: 0;
+}
+
+.ui.popup.hub-terminal-popup {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 
 .font-jetbrains-mono {
