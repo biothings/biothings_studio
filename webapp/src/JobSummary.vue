@@ -44,6 +44,13 @@
       <i class="right microchip icon"></i>
       {{ $filters.pretty_size(job_manager.memory)}}
     </button>
+    <!-- free-threading (an icon only: a label would wrap the menu on two lines) -->
+    <button class="ui compact icon button tiny free-threading" :class="free_threading.color"
+      :data-tooltip="free_threading.tooltip"
+      data-position="bottom right"
+      v-if="free_threading">
+      <i class="icon" :class="free_threading.icon"></i>
+    </button>
   </div>
 </template>
 
@@ -98,6 +105,41 @@ export default {
       // errors: [],
     }
   },
+  computed: {
+    // whether the hub runs CPU-bound jobs in threads instead of processes (HUB_FREE_THREADED_WORKERS),
+    // and whether its GIL is enabled; null, showing nothing, when both are as usual or the hub doesn't
+    // tell (older biothings versions)
+    free_threading () {
+      const workers = this.job_manager.free_threaded_workers
+      const gil = this.job_manager.gil_enabled
+      if (workers && gil === false) {
+        return {
+          color: 'teal',
+          icon: 'stream',
+          tooltip: 'Free-threaded workers: the GIL is disabled, so CPU-bound jobs (merges, diffs, uploads) ' +
+            'run in parallel in threads of the hub, counted with the threads rather than the processes'
+        }
+      }
+      if (workers && gil === true) {
+        return {
+          color: 'orange',
+          icon: 'exclamation triangle',
+          tooltip: 'Free-threaded workers, but the GIL was enabled again by importing an extension module ' +
+            'without free-threading support: the Python code of CPU-bound jobs no longer runs in parallel. ' +
+            'They are counted with the threads rather than the processes'
+        }
+      }
+      if (!workers && gil === false) {
+        return {
+          color: '',
+          icon: 'stream',
+          tooltip: 'Free-threaded Python, with the GIL disabled, but CPU-bound jobs run in forked processes ' +
+            '(HUB_FREE_THREADED_WORKERS is off)'
+        }
+      }
+      return null
+    }
+  },
   watch: {
     num_commands: function (newv, oldv) {
       if (newv == 0) {
@@ -148,3 +190,12 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* wrapped on a few lines, rather than one line as wide as the text */
+.free-threading[data-tooltip]:after {
+  white-space: normal;
+  width: 24rem;
+  max-width: 90vw;
+}
+</style>
