@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<button class="ui compact labeled icon threads circular button tiny" id="events">
+        <button class="ui compact labeled icon circular button tiny" id="events">
 			<i :class="['bullhorn', notifnumcolor, 'icon']"></i>
 			<a id="num_events" :class="notifnumcolor">{{events.length}}</a>
 		</button>
