@@ -60,9 +60,10 @@ export default {
   name: 'job-summary',
   mounted () {
     this.getJobSummary()
-    // setup menu
-    $('.processes.button').popup({
-      popup: $('.processes.popup'),
+    // setup menu, looking only inside this component (other components can use the same classes)
+    const $el = $(this.$el)
+    $el.find('.processes.button').popup({
+      popup: $el.find('.processes.popup'),
       on: 'click',
       // default position and fallback if no space left
       position: 'bottom left',
@@ -70,8 +71,8 @@ export default {
       onVisible: () => { this.onJobsOpened(true) },
       onHide: () => { this.onJobsOpened(false) }
     })
-    $('.threads.button').popup({
-      popup: $('.threads.popup'),
+    $el.find('.threads.button').popup({
+      popup: $el.find('.threads.popup'),
       on: 'click',
       // default position and fallback if no space left
       position: 'bottom left',
